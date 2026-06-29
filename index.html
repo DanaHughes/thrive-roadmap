@@ -52,8 +52,9 @@
   .wsfld{border:1px solid #E2E8DE;background:#fff;font-family:inherit;outline:none;border-radius:10px;padding:9px 11px;width:100%;color:#33402A;font-size:12.5px;resize:vertical;line-height:1.5;}
   .wsfld:focus{border-color:#BFD6AE;box-shadow:0 0 0 3px rgba(143,174,72,.12);}
   .wsfld.big{min-height:340px;}
-  .boardnote{height:34px;transition:height .15s ease;}
+  .boardnote{height:34px;transition:height .15s ease;overflow-y:auto;}
   .boardnote.big{height:180px;}
+  .wsfld.big{overflow-y:auto;}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:#23311C;color:#EAF2E1;font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:12px;box-shadow:0 8px 28px rgba(20,30,12,.28);z-index:80;opacity:0;pointer-events:none;transition:all .25s ease;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   /* ---- Mobile / home-screen app ---- */
@@ -87,7 +88,7 @@
   <div class="side-back {{ navCls }}" onClick="{{ onCloseNav }}"></div>
 
   <!-- ===== SIDEBAR ===== -->
-  <aside class="side {{ navCls }}" style="width:262px;flex:0 0 auto;background:#fff;border-right:1px solid #E7ECF4;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;">
+  <aside class="side {{ navCls }}" style="width:262px;flex:0 0 auto;background:#fff;border-right:1px solid #E7ECF4;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;">
     <div onClick="{{ goDashboard }}" class="pbtn" style="display:flex;align-items:center;gap:10px;padding:0 4px 20px;cursor:pointer;" title="Back to Dashboard">
       <img src="assets/thrive-logo.png" alt="Thrive" style="width:46px;height:46px;object-fit:contain;flex:0 0 auto;">
       <div style="line-height:1;">
@@ -305,7 +306,7 @@
                 </div>
                 <div style="padding:9px 12px;border-left:1px solid #ECF0E8;display:flex;flex-direction:column;gap:7px;justify-content:center;background:#FCFDFB;">
                   <div style="position:relative;">
-                    <textarea class="boardnote {{ t.noteCls }}" value="{{ t.notes }}" onInput="{{ t.onNote }}" placeholder="Add notes…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 28px 6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;width:100%;resize:none;line-height:1.55;"></textarea>
+                    <textarea class="boardnote {{ t.noteCls }}" value="{{ t.notes }}" onInput="{{ t.onNote }}" placeholder="Add notes…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 28px 6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;width:100%;resize:vertical;line-height:1.55;"></textarea>
                     <button class="pbtn" onClick="{{ t.onToggleNote }}" title="Expand / collapse notes" style="position:absolute;top:4px;right:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #E2E8DE;border-radius:6px;background:#fff;color:#7C8C6C;font-size:11px;cursor:pointer;padding:0;line-height:1;">{{ t.noteToggleGlyph }}</button>
                   </div>
                   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
