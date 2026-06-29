@@ -51,6 +51,7 @@
   .ws.show{transform:translateX(0);}
   .wsfld{border:1px solid #E2E8DE;background:#fff;font-family:inherit;outline:none;border-radius:10px;padding:9px 11px;width:100%;color:#33402A;font-size:12.5px;resize:vertical;line-height:1.5;}
   .wsfld:focus{border-color:#BFD6AE;box-shadow:0 0 0 3px rgba(143,174,72,.12);}
+  .wsfld.big{min-height:340px;}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:#23311C;color:#EAF2E1;font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:12px;box-shadow:0 8px 28px rgba(20,30,12,.28);z-index:80;opacity:0;pointer-events:none;transition:all .25s ease;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   /* ---- Mobile / home-screen app ---- */
@@ -776,8 +777,11 @@
         <input class="wsfld" value="{{ ws.dod }}" onInput="{{ ws.onDod }}" placeholder="What does done look like for this task?">
       </div>
       <div>
-        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">NOTES</div>
-        <textarea class="wsfld" rows="3" value="{{ ws.notes }}" onInput="{{ ws.onNotes }}" placeholder="Working notes…"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;">NOTES</span>
+          <button class="pbtn" onClick="{{ ws.onToggleNote }}" style="font-size:10px;font-weight:700;color:#5B6B4E;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:3px 9px;cursor:pointer;">{{ ws.noteToggleLabel }}</button>
+        </div>
+        <textarea class="wsfld {{ ws.noteCls }}" rows="3" value="{{ ws.notes }}" onInput="{{ ws.onNotes }}" placeholder="Working notes…"></textarea>
       </div>
       <div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">QUESTIONS / TALKING POINTS</div>
@@ -913,7 +917,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1229,6 +1233,7 @@ class Component extends DCLogic {
           onLabel:e=>this.setTaskField(wph,wdi,wti,'label',e.target.value),
           onDod:e=>this.setTaskField(wph,wdi,wti,'dod',e.target.value),
           onNotes:e=>this.setTaskField(wph,wdi,wti,'notes',e.target.value),
+          noteCls:this.state.noteBig?'big':'', noteToggleLabel:this.state.noteBig?'⤡ Collapse':'⤢ Expand', onToggleNote:()=>this.setState({noteBig:!this.state.noteBig}),
           onQuestions:e=>this.setTaskField(wph,wdi,wti,'questions',e.target.value),
           onContact:e=>this.setTaskField(wph,wdi,wti,'contact',e.target.value),
           onRelated:e=>this.setTaskField(wph,wdi,wti,'related',e.target.value),
