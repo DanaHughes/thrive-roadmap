@@ -1034,7 +1034,7 @@ class Component extends DCLogic {
     return b;
   }
   componentDidMount(){
-    try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:s.board, active:s.active||'p1'}); } }catch(e){}
+    try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:this.normalizeBoard(s.board), active:s.active||'p1'}); } }catch(e){}
     try{ const hh=JSON.parse(localStorage.getItem(this.HKEY)||'null'); if(Array.isArray(hh)){ this.setState({history:hh}); } }catch(e){}
     // Locked-present build: someone shared a present-only copy. No unlocking possible.
     const locked = !!document.querySelector('meta[name="thrive-lock"]');
@@ -1058,6 +1058,22 @@ class Component extends DCLogic {
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
+  normalizeBoard(b){
+    if(!b||typeof b!=='object') return b;
+    const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.keys(v).sort((a,c)=>(+a)-(+c)).map(k=>v[k]):[]);
+    Object.keys(b).forEach(k=>{
+      if(k==='meta') return;
+      const phase=arr(b[k]); b[k]=phase;
+      phase.forEach(del=>{ if(!del||typeof del!=='object') return;
+        del.files=arr(del.files); del.tasks=arr(del.tasks);
+        del.tasks.forEach(t=>{ if(!t||typeof t!=='object') return;
+          t.files=arr(t.files); t.links=arr(t.links); t.subs=arr(t.subs);
+          t.subs.forEach(s=>{ if(s&&typeof s==='object'){ s.files=arr(s.files); s.links=arr(s.links); } });
+        });
+      });
+    });
+    return b;
+  }
   async cloudInit(){
     const url=this.cloudUrl(); if(!url) return;
     try{
@@ -1065,8 +1081,9 @@ class Component extends DCLogic {
       if(res.ok){
         const data=await res.json();
         if(data && data.board){
-          this._lastSyncedJson=JSON.stringify(data.board);
-          this.setState({board:data.board}); this.persist({board:data.board});
+          const nb=this.normalizeBoard(data.board);
+          this._lastSyncedJson=JSON.stringify(nb);
+          this.setState({board:nb}); this.persist({board:nb});
           this.toast('Synced from cloud ☁');
         } else {
           await this.cloudPush();
@@ -1085,8 +1102,9 @@ class Component extends DCLogic {
       const res=await fetch(url,{cache:'no-store'}); if(!res.ok) return;
       const data=await res.json();
       if(data && data.board){
-        const rj=JSON.stringify(data.board);
-        if(rj!==this._lastSyncedJson){ this._lastSyncedJson=rj; this.setState({board:data.board}); this.persist({board:data.board}); }
+        const nb=this.normalizeBoard(data.board);
+        const rj=JSON.stringify(nb);
+        if(rj!==this._lastSyncedJson){ this._lastSyncedJson=rj; this.setState({board:nb}); this.persist({board:nb}); }
       }
     }catch(e){}
   }
@@ -1139,8 +1157,8 @@ class Component extends DCLogic {
   renameTask(ph,di,ti,v){ this.mut(b=>{ b[ph][di].tasks[ti].label=v; }); }
   renameSub(ph,di,ti,si,v){ this.mut(b=>{ b[ph][di].tasks[ti].subs[si].label=v; }); }
   setNote(ph,di,ti,v){ this.mut(b=>{ b[ph][di].tasks[ti].notes=v; }); }
-  addTaskFile(ph,di,ti,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ b[ph][di].tasks[ti].files.push(nm); }); }
-  addDelFile(ph,di,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ b[ph][di].files.push(nm); }); }
+  addTaskFile(ph,di,ti,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ const t=b[ph][di].tasks[ti]; if(!Array.isArray(t.files)) t.files=[]; t.files.push(nm); }); }
+  addDelFile(ph,di,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ const d=b[ph][di]; if(!Array.isArray(d.files)) d.files=[]; d.files.push(nm); }); }
   delDelFile(ph,di,fi){ this.mut(b=>{ b[ph][di].files.splice(fi,1); }); }
   addDelLink(ph,di){ this.mut(b=>{ if(!b[ph][di].delLinks)b[ph][di].delLinks=[]; b[ph][di].delLinks.push({label:'New link',url:''}); }); }
   setDelLink(ph,di,li,f,v){ this.mut(b=>{ b[ph][di].delLinks[li][f]=v; }); }
@@ -1149,7 +1167,7 @@ class Component extends DCLogic {
   delCard(ph,di){ this.mut(b=>{ b[ph].splice(di,1); }); }
   addTask(ph,di){ this.mut(b=>{ b[ph][di].tasks.push({id:this.uid(),label:'New task',done:false,notes:'',files:[],subs:[]}); }); }
   delTask(ph,di,ti){ this.mut(b=>{ b[ph][di].tasks.splice(ti,1); }); }
-  addSub(ph,di,ti){ this.mut(b=>{ b[ph][di].tasks[ti].subs.push({id:this.uid(),label:'New subtask',done:false}); }); }
+  addSub(ph,di,ti){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; if(!Array.isArray(t.subs)) t.subs=[]; t.subs.push({id:this.uid(),label:'New subtask',done:false,notes:'',files:[],links:[]}); }); }
   delSub(ph,di,ti,si){ this.mut(b=>{ b[ph][di].tasks[ti].subs.splice(si,1); }); }
   setSubNote(ph,di,ti,si,v){ this.mut(b=>{ b[ph][di].tasks[ti].subs[si].notes=v; }); }
   addSubFile(ph,di,ti,si,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ const s=b[ph][di].tasks[ti].subs[si]; if(!s.files)s.files=[]; s.files.push(nm); }); }
