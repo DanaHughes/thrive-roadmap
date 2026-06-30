@@ -1117,6 +1117,7 @@ class Component extends DCLogic {
   componentDidMount(){
     try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:this.normalizeBoard(s.board), active:s.active||'p1'}); } }catch(e){}
     try{ const hh=JSON.parse(localStorage.getItem(this.HKEY)||'null'); if(Array.isArray(hh)){ this.setState({history:hh}); } }catch(e){}
+    this.histPull();
     // Locked-present build: someone shared a present-only copy. No unlocking possible.
     const teamMode = /(?:^|[?&#])team(?:[=&/]|$)/i.test((location.search||'')+(location.hash||''));
     const locked = teamMode || !!document.querySelector('meta[name="thrive-lock"]');
@@ -1137,7 +1138,7 @@ class Component extends DCLogic {
     this.tlInit();
     this.commentsInit();
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1201,6 +1202,13 @@ class Component extends DCLogic {
       if(res.ok){ this._lastSyncedJson=bj; this._dirty=false; }
     }catch(e){}
   }
+
+  // ---- Version history: synced across devices via Firebase (merge by snapshot ts) ----
+  histUrl(){ return this.SYNC_URL ? (this.SYNC_URL.replace(/\/+$/,'')+'/thrivehist/'+this.CTOKEN+'.json') : ''; }
+  histMerge(a,b){ const map={}; (a||[]).concat(b||[]).forEach(h=>{ if(h&&typeof h.ts==='number'){ const k=h.ts+(h.manual?'m':''); if(!map[k]) map[k]=h; } }); return Object.keys(map).map(k=>map[k]).sort((x,y)=>(y.ts||0)-(x.ts||0)).slice(0,40); }
+  saveHistory(history){ this.persistHistory(history); this.setState({history}); this.histPush(); }
+  histPush(){ const url=this.histUrl(); if(!url) return; clearTimeout(this._histT); this._histT=setTimeout(async()=>{ try{ await fetch(url,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({items:this.state.history||[]})}); }catch(e){} }, 1200); }
+  async histPull(){ const url=this.histUrl(); if(!url) return; try{ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) return; const data=await res.json(); const remote=(data&&Array.isArray(data.items))?data.items:[]; if(!remote.length) return; const merged=this.histMerge(this.state.history, remote); if(JSON.stringify(merged)!==JSON.stringify(this.state.history)){ this.persistHistory(merged); this.setState({history:merged}); } }catch(e){} }
   toast(msg){ this.setState({toast:msg}); clearTimeout(this._t); this._t=setTimeout(()=>this.setState({toast:''}),2600); }
   openWS(ph,di,ti){ this.setState({wsOpen:true, wsPath:{ph,di,ti}}); }
   closeWS(){ this.setState({wsOpen:false}); }
@@ -1221,13 +1229,13 @@ class Component extends DCLogic {
     const now=Date.now();
     if(!this._lastSnap || now-this._lastSnap>5000){
       const history=[{ts:now, board:JSON.parse(JSON.stringify(prev))}].concat(this.state.history||[]).slice(0,40);
-      this._lastSnap=now; this.persistHistory(history); this.setState({history});
+      this._lastSnap=now; this.saveHistory(history);
     }
     const board=JSON.parse(JSON.stringify(prev)); fn(board);
     this.setState({board}); this.persist({board}); this.scheduleCloudPush();
   }
-  manualCheckpoint(){ const history=[{ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board)), manual:true}].concat(this.state.history||[]).slice(0,40); this._lastSnap=Date.now(); this.persistHistory(history); this.setState({history}); this.toast('Checkpoint saved'); }
-  restoreVersion(i){ const h=this.state.history||[]; if(!h[i]) return; const cur={ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board))}; const history=[cur].concat(h).slice(0,40); const board=JSON.parse(JSON.stringify(h[i].board)); this._lastSnap=Date.now(); this.setState({board, history}); this.persist({board}); this.persistHistory(history); this.scheduleCloudPush(); this.toast('Restored — your current version was saved first'); }
+  manualCheckpoint(){ const history=[{ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board)), manual:true}].concat(this.state.history||[]).slice(0,40); this._lastSnap=Date.now(); this.saveHistory(history); this.toast('Checkpoint saved'); }
+  restoreVersion(i){ const h=this.state.history||[]; if(!h[i]) return; const cur={ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board))}; const history=[cur].concat(h).slice(0,40); const board=JSON.parse(JSON.stringify(h[i].board)); this._lastSnap=Date.now(); this.setState({board}); this.persist({board}); this.saveHistory(history); this.scheduleCloudPush(); this.toast('Restored — your current version was saved first'); }
 
   setActive(k){ this.setState({active:k,view:'phase',navOpen:false}); this.persist({active:k,view:'phase'}); }
   setView(v){ this.setState({view:v,navOpen:false}); this.persist({view:v}); try{ if(history&&history.replaceState) history.replaceState(null,'','#'+v); }catch(e){} }
@@ -1323,8 +1331,8 @@ class Component extends DCLogic {
     ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.addEventListener(ev,this._tlAct,{passive:true}));
     this._tlSaveTick=0; this._tlInt=setInterval(()=>this.tlTick(),1000);
     this.tlSyncPull();
-    this._tlSyncInt=setInterval(()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.tlPush(); } }, 10000);
-    this._tlVis=()=>{ if(document.visibilityState==='visible') this.tlSyncPull(); };
+    this._tlSyncInt=setInterval(()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.tlPush(); this.histPull(); } }, 10000);
+    this._tlVis=()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.histPull(); } };
     document.addEventListener('visibilitychange', this._tlVis); window.addEventListener('focus', this._tlVis);
   }
   tlElapsed(){ if(!this.TL||!this.TL.running) return 0; const seg=(this.TL.paused||!this.TL.segStart)?0:Math.round((Date.now()-this.TL.segStart)/1000); return Math.max(0,(this.TL.accumSec||0)+seg); }
