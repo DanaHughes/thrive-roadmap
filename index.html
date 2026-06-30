@@ -101,6 +101,13 @@
       </div>
       <sc-if value="{{ tlRunning }}" hint-placeholder-val="{{ false }}">
         <span style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#C7E89A;min-width:58px;text-align:center;">{{ tl.runDisp }}</span>
+        <sc-if value="{{ tlPaused }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:8px;font-weight:800;letter-spacing:.08em;color:#E8C06A;">PAUSED</span>
+          <button class="pbtn" onClick="{{ tl.onResume }}" style="font-size:11px;font-weight:800;color:#23311C;background:#C7E89A;border:none;border-radius:9px;padding:7px 12px;cursor:pointer;">▶ Resume</button>
+        </sc-if>
+        <sc-if value="{{ tlActive }}" hint-placeholder-val="{{ true }}">
+          <button class="pbtn" onClick="{{ tl.onPause }}" style="font-size:11px;font-weight:800;color:#EAF2E1;background:#3C4F30;border:none;border-radius:9px;padding:7px 12px;cursor:pointer;">⏸ Pause</button>
+        </sc-if>
         <button class="pbtn" onClick="{{ tl.onStop }}" style="font-size:11px;font-weight:800;color:#fff;background:#B4452E;border:none;border-radius:9px;padding:7px 13px;cursor:pointer;">■ Stop</button>
       </sc-if>
       <sc-if value="{{ tlIdle }}" hint-placeholder-val="{{ true }}">
@@ -117,8 +124,8 @@
         <div style="font-size:12px;color:#79866C;margin-bottom:17px;">You worked <b style="color:#34672A;">{{ bill.worked }}</b>. Set your billable hours and a quick note for your work spreadsheet.</div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">BILLABLE HOURS</div>
         <input value="{{ bill.hours }}" onInput="{{ bill.onHours }}" type="number" step="0.25" min="0" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;font-weight:700;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;">
-        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">WHAT DID YOU WORK ON?</div>
-        <textarea value="{{ bill.desc }}" onInput="{{ bill.onDesc }}" rows="3" placeholder="Brief description of tasks worked on…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">WHAT DID YOU WORK ON? <span style="color:#8FAE48;font-weight:700;letter-spacing:0;text-transform:none;">· auto-filled from your roadmap — edit freely</span></div>
+        <textarea value="{{ bill.desc }}" onInput="{{ bill.onDesc }}" rows="4" placeholder="Brief description of tasks worked on…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
         <div style="display:flex;gap:8px;margin-top:18px;">
           <button class="pbtn" onClick="{{ bill.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Save session</button>
           <button class="pbtn" onClick="{{ bill.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Discard</button>
@@ -1130,7 +1137,7 @@ class Component extends DCLogic {
     this.tlInit();
     this.commentsInit();
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearInterval(this._tlInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1302,28 +1309,50 @@ class Component extends DCLogic {
 
   // ---- Time tracking (device-local: passive active tracker + manual work timer) ----
   dayKey(d){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
+  timeUrl(){ return this.SYNC_URL.replace(/\/+$/,'')+'/thrivetime/'+this.CTOKEN+'.json'; }
   tlInit(){
     let tl=null; try{ tl=JSON.parse(localStorage.getItem('thrive_timelog')||'null'); }catch(e){}
-    if(!tl||typeof tl!=='object') tl={today:'', activeSec:0, days:{}, running:false, runStart:0, sessions:[]};
-    tl.days=tl.days||{}; tl.sessions=tl.sessions||[];
-    this.TL=tl; this._lastAct=Date.now(); this.tlRollover();
+    if(!tl||typeof tl!=='object') tl={};
+    tl.days=(tl.days&&typeof tl.days==='object'&&!Array.isArray(tl.days))?tl.days:{}; tl.sessions=Array.isArray(tl.sessions)?tl.sessions:[];
+    if(typeof tl.ts!=='number') tl.ts=0;
+    tl.running=!!tl.running; tl.paused=!!tl.paused; tl.accumSec=tl.accumSec||0; tl.segStart=tl.segStart||0; tl.startMs=tl.startMs||0;
+    if(tl.runStart){ tl.startMs=tl.startMs||tl.runStart; tl.segStart=tl.segStart||tl.runStart; delete tl.runStart; }
+    if(tl.today && tl.activeSec){ tl.days[tl.today]=(tl.days[tl.today]||0)+tl.activeSec; } delete tl.today; delete tl.activeSec;
+    this.TL=tl; this._lastAct=Date.now();
     this._tlAct=()=>{ this._lastAct=Date.now(); };
     ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.addEventListener(ev,this._tlAct,{passive:true}));
     this._tlSaveTick=0; this._tlInt=setInterval(()=>this.tlTick(),1000);
+    this.tlSyncPull();
+    this._tlSyncInt=setInterval(()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.tlPush(); } }, 10000);
+    this._tlVis=()=>{ if(document.visibilityState==='visible') this.tlSyncPull(); };
+    document.addEventListener('visibilitychange', this._tlVis); window.addEventListener('focus', this._tlVis);
   }
-  tlRollover(){ if(!this.TL) return; const tk=this.dayKey(Date.now()); if(this.TL.today!==tk){ if(this.TL.today && this.TL.activeSec){ this.TL.days[this.TL.today]=(this.TL.days[this.TL.today]||0)+this.TL.activeSec; } this.TL.today=tk; this.TL.activeSec=0; } }
+  tlElapsed(){ if(!this.TL||!this.TL.running) return 0; const seg=(this.TL.paused||!this.TL.segStart)?0:Math.round((Date.now()-this.TL.segStart)/1000); return Math.max(0,(this.TL.accumSec||0)+seg); }
   tlSave(){ try{ if(this.TL) localStorage.setItem('thrive_timelog', JSON.stringify(this.TL)); }catch(e){} }
+  tlBump(){ if(this.TL) this.TL.ts=Date.now(); }
+  async tlPush(){ const url=this.timeUrl(); if(!url||!this.TL) return; try{ await fetch(url,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(this.TL)}); }catch(e){} }
+  async tlSyncPull(){ const url=this.timeUrl(); if(!url||!this.TL) return; try{ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) return; const r=await res.json(); if(!r||typeof r!=='object') return; let changed=false;
+    if((r.ts||0) > (this.TL.ts||0)){ this.TL.ts=r.ts; this.TL.running=!!r.running; this.TL.paused=!!r.paused; this.TL.accumSec=r.accumSec||0; this.TL.segStart=r.segStart||0; this.TL.startMs=r.startMs||0; this.TL.sessions=Array.isArray(r.sessions)?r.sessions:(this.TL.sessions||[]); changed=true; }
+    const rd=(r.days&&typeof r.days==='object')?r.days:{}; Object.keys(rd).forEach(k=>{ const v=Math.max(this.TL.days[k]||0, rd[k]||0); if(v!==(this.TL.days[k]||0)){ this.TL.days[k]=v; changed=true; } });
+    if(changed){ this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
+  }catch(e){} }
   tlTick(){
-    if(!this.TL) return; this.tlRollover();
+    if(!this.TL) return;
+    if(this.TL.running && this.dayKey(this.TL.startMs||Date.now())!==this.dayKey(Date.now()) && !this.state.billModal){ this.tlStop(); return; }
     const idleMs=Date.now()-(this._lastAct||0);
     const active=(typeof document!=='undefined' && document.visibilityState==='visible') && idleMs < 15*60*1000;
-    if(active) this.TL.activeSec+=1;
+    if(active){ const k=this.dayKey(Date.now()); this.TL.days[k]=(this.TL.days[k]||0)+1; }
     this._tlSaveTick=(this._tlSaveTick||0)+1; if(this._tlSaveTick%15===0) this.tlSave();
-    if(this.TL.running || this._tlSaveTick%5===0) this.setState({tlTick:(this.state.tlTick||0)+1});
+    if((this.TL.running&&!this.TL.paused) || this._tlSaveTick%5===0) this.setState({tlTick:(this.state.tlTick||0)+1});
   }
-  tlStart(){ if(!this.TL||this.TL.running) return; this.TL.running=true; this.TL.runStart=Date.now(); this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Work timer started'); }
-  tlStop(){ if(!this.TL||!this.TL.running) return; const start=this.TL.runStart, end=Date.now(); const sec=Math.max(1,Math.round((end-start)/1000)); this.TL.running=false; this.TL.runStart=0; this.tlSave(); this.setState({billModal:{start,end,sec,hours:(sec/3600).toFixed(2),desc:''}, tlTick:(this.state.tlTick||0)+1}); }
-  tlSaveSession(){ const m=this.state.billModal; if(!m) return; const h=parseFloat(m.hours); const billable=isNaN(h)?0:Math.max(0,h); this.TL.sessions.unshift({date:this.dayKey(m.end), start:m.start, end:m.end, sec:m.sec, billable, desc:(m.desc||'').trim()}); if(this.TL.sessions.length>500) this.TL.sessions=this.TL.sessions.slice(0,500); this.tlSave(); this.setState({billModal:null}); this.toast('Session logged · '+billable.toFixed(2)+'h billable'); }
+  allDoneTasks(){ const m={}; this.PHASES.forEach(P=>{ (this.state.board[P.key]||[]).forEach(del=>{ (del&&del.tasks||[]).forEach(t=>{ if(t&&t.done) m[t.id]=t.label; }); }); }); return m; }
+  tlCurrentFocus(){ for(const P of this.PHASES){ const dels=this.state.board[P.key]||[]; for(let di=0;di<dels.length;di++){ const del=dels[di]; const t=(del&&del.tasks||[]).find(x=>x&&!x.done); if(t) return P.label+' · '+del.title+' · '+t.label; } } return ''; }
+  tlAutoDesc(){ const done=this.allDoneTasks(); const startIds=this._sessStartDone||[]; const newLabels=Object.keys(done).filter(id=>startIds.indexOf(id)<0).map(id=>done[id]); const focus=this.tlCurrentFocus(); let d=''; if(newLabels.length) d+='Completed: '+newLabels.join('; ')+'. '; if(focus) d+='Left off on: '+focus; return d.trim(); }
+  tlStart(){ if(!this.TL||this.TL.running) return; this.TL.running=true; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=Date.now(); this.TL.startMs=Date.now(); this._sessStartDone=Object.keys(this.allDoneTasks()); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Work timer started'); }
+  tlPause(){ if(!this.TL||!this.TL.running||this.TL.paused) return; this.TL.accumSec=(this.TL.accumSec||0)+Math.round((Date.now()-this.TL.segStart)/1000); this.TL.paused=true; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Paused — day’s clock kept'); }
+  tlResume(){ if(!this.TL||!this.TL.running||!this.TL.paused) return; this.TL.paused=false; this.TL.segStart=Date.now(); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Resumed'); }
+  tlStop(){ if(!this.TL||!this.TL.running) return; const sec=Math.max(1,this.tlElapsed()); const start=this.TL.startMs||Date.now(); const end=Date.now(); const desc=this.tlAutoDesc(); this.TL.running=false; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({billModal:{start,end,sec,hours:(sec/3600).toFixed(2),desc}, tlTick:(this.state.tlTick||0)+1}); }
+  tlSaveSession(){ const m=this.state.billModal; if(!m) return; const h=parseFloat(m.hours); const billable=isNaN(h)?0:Math.max(0,h); const id='s'+Math.random().toString(36).slice(2,9); this.TL.sessions.unshift({id, date:this.dayKey(m.end), start:m.start, end:m.end, sec:m.sec, billable, desc:(m.desc||'').trim()}); if(this.TL.sessions.length>500) this.TL.sessions=this.TL.sessions.slice(0,500); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({billModal:null}); this.toast('Session logged · '+billable.toFixed(2)+'h billable'); }
   tlCancelSession(){ this.setState({billModal:null}); this.toast('Session discarded'); }
   setBill(field,v){ this.setState(s=>({billModal:Object.assign({},s.billModal,{[field]:v})})); }
   fmtHM(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60); return h>0?(h+'h '+m+'m'):(m+'m'); }
@@ -1334,13 +1363,12 @@ class Component extends DCLogic {
     const rows=[['Date','Start','End','Worked (h)','Billable (h)','Description']];
     (TL.sessions||[]).slice().reverse().forEach(s=>{ rows.push([s.date, new Date(s.start).toLocaleTimeString(), new Date(s.end).toLocaleTimeString(), (s.sec/3600).toFixed(2), Number(s.billable||0).toFixed(2), s.desc||'']); });
     rows.push([]); rows.push(['Daily active time (app open & active)']); rows.push(['Date','Active (h)']);
-    const days=Object.assign({}, TL.days||{}); if(TL.today) days[TL.today]=(days[TL.today]||0)+(TL.activeSec||0);
-    Object.keys(days).sort().forEach(d=>rows.push([d,(days[d]/3600).toFixed(2)]));
+    Object.keys(TL.days||{}).sort().forEach(d=>rows.push([d,((TL.days[d]||0)/3600).toFixed(2)]));
     const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
     try{ const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='thrive-time-log-'+this.dayKey(Date.now())+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); this.toast('CSV exported'); }catch(e){ this.toast('Export failed'); }
   }
-  editSession(i,field,v){ if(!this.TL||!this.TL.sessions[i]) return; if(field==='billable'){ const n=parseFloat(v); this.TL.sessions[i].billable=isNaN(n)?0:Math.max(0,n); } else { this.TL.sessions[i][field]=v; } this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
-  delSession(i){ if(!this.TL||!this.TL.sessions[i]) return; this.TL.sessions.splice(i,1); this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Session removed'); }
+  editSession(i,field,v){ if(!this.TL||!this.TL.sessions[i]) return; if(field==='billable'){ const n=parseFloat(v); this.TL.sessions[i].billable=isNaN(n)?0:Math.max(0,n); } else { this.TL.sessions[i][field]=v; } this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
+  delSession(i){ if(!this.TL||!this.TL.sessions[i]) return; this.TL.sessions.splice(i,1); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Session removed'); }
   undoLast(){ const h=this.state.history||[]; if(!h.length){ this.toast('Nothing to undo'); return; } this.restoreVersion(0); }
 
   // ---- Comments (team link → Firebase → Dana inbox) ----
@@ -1506,12 +1534,13 @@ class Component extends DCLogic {
     const plItems=(meta.parkingLot||[]).map((x,i)=>({text:x,onInput:e=>this.setMetaArr('parkingLot',i,e.target.value),onDelete:()=>this.delMetaArr('parkingLot',i)}));
     const cmItems=(meta.commitments||[]).map((x,i)=>({title:x.title,time:x.time,onTitle:e=>this.setMetaObj('commitments',i,'title',e.target.value),onTime:e=>this.setMetaObj('commitments',i,'time',e.target.value),onDelete:()=>this.delMetaArr('commitments',i)}));
     const Ct=2*Math.PI*30;
-    const _tl=this.TL||{activeSec:0,sessions:[],today:''};
+    const _tl=this.TL||{days:{},sessions:[]};
     const _today=this.dayKey(Date.now());
     const _todaySess=(_tl.sessions||[]).filter(s=>s.date===_today);
-    const _workSec=_todaySess.reduce((a,s)=>a+(s.sec||0),0);
+    let _workSec=_todaySess.reduce((a,s)=>a+(s.sec||0),0);
+    if(_tl.running && this.dayKey(_tl.startMs||Date.now())===_today) _workSec+=this.tlElapsed();
     const _billH=_todaySess.reduce((a,s)=>a+Number(s.billable||0),0);
-    const _activeSec=_tl.activeSec||0;
+    const _activeSec=(_tl.days&&_tl.days[_today])||0;
     const _DAY=8*3600;
     const focusRing=(Math.min(1,_workSec/_DAY)*Ct)+' '+Ct, billRing=(Math.min(1,(_billH*3600)/_DAY)*Ct)+' '+Ct;
     const tlFocusDisp=this.fmtHM(_workSec), tlBillDisp=(_billH%1?_billH.toFixed(1):_billH.toFixed(0))+'h';
@@ -1582,9 +1611,10 @@ class Component extends DCLogic {
       navCls:this.state.navOpen?'open':'', onOpenNav:()=>this.setState({navOpen:true}), onCloseNav:()=>this.setState({navOpen:false}),
       showWorkTimer:(this.state.view==='phase' && this.state.privateMode && !!this.TL),
       tlRunning:!!(this.TL&&this.TL.running), tlIdle:!(this.TL&&this.TL.running),
-      tl:{ running:!!(this.TL&&this.TL.running), runDisp:this.fmtClock(this.TL&&this.TL.running?Math.round((Date.now()-this.TL.runStart)/1000):0), activeToday:this.fmtHM(this.TL?this.TL.activeSec:0), onStart:()=>this.tlStart(), onStop:()=>this.tlStop() },
+      tlPaused:!!(this.TL&&this.TL.running&&this.TL.paused), tlActive:!!(this.TL&&this.TL.running&&!this.TL.paused),
+      tl:{ running:!!(this.TL&&this.TL.running), paused:!!(this.TL&&this.TL.paused), runDisp:this.fmtClock(this.tlElapsed()), activeToday:this.fmtHM((this.TL&&this.TL.days&&this.TL.days[this.dayKey(Date.now())])||0), onStart:()=>this.tlStart(), onStop:()=>this.tlStop(), onPause:()=>this.tlPause(), onResume:()=>this.tlResume() },
       bill:(this.state.billModal?{ open:true, worked:this.fmtClock(this.state.billModal.sec), hours:this.state.billModal.hours, desc:this.state.billModal.desc, onHours:e=>this.setBill('hours',e.target.value), onDesc:e=>this.setBill('desc',e.target.value), onSave:()=>this.tlSaveSession(), onCancel:()=>this.tlCancelSession() }:{ open:false }),
-      timeLog:(()=>{ const TL=this.TL||{days:{},sessions:[],today:'',activeSec:0}; const days=Object.assign({},TL.days||{}); if(TL.today) days[TL.today]=(days[TL.today]||0)+(TL.activeSec||0); const dayRows=Object.keys(days).sort().reverse().slice(0,30).map(d=>({date:d, active:this.fmtHM(days[d])})); const sessRows=(TL.sessions||[]).slice(0,80).map((s,i)=>({date:s.date, time:new Date(s.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'–'+new Date(s.end).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), worked:this.fmtHM(s.sec), billable:Number(s.billable||0).toFixed(2), desc:s.desc||'', onBill:e=>this.editSession(i,'billable',e.target.value), onDesc:e=>this.editSession(i,'desc',e.target.value), onDelete:()=>this.delSession(i)})); const billTotal=(TL.sessions||[]).reduce((a,s)=>a+Number(s.billable||0),0).toFixed(2); return { show:this.state.privateMode, days:dayRows, sessions:sessRows, billTotal, activeToday:this.fmtHM(TL.activeSec), hasSessions:(TL.sessions||[]).length>0, hasDays:dayRows.length>0, onExport:()=>this.tlExportCSV() }; })(),
+      timeLog:(()=>{ const TL=this.TL||{days:{},sessions:[]}; const days=Object.assign({},TL.days||{}); const _tkey=this.dayKey(Date.now()); const dayRows=Object.keys(days).sort().reverse().slice(0,30).map(d=>({date:d, active:this.fmtHM(days[d])})); const sessRows=(TL.sessions||[]).slice(0,80).map((s,i)=>({date:s.date, time:new Date(s.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'–'+new Date(s.end).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), worked:this.fmtHM(s.sec), billable:Number(s.billable||0).toFixed(2), desc:s.desc||'', onBill:e=>this.editSession(i,'billable',e.target.value), onDesc:e=>this.editSession(i,'desc',e.target.value), onDelete:()=>this.delSession(i)})); const billTotal=(TL.sessions||[]).reduce((a,s)=>a+Number(s.billable||0),0).toFixed(2); return { show:this.state.privateMode, days:dayRows, sessions:sessRows, billTotal, activeToday:this.fmtHM(days[_tkey]||0), hasSessions:(TL.sessions||[]).length>0, hasDays:dayRows.length>0, onExport:()=>this.tlExportCSV() }; })(),
       canUndo:(this.state.privateMode && (this.state.history||[]).length>0), onUndo:()=>this.undoLast(),
       locked:this.state.locked, notLocked:!this.state.locked,
       modeBadge:this.state.locked?'SHARED VIEW':(this.state.privateMode?'WORK':'PRESENTING'),
