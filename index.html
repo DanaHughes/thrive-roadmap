@@ -343,11 +343,15 @@
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
+              <button class="pbtn" onClick="{{ d.onToggleCollapse }}" title="{{ d.collapseTitle }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ d.collapseGlyph }}</button>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
           </div>
           <div style="height:9px;background:#EDF1E7;"><div style="height:100%;width:{{ d.pctW }};background:{{ d.iconColor }};"></div></div>
-
+          <sc-if value="{{ d.collapsed }}" hint-placeholder-val="{{ false }}">
+            <button class="pbtn" onClick="{{ d.onToggleCollapse }}" style="width:100%;text-align:left;font-family:inherit;font-size:11px;font-weight:700;color:#9AA68C;background:#FBFCFA;border:none;border-top:1px solid #EEF2EA;padding:9px 18px;cursor:pointer;">▸ {{ d.taskSummary }} — tap to expand</button>
+          </sc-if>
+          <sc-if value="{{ d.expanded }}" hint-placeholder-val="{{ true }}">
           <div class="rg" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:11px 18px 6px;font-size:10px;font-weight:700;letter-spacing:.08em;color:#A6B098;">
             <div>TASK</div><div style="padding-left:13px;">NOTES &amp; FILES</div>
           </div>
@@ -439,6 +443,7 @@
               </sc-for>
             </div>
           </div>
+          </sc-if>
         </div>
       </sc-for>
       <button class="add" onClick="{{ onAddCard }}" style="width:100%;font-family:inherit;font-size:13px;font-weight:700;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:14px;padding:15px;cursor:pointer;margin-top:2px;">+ Add Milestone</button>
@@ -1102,7 +1107,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1443,11 +1448,15 @@ class Component extends DCLogic {
       if(tt>0&&dd===tt){} else if(dd>0) delInProg++; else delNotStarted++;
       const pct=tt?Math.round(dd/tt*100):0;
       const match=(!q)||del.title.toLowerCase().includes(q)||del.desc.toLowerCase().includes(q)||del.tasks.some(t=>t.label.toLowerCase().includes(q));
+      const _col=!!this.state.msCol[del.id];
       return {
         _vis:match,
         ms:di+1, title:del.title, desc:del.desc,
         glyph:active.glyph, iconBg:active.iconBg, iconColor:active.color, tint:active.iconBg,
         pctStr:pct+'%', pctW:pct+'%', pctColor:pct===0?'#9AA68C':active.color,
+        collapsed:_col, expanded:!_col, collapseGlyph:_col?'▸':'▾', collapseTitle:_col?'Expand milestone':'Minimize milestone',
+        taskSummary:(dd+'/'+tt+' tasks done'),
+        onToggleCollapse:()=>this.setState(s=>({msCol:Object.assign({},s.msCol,{[del.id]:!s.msCol[del.id]})})),
         delFiles:(del.files||[]).map((n,fi)=>({name:n, onDelete:()=>this.delDelFile(ph,di,fi)})),
         delLinks:(del.delLinks||[]).map((l,li)=>({ label:l.label, url:l.url, hasUrl:!!(l.url&&l.url.trim()), onLabel:(e)=>this.setDelLink(ph,di,li,'label',e.target.value), onUrl:(e)=>this.setDelLink(ph,di,li,'url',e.target.value), onDelete:()=>this.delDelLink(ph,di,li) })),
         onAddDelLink:()=>this.addDelLink(ph,di),
