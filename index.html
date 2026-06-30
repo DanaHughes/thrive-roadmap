@@ -1148,6 +1148,7 @@ class Component extends DCLogic {
         });
       });
     });
+    if(b.meta && typeof b.meta==='object'){ ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ b.meta[k]=arr(b.meta[k]); }); }
     return b;
   }
   async cloudInit(){
