@@ -42,6 +42,9 @@
   .edt:focus{border-color:#BFD6AE;background:#fff;}
   .del:hover{color:#C0392B !important;background:#FBECEA !important;}
   .team-mode .del{display:none !important;}
+  /* team/present mode = soft read-only: can comment, can't edit the board */
+  .team-mode .cbx,.team-mode .cbs,.team-mode .edt,.team-mode .boardnote,.team-mode .add,.team-mode .wsfld,.team-mode input[type=file]{pointer-events:none !important;}
+  .team-mode .edt,.team-mode .boardnote{background:transparent !important;border-color:transparent !important;}
   .add:hover{background:#EDF3E6;border-color:#BFD6AE;color:#34672A;}
   .aibtn{cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:700;color:#46603A;background:#F4F7F0;border:1px solid #E2E8DE;border-radius:9px;padding:8px 10px;text-align:left;transition:all .12s ease;}
   .aibtn:hover{background:#EDF3E6;border-color:#BFD6AE;color:#2F5226;}
@@ -119,6 +122,43 @@
         <div style="display:flex;gap:8px;margin-top:18px;">
           <button class="pbtn" onClick="{{ bill.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Save session</button>
           <button class="pbtn" onClick="{{ bill.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Discard</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== TEAM COMMENT MODAL ===== -->
+  <sc-if value="{{ cm.open }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
+        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:3px;">Add a comment for Dana</div>
+        <div style="font-size:11.5px;color:#79866C;margin-bottom:16px;">On: <b style="color:#3F6193;">{{ cm.label }}</b></div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">YOUR NAME</div>
+        <input value="{{ cm.name }}" onInput="{{ cm.onName }}" placeholder="e.g. Terry" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">YOUR COMMENT / QUESTION / NOTE</div>
+        <textarea value="{{ cm.body }}" onInput="{{ cm.onBody }}" rows="4" placeholder="Type your comment, question, or note…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:18px;">
+          <button class="pbtn" onClick="{{ cm.onSend }}" style="flex:1;background:#3F6193;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Send to Dana</button>
+          <button class="pbtn" onClick="{{ cm.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== DANA REPLY MODAL ===== -->
+  <sc-if value="{{ reply.open }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:460px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
+        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:10px;">Reply to {{ reply.author }}</div>
+        <div style="background:#F4F7FA;border:1px solid #E2EAF1;border-radius:11px;padding:11px 13px;margin-bottom:14px;">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:#9DB0C8;margin-bottom:4px;">{{ reply.itemLabel }}</div>
+          <div style="font-size:12px;color:#3A4632;line-height:1.5;">“{{ reply.quote }}”</div>
+        </div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">YOUR REPLY (added to the item’s public notes)</div>
+        <textarea value="{{ reply.text }}" onInput="{{ reply.onText }}" rows="3" placeholder="Type your reply…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:18px;">
+          <button class="pbtn" onClick="{{ reply.onSend }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Post reply</button>
+          <button class="pbtn" onClick="{{ reply.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
         </div>
       </div>
     </div>
@@ -295,6 +335,7 @@
             </div>
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
+              <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
           </div>
@@ -310,6 +351,7 @@
                   <div style="display:flex;align-items:center;gap:10px;">
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
                     <input class="edt" value="{{ t.label }}" onInput="{{ t.onRename }}" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};">
+                    <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
                   </div>
@@ -433,6 +475,37 @@
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#A6B098;">☑</span>Tasks</div><div style="font-size:31px;font-weight:800;color:#1E2A16;">{{ microDoneAll }} <span style="font-size:14px;font-weight:600;color:#9AA68C;">of {{ microTotalAll }}</span></div></div>
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#A6B098;">↗</span>Evidence files</div><div style="font-size:31px;font-weight:800;color:#1E2A16;">{{ evLinked }}</div></div>
     </div>
+
+    <sc-if value="{{ inbox.show }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap;">
+          <span style="color:#3F6193;">💬</span>
+          <span style="font-size:14px;font-weight:800;color:#33402A;">Team Comments</span>
+          <sc-if value="{{ inbox.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#D9534F;border-radius:20px;padding:2px 9px;">{{ inbox.unreadStr }} new</span></sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <sc-for list="{{ inbox.items }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid #ECF0E8;border-radius:12px;background:#FCFDFB;">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ c.unreadDot }};flex:0 0 auto;margin-top:6px;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                  <span style="font-size:12.5px;font-weight:800;color:#23311C;">{{ c.author }}</span>
+                  <span style="font-size:10.5px;color:#9AA68C;">{{ c.when }}</span>
+                  <span style="font-size:10px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:20px;padding:1px 8px;">{{ c.item }}</span>
+                </div>
+                <div style="font-size:12.5px;color:#3A4632;line-height:1.5;">{{ c.body }}</div>
+                <sc-if value="{{ c.hasReply }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#5B7A45;margin-top:5px;font-style:italic;">↳ You replied: {{ c.reply }}</div></sc-if>
+                <div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;">
+                  <button class="pbtn" onClick="{{ c.onReply }}" style="font-size:11px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;">Reply</button>
+                  <button class="pbtn" onClick="{{ c.onJump }}" style="font-size:11px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:7px;padding:5px 11px;cursor:pointer;">Jump to →</button>
+                  <button class="pbtn" onClick="{{ c.onRead }}" style="font-size:11px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 11px;cursor:pointer;">Mark read</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
 
     <div class="rg" style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:18px;">
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
@@ -971,6 +1044,7 @@ class Component extends DCLogic {
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
+    this.CTOKEN='so59usipj33li5w5urnt';
     this.DEVICE='d'+Math.random().toString(36).slice(2,9);
     this._dirty=false; this._lastSyncedJson=null;
     this.HKEY='thrive_history_v2';
@@ -1021,7 +1095,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, tlTick:0, billModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1037,7 +1111,8 @@ class Component extends DCLogic {
     try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:this.normalizeBoard(s.board), active:s.active||'p1'}); } }catch(e){}
     try{ const hh=JSON.parse(localStorage.getItem(this.HKEY)||'null'); if(Array.isArray(hh)){ this.setState({history:hh}); } }catch(e){}
     // Locked-present build: someone shared a present-only copy. No unlocking possible.
-    const locked = !!document.querySelector('meta[name="thrive-lock"]');
+    const teamMode = /(?:^|[?&#])team(?:[=&/]|$)/i.test((location.search||'')+(location.hash||''));
+    const locked = teamMode || !!document.querySelector('meta[name="thrive-lock"]');
     // Private (Dana-only) mode: this (unlocked) build defaults to Work Mode; remembers your choice. Locked build is always Present.
     let priv=!locked; try{ const v=localStorage.getItem('thrive_private'); if(v==='1')priv=true; else if(v==='0')priv=false; }catch(e){}
     const privTokens=['dana','launchpad','braindump'];
@@ -1047,14 +1122,15 @@ class Component extends DCLogic {
     if(locked) priv=false;
     const landing = (!locked && h==='dana') ? 'launchpad' : (valid.includes(h)?h:'dashboard');
     const safeLanding = (!priv && (landing==='launchpad'||landing==='braindump')) ? 'dashboard' : landing;
-    this.setState({view: safeLanding, privateMode: priv, locked});
+    this.setState({view: safeLanding, privateMode: priv, locked, teamMode});
     this._onHash=()=>{ if(this.state.locked) return; const hh=(location.hash||'').replace('#','').toLowerCase(); if(privTokens.includes(hh)){ this.setState({privateMode:true}); try{ localStorage.setItem('thrive_private','1'); }catch(e){} } if(valid.includes(hh)) this.setState({view:hh}); };
     window.addEventListener('hashchange', this._onHash);
     this._clock=setInterval(()=>this.setState({now:new Date()}),15000);
     this.cloudInit();
     this.tlInit();
+    this.commentsInit();
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearInterval(this._tlInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearInterval(this._tlInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1266,6 +1342,38 @@ class Component extends DCLogic {
   delSession(i){ if(!this.TL||!this.TL.sessions[i]) return; this.TL.sessions.splice(i,1); this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Session removed'); }
   undoLast(){ const h=this.state.history||[]; if(!h.length){ this.toast('Nothing to undo'); return; } this.restoreVersion(0); }
 
+  // ---- Comments (team link → Firebase → Dana inbox) ----
+  commentUrl(id){ return this.SYNC_URL.replace(/\/+$/,'')+'/thrivecomments/'+this.CTOKEN+(id?('/'+id):'')+'.json'; }
+  commentsInit(){ this.loadComments(); this._cmInt=setInterval(()=>{ if(document.visibilityState==='visible') this.loadComments(); }, 20000); }
+  async loadComments(){ try{ const res=await fetch(this.commentUrl(),{cache:'no-store'}); if(!res.ok) return; const data=await res.json(); const arr=(data&&typeof data==='object')?Object.keys(data).map(k=>data[k]).filter(c=>c&&c.id):[]; arr.sort((a,b)=>(b.ts||0)-(a.ts||0)); this.setState({comments:arr}); }catch(e){} }
+  openComment(anchor){ let nm=''; try{ nm=localStorage.getItem('thrive_cm_name')||''; }catch(e){} this.setState({cmModal:{anchor, name:nm, body:''}}); }
+  setCm(field,v){ this.setState(s=>({cmModal:Object.assign({},s.cmModal,{[field]:v})})); }
+  cancelComment(){ this.setState({cmModal:null}); }
+  async sendComment(){
+    const m=this.state.cmModal; if(!m) return; const author=(m.name||'').trim(), body=(m.body||'').trim();
+    if(!author){ this.toast('Please add your name'); return; } if(!body){ this.toast('Please write a comment'); return; }
+    const id='c'+Math.random().toString(36).slice(2,10);
+    const c=Object.assign({id, author, body, ts:Date.now(), read:false, reply:''}, m.anchor);
+    try{ localStorage.setItem('thrive_cm_name', author); }catch(e){}
+    try{ const res=await fetch(this.commentUrl(id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(c)}); if(!res.ok) throw 0; this.setState({cmModal:null}); this.toast('Your comment was sent to Dana ✓'); this.loadComments(); }
+    catch(e){ this.toast('Could not send — check your connection'); }
+  }
+  jumpComment(c){ if(!c||!c.ph) return; const ph=c.ph; const arr=this.state.board[ph]||[]; if(c.taskId){ for(let di=0;di<arr.length;di++){ const ti=(arr[di].tasks||[]).findIndex(t=>t.id===c.taskId); if(ti>=0){ this.setState({active:ph,view:'phase'}); this.persist({active:ph,view:'phase'}); this.openWS(ph,di,ti); return; } } } this.setState({active:ph,view:'phase'}); this.persist({active:ph,view:'phase'}); }
+  openReply(c){ this.setState({replyModal:{c, body:''}}); }
+  setReply(v){ this.setState(s=>({replyModal:Object.assign({},s.replyModal,{body:v})})); }
+  cancelReply(){ this.setState({replyModal:null}); }
+  async sendReply(){
+    const m=this.state.replyModal; if(!m||!m.c) return; const c=m.c; const reply=(m.body||'').trim(); if(!reply){ this.toast('Write a reply first'); return; }
+    const line='In response to '+c.author+'’s comment “'+c.body+'”: '+reply;
+    const ph=c.ph; const arr=this.state.board[ph]||[]; let placed=false;
+    if(c.taskId){ for(let di=0;di<arr.length&&!placed;di++){ const ti=(arr[di].tasks||[]).findIndex(t=>t.id===c.taskId); if(ti>=0){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; t.notes=(t.notes&&String(t.notes).trim()?String(t.notes).trim()+'\n\n':'')+line; }); placed=true; } } }
+    else if(c.msId){ const di=arr.findIndex(d=>d.id===c.msId); if(di>=0){ this.mut(b=>{ const d=b[ph][di]; d.desc=(d.desc&&String(d.desc).trim()?String(d.desc).trim()+'\n\n':'')+line; }); placed=true; } }
+    const upd=Object.assign({}, c, {read:true, reply:reply, repliedTs:Date.now()});
+    try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){}
+    this.setState({replyModal:null}); this.toast(placed?'Reply posted to the item’s notes ✓':'Reply saved'); this.loadComments();
+  }
+  async markCommentRead(c){ const upd=Object.assign({}, c, {read:true}); try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){} this.loadComments(); }
+
   renderVals(){
     const board=this.state.board;
     const active=this.PHASES.find(p=>p.key===this.state.active)||this.PHASES[0];
@@ -1311,6 +1419,7 @@ class Component extends DCLogic {
         onDelete:()=>this.delCard(ph,di),
         onAddTask:()=>this.addTask(ph,di),
         onAddDelFile:(e)=>this.addDelFile(ph,di,e),
+        onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes,
           color:t.done?'#94A3B8':'#334155', strike:t.done?'line-through':'none',
@@ -1325,6 +1434,7 @@ class Component extends DCLogic {
           onDelete:()=>this.delTask(ph,di,ti),
           onAddSub:()=>this.addSub(ph,di,ti),
           onOpen:()=>this.openWS(ph,di,ti),
+          onComment:()=>this.openComment({ph, msId:del.id, taskId:t.id, label:t.label}),
           subs:(t.subs||[]).map((s,si)=>({
             label:s.label, done:s.done,
             color:s.done?'#A6AE9A':'#56624A', strike:s.done?'line-through':'none', cbcls:s.done?'on':'',
@@ -1464,6 +1574,10 @@ class Component extends DCLogic {
       privateMode:this.state.privateMode,
       onTogglePrivate:()=>this.togglePrivate(),
       rootModeClass:this.state.privateMode?'owner-mode':'team-mode',
+      teamMode:this.state.teamMode,
+      cm:(this.state.cmModal?{ open:true, label:this.state.cmModal.anchor.label, name:this.state.cmModal.name, body:this.state.cmModal.body, onName:e=>this.setCm('name',e.target.value), onBody:e=>this.setCm('body',e.target.value), onSend:()=>this.sendComment(), onCancel:()=>this.cancelComment() }:{ open:false }),
+      reply:(this.state.replyModal?{ open:true, author:this.state.replyModal.c.author, quote:this.state.replyModal.c.body, itemLabel:this.state.replyModal.c.label||'', text:this.state.replyModal.body, onText:e=>this.setReply(e.target.value), onSend:()=>this.sendReply(), onCancel:()=>this.cancelReply() }:{ open:false }),
+      inbox:(()=>{ const cs=this.state.comments||[]; const items=cs.slice(0,60).map(c=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c) })); const unread=cs.filter(c=>!c.read).length; return { show:(this.state.privateMode && cs.length>0), items, count:cs.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0 }; })(),
       navCls:this.state.navOpen?'open':'', onOpenNav:()=>this.setState({navOpen:true}), onCloseNav:()=>this.setState({navOpen:false}),
       showWorkTimer:(this.state.view==='phase' && this.state.privateMode && !!this.TL),
       tlRunning:!!(this.TL&&this.TL.running), tlIdle:!(this.TL&&this.TL.running),
