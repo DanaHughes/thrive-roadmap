@@ -40,6 +40,9 @@
   .edt{border:1px solid transparent;background:transparent;font-family:inherit;outline:none;border-radius:7px;padding:3px 6px;width:100%;color:inherit;font-weight:inherit;font-size:inherit;}
   .edt:hover{background:#F2F6EF;}
   .edt:focus{border-color:#BFD6AE;background:#fff;}
+  /* auto-growing, wrapping text fields (replace single-line inputs so long text is fully readable) */
+  textarea.gtext{display:block;box-sizing:border-box;resize:none;overflow:hidden;min-height:26px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;}
+  textarea.wsfld{min-height:38px;}
   .del:hover{color:#C0392B !important;background:#FBECEA !important;}
   .team-mode .del{display:none !important;}
   /* team/present mode = soft read-only: can comment, can't edit the board */
@@ -340,9 +343,9 @@
             <div style="min-width:0;flex:1;">
               <div style="display:flex;align-items:center;gap:7px;">
                 <span style="font-size:14.5px;font-weight:800;color:{{ d.iconColor }};white-space:nowrap;">Milestone {{ d.ms }} ·</span>
-                <input class="edt" value="{{ d.title }}" onInput="{{ d.onRename }}" style="font-size:14.5px;font-weight:800;color:#23311C;">
+                <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onRename }}" style="font-size:14.5px;font-weight:800;color:#23311C;"></textarea>
               </div>
-              <input class="edt" value="{{ d.desc }}" onInput="{{ d.onRenameDesc }}" style="font-size:12px;color:#6E7C63;margin-top:1px;">
+              <textarea rows="1" class="edt gtext" value="{{ d.desc }}" onInput="{{ d.onRenameDesc }}" style="font-size:12px;color:#6E7C63;margin-top:1px;"></textarea>
             </div>
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
@@ -365,7 +368,7 @@
                 <div style="padding:11px 13px;background:{{ t.bg }};">
                   <div style="display:flex;align-items:center;gap:10px;">
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                    <input class="edt" value="{{ t.label }}" onInput="{{ t.onRename }}" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};">
+                    <textarea rows="1" class="edt gtext" value="{{ t.label }}" onInput="{{ t.onRename }}" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
@@ -375,7 +378,7 @@
                       <div style="display:flex;flex-direction:column;gap:5px;">
                         <div style="display:flex;align-items:center;gap:8px;">
                           <div class="cbs {{ s.cbcls }}" onClick="{{ s.onToggle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                          <input class="edt" value="{{ s.label }}" onInput="{{ s.onRename }}" style="font-size:11.5px;color:{{ s.color }};text-decoration:{{ s.strike }};">
+                          <textarea rows="1" class="edt gtext" value="{{ s.label }}" onInput="{{ s.onRename }}" style="font-size:11.5px;color:{{ s.color }};text-decoration:{{ s.strike }};"></textarea>
                           <button class="pbtn" onClick="{{ s.onToggleExp }}" title="Add files, links & a note to this subtask" style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:#5B6B4E;background:#fff;border:1px solid #E2E8DE;border-radius:6px;padding:3px 7px;cursor:pointer;flex:0 0 auto;white-space:nowrap;">{{ s.expGlyph }} 📎</button>
                           <button class="del" onClick="{{ s.onDelete }}" title="Delete subtask" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;">✕</button>
                         </div>
@@ -391,8 +394,8 @@
                             </div>
                             <sc-for list="{{ s.links }}" as="l" hint-placeholder-count="0">
                               <div style="display:flex;align-items:center;gap:6px;">
-                                <input class="edt" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Label" style="font-size:10.5px;color:#3A4633;border:1px solid #E8EDE4;background:#fff;flex:0 0 35%;">
-                                <input class="edt" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="https://…" style="font-size:10.5px;color:#3A4633;border:1px solid #E8EDE4;background:#fff;flex:1;">
+                                <textarea rows="1" class="edt gtext" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Label" style="font-size:10.5px;color:#3A4633;border:1px solid #E8EDE4;background:#fff;flex:0 0 35%;"></textarea>
+                                <textarea rows="1" class="edt gtext" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="https://…" style="font-size:10.5px;color:#3A4633;border:1px solid #E8EDE4;background:#fff;flex:1;"></textarea>
                                 <button class="del" onClick="{{ l.onDelete }}" title="Delete link" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;flex:0 0 auto;">✕</button>
                               </div>
                             </sc-for>
@@ -430,8 +433,8 @@
               <sc-for list="{{ d.delLinks }}" as="l" hint-placeholder-count="0">
                 <div style="display:flex;align-items:center;gap:8px;border:1px solid #E2E8DE;border-radius:10px;padding:8px 11px;background:#fff;">
                   <span style="color:#45852B;flex:0 0 auto;">🔗</span>
-                  <input class="edt" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Link name" style="font-size:12.5px;font-weight:700;color:#33402A;flex:0 0 34%;">
-                  <input class="edt" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="Paste URL (https://…)" style="font-size:12px;color:#6E8AAE;flex:1;">
+                  <textarea rows="1" class="edt gtext" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Link name" style="font-size:12.5px;font-weight:700;color:#33402A;flex:0 0 34%;"></textarea>
+                  <textarea rows="1" class="edt gtext" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="Paste URL (https://…)" style="font-size:12px;color:#6E8AAE;flex:1;"></textarea>
                   <sc-if value="{{ l.hasUrl }}" hint-placeholder-val="{{ false }}">
                     <a href="{{ l.url }}" target="_blank" rel="noopener" class="pbtn" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 11px;flex:0 0 auto;">Open ↗</a>
                   </sc-if>
@@ -502,7 +505,7 @@
           <sc-for list="{{ execItems }}" as="x" hint-placeholder-count="4">
             <div class="exrow" style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F1F4ED;">
               <span style="color:#8FAE48;font-size:15px;line-height:1.5;flex:0 0 auto;">•</span>
-              <input class="edt" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:13px;color:#3A4632;line-height:1.5;flex:1;">
+              <textarea rows="1" class="edt gtext" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:13px;color:#3A4632;line-height:1.5;flex:1;"></textarea>
               <button class="del" onClick="{{ x.onDelete }}" title="Remove line" style="width:22px;height:22px;border-radius:6px;border:none;background:transparent;color:#C2CCB6;cursor:pointer;flex:0 0 auto;font-size:12px;">✕</button>
             </div>
           </sc-for>
@@ -532,10 +535,10 @@
                 <div style="display:flex;align-items:flex-start;gap:9px;">
                   <div class="cbx {{ d.cbcls }}" onClick="{{ d.onToggleDone }}" title="Mark this decision done" style="margin-top:3px;flex:0 0 auto;"><sc-if value="{{ d.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
                   <div style="flex:1;min-width:0;">
-                    <input class="edt" value="{{ d.title }}" onInput="{{ d.onTitle }}" style="font-size:15px;font-weight:800;color:{{ d.titleColor }};text-decoration:{{ d.titleStrike }};">
+                    <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onTitle }}" style="font-size:15px;font-weight:800;color:{{ d.titleColor }};text-decoration:{{ d.titleStrike }};"></textarea>
                     <div style="display:flex;align-items:center;gap:7px;margin-top:7px;">
                       <span style="font-size:11px;color:#9A8748;font-weight:600;">Expected</span>
-                      <input class="edt" value="{{ d.expected }}" onInput="{{ d.onExpected }}" style="font-size:11.5px;font-weight:800;color:#7A5E12;max-width:130px;">
+                      <textarea rows="1" class="edt gtext" value="{{ d.expected }}" onInput="{{ d.onExpected }}" style="font-size:11.5px;font-weight:800;color:#7A5E12;max-width:130px;"></textarea>
                     </div>
                   </div>
                 </div>
@@ -715,7 +718,7 @@
           <sc-for list="{{ naItems }}" as="x" hint-placeholder-count="2">
             <div style="display:flex;align-items:flex-start;gap:8px;background:#FCF1F0;border:1px solid #F3DAD8;border-radius:10px;padding:9px 11px;">
               <span style="color:#D9534F;font-size:7px;margin-top:6px;">●</span>
-              <input class="edt" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:12px;font-weight:600;color:#7A3B38;line-height:1.4;">
+              <textarea rows="1" class="edt gtext" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:12px;font-weight:600;color:#7A3B38;line-height:1.4;"></textarea>
               <button class="del" onClick="{{ x.onDelete }}" style="width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:#D6A9A6;cursor:pointer;font-size:10px;flex:0 0 auto;">✕</button>
             </div>
           </sc-for>
@@ -730,10 +733,10 @@
           <sc-for list="{{ woItems }}" as="x" hint-placeholder-count="2">
             <div style="background:#FFF8EC;border:1px solid #F0E2C4;border-radius:10px;padding:9px 11px;">
               <div style="display:flex;align-items:flex-start;gap:7px;">
-                <input class="edt" value="{{ x.what }}" onInput="{{ x.onWhat }}" style="font-size:12px;font-weight:700;color:#7A5E12;line-height:1.4;">
+                <textarea rows="1" class="edt gtext" value="{{ x.what }}" onInput="{{ x.onWhat }}" style="font-size:12px;font-weight:700;color:#7A5E12;line-height:1.4;"></textarea>
                 <button class="del" onClick="{{ x.onDelete }}" style="width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:#D2B884;cursor:pointer;font-size:10px;flex:0 0 auto;">✕</button>
               </div>
-              <div style="display:flex;align-items:center;gap:5px;margin-top:2px;"><span style="font-size:10px;color:#A88416;">↳</span><input class="edt" value="{{ x.who }}" onInput="{{ x.onWho }}" style="font-size:11px;font-weight:600;color:#9A8748;"></div>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:2px;"><span style="font-size:10px;color:#A88416;">↳</span><textarea rows="1" class="edt gtext" value="{{ x.who }}" onInput="{{ x.onWho }}" style="font-size:11px;font-weight:600;color:#9A8748;"></textarea></div>
             </div>
           </sc-for>
         </div>
@@ -747,7 +750,7 @@
           <sc-for list="{{ plItems }}" as="x" hint-placeholder-count="2">
             <div style="display:flex;align-items:flex-start;gap:8px;background:#F4F7FA;border:1px solid #E2EAF1;border-radius:10px;padding:9px 11px;">
               <span style="color:#6E8AAE;font-size:11px;">◇</span>
-              <input class="edt" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:12px;font-weight:600;color:#445567;line-height:1.4;">
+              <textarea rows="1" class="edt gtext" value="{{ x.text }}" onInput="{{ x.onInput }}" style="font-size:12px;font-weight:600;color:#445567;line-height:1.4;"></textarea>
               <button class="del" onClick="{{ x.onDelete }}" style="width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:#AEBECD;cursor:pointer;font-size:10px;flex:0 0 auto;">✕</button>
             </div>
           </sc-for>
@@ -766,8 +769,8 @@
           <sc-for list="{{ cmItems }}" as="c" hint-placeholder-count="2">
             <div style="display:flex;align-items:center;gap:12px;background:#FAFBF8;border:1px solid #EAEFE4;border-radius:11px;padding:11px 13px;">
               <div style="width:34px;height:34px;border-radius:9px;background:#EDF3E6;color:#45852B;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;">◷</div>
-              <input class="edt" value="{{ c.title }}" onInput="{{ c.onTitle }}" style="font-size:13px;font-weight:700;color:#33402A;">
-              <input class="edt" value="{{ c.time }}" onInput="{{ c.onTime }}" style="font-size:12px;font-weight:700;color:#7C8C6C;max-width:80px;text-align:right;">
+              <textarea rows="1" class="edt gtext" value="{{ c.title }}" onInput="{{ c.onTitle }}" style="font-size:13px;font-weight:700;color:#33402A;"></textarea>
+              <textarea rows="1" class="edt gtext" value="{{ c.time }}" onInput="{{ c.onTime }}" style="font-size:12px;font-weight:700;color:#7C8C6C;max-width:80px;text-align:right;"></textarea>
               <button class="del" onClick="{{ c.onDelete }}" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C2CCB6;cursor:pointer;font-size:11px;flex:0 0 auto;">✕</button>
             </div>
           </sc-for>
@@ -817,7 +820,7 @@
                 <input value="{{ r.billable }}" onInput="{{ r.onBill }}" type="number" step="0.25" min="0" style="width:52px;border:1px solid #CBDDBC;border-radius:6px;padding:4px 5px;font-family:inherit;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;outline:none;text-align:right;">
                 <span style="font-size:10px;font-weight:700;color:#79866C;">h</span>
               </div>
-              <div style="padding:6px 6px;"><input class="edt" value="{{ r.note }}" onInput="{{ r.onNote }}" placeholder="Note…" style="font-size:10.5px;color:#3A4633;border:1px solid #ECF0E8;background:#fff;width:100%;"></div>
+              <div style="padding:6px 6px;"><textarea rows="1" class="edt gtext" value="{{ r.note }}" onInput="{{ r.onNote }}" placeholder="Note…" style="font-size:10.5px;color:#3A4633;border:1px solid #ECF0E8;background:#fff;width:100%;"></textarea></div>
               <button class="del" onClick="{{ r.onClear }}" title="Clear this day" style="width:22px;height:22px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
             </div>
           </sc-for>
@@ -977,13 +980,13 @@
       </div>
       <div style="display:flex;align-items:flex-start;gap:11px;">
         <div class="cbx {{ ws.cbcls }}" onClick="{{ ws.onToggle }}" style="margin-top:3px;"><sc-if value="{{ ws.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-        <input class="edt" value="{{ ws.label }}" onInput="{{ ws.onLabel }}" style="font-size:18px;font-weight:800;color:#23311C;">
+        <textarea rows="1" class="edt gtext" value="{{ ws.label }}" onInput="{{ ws.onLabel }}" style="font-size:18px;font-weight:800;color:#23311C;"></textarea>
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:18px 24px 28px;display:flex;flex-direction:column;gap:18px;">
       <div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">DEFINITION OF DONE</div>
-        <input class="wsfld" value="{{ ws.dod }}" onInput="{{ ws.onDod }}" placeholder="What does done look like for this task?">
+        <textarea rows="1" class="wsfld gtext" value="{{ ws.dod }}" onInput="{{ ws.onDod }}" placeholder="What does done look like for this task?"></textarea>
       </div>
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;">
@@ -1015,18 +1018,18 @@
           <sc-for list="{{ ws.links }}" as="l" hint-placeholder-count="0">
             <div style="display:flex;align-items:center;gap:8px;border:1px solid #E8EDE4;border-radius:10px;padding:7px 10px;background:#fff;">
               <span style="color:#45852B;flex:0 0 auto;">🔗</span>
-              <input class="edt" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Label" style="font-size:12px;font-weight:700;color:#33402A;flex:0 0 38%;">
-              <input class="edt" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="https://…" style="font-size:11.5px;color:#6E8AAE;flex:1;">
+              <textarea rows="1" class="edt gtext" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Label" style="font-size:12px;font-weight:700;color:#33402A;flex:0 0 38%;"></textarea>
+              <textarea rows="1" class="edt gtext" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="https://…" style="font-size:11.5px;color:#6E8AAE;flex:1;"></textarea>
               <button class="del" onClick="{{ l.onDelete }}" style="width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:#C2CCB6;cursor:pointer;font-size:10px;flex:0 0 auto;">✕</button>
             </div>
           </sc-for>
         </div>
       </div>
       <div class="rg" style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
-        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">CONTACT</div><input class="wsfld" value="{{ ws.contact }}" onInput="{{ ws.onContact }}" placeholder="Name · email · phone"></div>
-        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">WAITING ON</div><input class="wsfld" value="{{ ws.waitingOn }}" onInput="{{ ws.onWaitingOn }}" placeholder="Vendor, founder, response…"></div>
-        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">RELATED DOCUMENTS</div><input class="wsfld" value="{{ ws.related }}" onInput="{{ ws.onRelated }}" placeholder="Reference docs"></div>
-        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">RELATED TASKS</div><input class="wsfld" value="{{ ws.relatedTasks }}" onInput="{{ ws.onRelatedTasks }}" placeholder="Dependencies / linked work"></div>
+        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">CONTACT</div><textarea rows="1" class="wsfld gtext" value="{{ ws.contact }}" onInput="{{ ws.onContact }}" placeholder="Name · email · phone"></textarea></div>
+        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">WAITING ON</div><textarea rows="1" class="wsfld gtext" value="{{ ws.waitingOn }}" onInput="{{ ws.onWaitingOn }}" placeholder="Vendor, founder, response…"></textarea></div>
+        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">RELATED DOCUMENTS</div><textarea rows="1" class="wsfld gtext" value="{{ ws.related }}" onInput="{{ ws.onRelated }}" placeholder="Reference docs"></textarea></div>
+        <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">RELATED TASKS</div><textarea rows="1" class="wsfld gtext" value="{{ ws.relatedTasks }}" onInput="{{ ws.onRelatedTasks }}" placeholder="Dependencies / linked work"></textarea></div>
       </div>
       <div style="background:#F4F7F0;border:1px solid #E6EDDF;border-radius:14px;padding:15px 16px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;"><span style="color:#45852B;">✦</span><span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#33402A;">AI ASSIST</span><span style="font-size:9px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:20px;padding:2px 8px;">PLACEHOLDER</span></div>
@@ -1165,7 +1168,10 @@ class Component extends DCLogic {
     this.cloudInit();
     this.tlInit();
     this.commentsInit();
+    this._growAll(); setTimeout(()=>this._growAll(),120);
   }
+  componentDidUpdate(){ this._growAll(); }
+  _growAll(){ try{ const ns=document.querySelectorAll('textarea.gtext'); for(let i=0;i<ns.length;i++){ const t=ns[i]; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; } }catch(e){} }
   componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
