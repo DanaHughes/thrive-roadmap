@@ -244,10 +244,10 @@
       <button class="pbtn" onClick="{{ onTogglePrivate }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;padding:11px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;margin-bottom:10px;{{ presentToggleStyle }}">{{ presentToggleLabel }}</button>
       </sc-if>
       <div style="display:flex;align-items:center;gap:10px;border:1px solid #E7ECF4;border-radius:13px;padding:10px 11px;">
-        <div style="width:34px;height:34px;border-radius:50%;background:#45852B;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex:0 0 auto;">DH</div>
+        <div style="width:34px;height:34px;border-radius:50%;background:{{ profileAvatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex:0 0 auto;">{{ profileInitials }}</div>
         <div style="line-height:1.2;min-width:0;flex:1;">
-          <div style="font-size:12.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dana Hughes</div>
-          <div style="font-size:9.5px;color:#94A3B8;line-height:1.3;margin-top:2px;">Education Program &amp; Systems Architect</div>
+          <div style="font-size:12.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ profileName }}</div>
+          <div style="font-size:9.5px;color:#94A3B8;line-height:1.3;margin-top:2px;">{{ profileRole }}</div>
         </div>
         <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
         <span style="font-size:9px;font-weight:800;letter-spacing:.04em;border-radius:20px;padding:3px 8px;flex:0 0 auto;{{ modeBadgeStyle }}">{{ modeBadge }}</span>
@@ -1696,6 +1696,10 @@ class Component extends DCLogic {
       onTogglePrivate:()=>this.togglePrivate(),
       rootModeClass:this.state.privateMode?'owner-mode':'team-mode',
       teamMode:this.state.teamMode,
+      profileInitials:this.state.locked?'👥':'DH',
+      profileName:this.state.locked?'Team View':'Dana Hughes',
+      profileRole:this.state.locked?'Shared read-only · comment welcome':'Education Program & Systems Architect',
+      profileAvatarBg:this.state.locked?'#3F6193':'#45852B',
       cm:(this.state.cmModal?{ open:true, label:this.state.cmModal.anchor.label, name:this.state.cmModal.name, body:this.state.cmModal.body, onName:e=>this.setCm('name',e.target.value), onBody:e=>this.setCm('body',e.target.value), onSend:()=>this.sendComment(), onCancel:()=>this.cancelComment() }:{ open:false }),
       reply:(this.state.replyModal?{ open:true, author:this.state.replyModal.c.author, quote:this.state.replyModal.c.body, itemLabel:this.state.replyModal.c.label||'', text:this.state.replyModal.body, onText:e=>this.setReply(e.target.value), onSend:()=>this.sendReply(), onCancel:()=>this.cancelReply() }:{ open:false }),
       inbox:(()=>{ const cs=this.state.comments||[]; const items=cs.slice(0,60).map(c=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c) })); const unread=cs.filter(c=>!c.read).length; return { show:(this.state.privateMode && cs.length>0), items, count:cs.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0 }; })(),
