@@ -116,19 +116,23 @@
     </div>
   </sc-if>
 
-  <!-- ===== BILLABLE RECONCILE MODAL ===== -->
+  <!-- ===== FINALIZE WORK DAY MODAL ===== -->
   <sc-if value="{{ bill.open }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
-      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:430px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
-        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:4px;">Log this work session</div>
-        <div style="font-size:12px;color:#79866C;margin-bottom:17px;">You worked <b style="color:#34672A;">{{ bill.worked }}</b>. Set your billable hours and a quick note for your work spreadsheet.</div>
+      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
+        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:4px;">Finalize your work day</div>
+        <div style="font-size:12px;color:#79866C;margin-bottom:15px;">Set the billable hours and a note for your work spreadsheet. This logs today into your Time Log.</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <div style="flex:1;background:#F1F7EC;border:1px solid #DBE9CF;border-radius:11px;padding:10px 12px;"><div style="font-size:9px;font-weight:800;letter-spacing:.06em;color:#2E8B57;">ACTIVE TASK CLOCK</div><div style="font-size:16px;font-weight:800;color:#23311C;margin-top:2px;">{{ bill.activeStr }}</div></div>
+          <div style="flex:1;background:#F4F7EC;border:1px solid #E4EAD3;border-radius:11px;padding:10px 12px;"><div style="font-size:9px;font-weight:800;letter-spacing:.06em;color:#8FAE48;">PASSIVE CLOCK</div><div style="font-size:16px;font-weight:800;color:#23311C;margin-top:2px;">{{ bill.passiveStr }}</div></div>
+        </div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">BILLABLE HOURS</div>
-        <input value="{{ bill.hours }}" onInput="{{ bill.onHours }}" type="number" step="0.25" min="0" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;font-weight:700;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;">
-        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">WHAT DID YOU WORK ON? <span style="color:#8FAE48;font-weight:700;letter-spacing:0;text-transform:none;">· auto-filled from your roadmap — edit freely</span></div>
-        <textarea value="{{ bill.desc }}" onInput="{{ bill.onDesc }}" rows="4" placeholder="Brief description of tasks worked on…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
+        <input value="{{ bill.hours }}" onInput="{{ bill.onHours }}" type="number" step="0.25" min="0" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:14px;font-weight:700;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">SUMMARY OF THE DAY <span style="color:#8FAE48;font-weight:700;letter-spacing:0;text-transform:none;">· auto-filled from your roadmap — edit freely</span></div>
+        <textarea value="{{ bill.desc }}" onInput="{{ bill.onDesc }}" rows="4" placeholder="What you worked on today…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#33402A;outline:none;resize:vertical;line-height:1.5;background:#FBFCFA;box-sizing:border-box;"></textarea>
         <div style="display:flex;gap:8px;margin-top:18px;">
-          <button class="pbtn" onClick="{{ bill.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Save session</button>
-          <button class="pbtn" onClick="{{ bill.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Discard</button>
+          <button class="pbtn" onClick="{{ bill.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Finalize &amp; log day</button>
+          <button class="pbtn" onClick="{{ bill.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
         </div>
       </div>
     </div>
@@ -661,17 +665,22 @@
               <svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/><circle cx="37" cy="37" r="30" fill="none" stroke="#C7E89A" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ focusRing }}" transform="rotate(-90 37 37)"/></svg>
               <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">{{ tlFocusDisp }}</div>
             </div>
-            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Active Task Clock</div>
+            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Passive · all day</div>
           </div>
           <div style="text-align:center;">
             <div style="position:relative;width:74px;height:74px;margin:0 auto;">
               <svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/><circle cx="37" cy="37" r="30" fill="none" stroke="#9FC98A" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ billRing }}" transform="rotate(-90 37 37)"/></svg>
               <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">{{ tlBillDisp }}</div>
             </div>
-            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Billable today</div>
+            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Active Task</div>
           </div>
         </div>
-        <div style="font-size:10px;color:#A9C99A;text-align:center;line-height:1.4;">Active Task Clock = the Start/Stop timer on Phase pages. Passive Clock (dashboard movement) tracks below in your Time Summary.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:2px;">
+          <span style="font-size:10.5px;color:#C7DCB8;font-weight:600;">Billable today</span>
+          <span style="font-size:13px;color:#fff;font-weight:800;">{{ tlBillTodayDisp }}</span>
+        </div>
+        <button class="pbtn" onClick="{{ onFinalizeDay }}" style="width:100%;background:#C7E89A;color:#284A1C;border:none;border-radius:11px;padding:10px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;">✓ Finalize Work Day Now</button>
+        <div style="font-size:9.5px;color:#A9C99A;text-align:center;line-height:1.4;">Both clocks run all day &amp; save across devices. The day logs automatically at 11:59 PM, or finalize it now to set billable hours.</div>
       </div>
     </div>
 
@@ -786,43 +795,30 @@
         <span style="font-size:11px;color:#79866C;margin-left:4px;">Billable total <b style="color:#34672A;">{{ timeLog.billTotal }}h</b></span>
         <button class="pbtn" onClick="{{ timeLog.onExport }}" style="margin-left:auto;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
       </div>
-      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#2E8B57;">Active Task Clock</b> = time you tracked with the Start/Stop timer on Phase pages. <b style="color:#8FAE48;">Passive Clock</b> = time the dashboard was open with cursor/keyboard movement (pauses after 15 min idle, adds up all day). <b style="color:#357A2B;">Billable</b> = the hours you reconciled.</div>
+      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = the dashboard was open &amp; in use (pauses after 15 min idle, adds up all day). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages. <b style="color:#357A2B;">Billable</b> = you set it when you finalize the day (editable anytime).</div>
 
-      <!-- DAILY COMPARISON TABLE -->
+      <!-- DAILY TABLE -->
       <sc-if value="{{ timeLog.hasDaily }}" hint-placeholder-val="{{ true }}">
-        <div style="border:1px solid #E6EDDF;border-radius:12px;overflow:hidden;margin-bottom:18px;">
-          <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;background:#F4F7F0;border-bottom:1px solid #E6EDDF;">
-            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#79866C;padding:9px 12px;">DATE</div>
-            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#2E8B57;padding:9px 8px;text-align:right;">ACTIVE TASK</div>
-            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#8FAE48;padding:9px 8px;text-align:right;">PASSIVE</div>
-            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#357A2B;padding:9px 12px;text-align:right;">BILLABLE</div>
+        <div style="border:1px solid #E6EDDF;border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.15fr 0.8fr 0.8fr 0.75fr 1.5fr 24px;background:#F4F7F0;border-bottom:1px solid #E6EDDF;">
+            <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#79866C;padding:9px 10px;">DATE</div>
+            <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#2E8B57;padding:9px 6px;text-align:right;">ACTIVE</div>
+            <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#8FAE48;padding:9px 6px;text-align:right;">PASSIVE</div>
+            <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#357A2B;padding:9px 6px;text-align:right;">BILLABLE</div>
+            <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#79866C;padding:9px 8px;">NOTE</div>
+            <div></div>
           </div>
           <sc-for list="{{ timeLog.dailyRows }}" as="r" hint-placeholder-count="3">
-            <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;border-bottom:1px solid #EEF2EA;background:{{ r.rowBg }};align-items:center;">
-              <div style="font-size:11.5px;font-weight:700;color:#3A4632;padding:9px 12px;display:flex;align-items:center;gap:7px;">{{ r.date }}<sc-if value="{{ r.isToday }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.05em;color:#45852B;background:#E4F0DB;border-radius:20px;padding:1px 7px;">{{ r.todayTag }}</span></sc-if></div>
-              <div style="font-size:12px;font-weight:800;color:#2E8B57;padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.active }}</div>
-              <div style="font-size:12px;font-weight:700;color:#8FAE48;padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.passive }}</div>
-              <div style="font-size:12px;font-weight:800;color:#357A2B;padding:9px 12px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.billable }}h</div>
-            </div>
-          </sc-for>
-        </div>
-      </sc-if>
-
-      <!-- EDITABLE WORK SESSIONS -->
-      <sc-if value="{{ timeLog.hasSessions }}" hint-placeholder-val="{{ true }}">
-        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:8px;">WORK SESSIONS · edit billable hours or the note if the timer got it wrong</div>
-        <div style="display:flex;flex-direction:column;gap:7px;">
-          <sc-for list="{{ timeLog.sessions }}" as="s" hint-placeholder-count="3">
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid #ECF0E8;border-radius:10px;background:#FCFDFB;flex-wrap:wrap;">
-              <span style="font-size:11px;font-weight:800;color:#3A4632;flex:0 0 auto;">{{ s.date }}</span>
-              <span style="font-size:10.5px;color:#9AA68C;flex:0 0 auto;">{{ s.time }}</span>
-              <span style="font-size:10px;color:#79866C;flex:0 0 auto;">worked {{ s.worked }}</span>
-              <input class="edt" value="{{ s.desc }}" onInput="{{ s.onDesc }}" placeholder="What you worked on…" style="font-size:11px;color:#3A4633;border:1px solid #E8EDE4;background:#fff;flex:1;min-width:140px;">
-              <div style="display:flex;align-items:center;gap:4px;flex:0 0 auto;">
-                <input value="{{ s.billable }}" onInput="{{ s.onBill }}" type="number" step="0.25" min="0" style="width:62px;border:1px solid #CBDDBC;border-radius:7px;padding:5px 7px;font-family:inherit;font-size:11.5px;font-weight:800;color:#34672A;background:#EDF3E6;outline:none;text-align:right;">
-                <span style="font-size:11px;font-weight:700;color:#79866C;">h</span>
+            <div style="display:grid;grid-template-columns:1.15fr 0.8fr 0.8fr 0.75fr 1.5fr 24px;border-bottom:1px solid #EEF2EA;background:{{ r.rowBg }};align-items:center;">
+              <div style="font-size:11px;font-weight:700;color:#3A4632;padding:8px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">{{ r.date }}<sc-if value="{{ r.isToday }}" hint-placeholder-val="{{ false }}"><span style="font-size:8px;font-weight:800;letter-spacing:.05em;color:#45852B;background:#E4F0DB;border-radius:20px;padding:1px 6px;">{{ r.todayTag }}</span></sc-if></div>
+              <div style="font-size:11.5px;font-weight:800;color:#2E8B57;padding:8px 6px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.active }}</div>
+              <div style="font-size:11.5px;font-weight:700;color:#8FAE48;padding:8px 6px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.passive }}</div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:2px;padding:6px 4px;">
+                <input value="{{ r.billable }}" onInput="{{ r.onBill }}" type="number" step="0.25" min="0" style="width:52px;border:1px solid #CBDDBC;border-radius:6px;padding:4px 5px;font-family:inherit;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;outline:none;text-align:right;">
+                <span style="font-size:10px;font-weight:700;color:#79866C;">h</span>
               </div>
-              <button class="del" onClick="{{ s.onDelete }}" title="Delete session" style="width:22px;height:22px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;flex:0 0 auto;">✕</button>
+              <div style="padding:6px 6px;"><input class="edt" value="{{ r.note }}" onInput="{{ r.onNote }}" placeholder="Note…" style="font-size:10.5px;color:#3A4633;border:1px solid #ECF0E8;background:#fff;width:100%;"></div>
+              <button class="del" onClick="{{ r.onClear }}" title="Clear this day" style="width:22px;height:22px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
             </div>
           </sc-for>
         </div>
@@ -1170,7 +1166,7 @@ class Component extends DCLogic {
     this.tlInit();
     this.commentsInit();
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1417,17 +1413,20 @@ class Component extends DCLogic {
   toggleDecDone(i){ this.mut(b=>{ const d=this.ensureMeta(b).decisions[i]; if(d) d.done=!d.done; }); }
   toggleNoDec(){ this.mut(b=>{ const m=this.ensureMeta(b); m.noDecisions=!m.noDecisions; }); }
 
-  // ---- Time tracking (device-local: passive active tracker + manual work timer) ----
+  // ---- Time tracking: ONE ongoing all-day clock; logs only at end of day (button or 11:59 PM) ----
   dayKey(d){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
   timeUrl(){ return this.SYNC_URL.replace(/\/+$/,'')+'/thrivetime/'+this.CTOKEN+'.json'; }
   tlInit(){
     let tl=null; try{ tl=JSON.parse(localStorage.getItem('thrive_timelog')||'null'); }catch(e){}
     if(!tl||typeof tl!=='object') tl={};
-    tl.days=(tl.days&&typeof tl.days==='object'&&!Array.isArray(tl.days))?tl.days:{}; tl.sessions=Array.isArray(tl.sessions)?tl.sessions:[];
+    const obj=v=>(v&&typeof v==='object'&&!Array.isArray(v))?v:{};
+    tl.days=obj(tl.days); tl.active=obj(tl.active); tl.log=obj(tl.log); tl.sessions=Array.isArray(tl.sessions)?tl.sessions:[];
     if(typeof tl.ts!=='number') tl.ts=0;
-    tl.running=!!tl.running; tl.paused=!!tl.paused; tl.accumSec=tl.accumSec||0; tl.segStart=tl.segStart||0; tl.startMs=tl.startMs||0;
+    tl.running=!!tl.running; tl.paused=!!tl.paused; tl.accumSec=tl.accumSec||0; tl.segStart=tl.segStart||0; tl.startMs=tl.startMs||0; tl.lastActive=tl.lastActive||0;
     if(tl.runStart){ tl.startMs=tl.startMs||tl.runStart; tl.segStart=tl.segStart||tl.runStart; delete tl.runStart; }
     if(tl.today && tl.activeSec){ tl.days[tl.today]=(tl.days[tl.today]||0)+tl.activeSec; } delete tl.today; delete tl.activeSec;
+    // one-time migration: fold old per-session logs into per-day active time + billable
+    if(!tl._migrated && tl.sessions.length){ tl.sessions.forEach(s=>{ const d=s.date||this.dayKey(s.start); tl.active[d]=(tl.active[d]||0)+(s.sec||0); if(s.billable||s.desc){ const L=tl.log[d]||{billable:0,desc:''}; L.billable=(L.billable||0)+Number(s.billable||0); if(s.desc) L.desc=(L.desc?L.desc+'; ':'')+s.desc; L.ts=Date.now(); tl.log[d]=L; } }); tl._migrated=true; }
     this.TL=tl; this._lastAct=Date.now();
     this._tlAct=()=>{ this._lastAct=Date.now(); };
     ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.addEventListener(ev,this._tlAct,{passive:true}));
@@ -1435,53 +1434,67 @@ class Component extends DCLogic {
     this.tlSyncPull();
     this._tlSyncInt=setInterval(()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.tlPush(); this.histPull(); } }, 10000);
     this._tlVis=()=>{ if(document.visibilityState==='visible'){ this.tlSyncPull(); this.histPull(); } };
+    // persist the clock the instant the tab is hidden/closed so it never "starts over" on reopen
+    this._tlHide=()=>{ if(document.visibilityState==='hidden'){ this.TL.lastActive=Date.now(); this.tlBump(); this.tlSave(); this.tlPush(); } };
     document.addEventListener('visibilitychange', this._tlVis); window.addEventListener('focus', this._tlVis);
+    document.addEventListener('visibilitychange', this._tlHide); window.addEventListener('pagehide', this._tlHide);
   }
   tlElapsed(){ if(!this.TL||!this.TL.running) return 0; const seg=(this.TL.paused||!this.TL.segStart)?0:Math.round((Date.now()-this.TL.segStart)/1000); return Math.max(0,(this.TL.accumSec||0)+seg); }
+  tlActiveToday(){ if(!this.TL) return 0; const t=this.dayKey(Date.now()); let s=this.TL.active[t]||0; if(this.TL.running && this.dayKey(this.TL.startMs||Date.now())===t) s+=this.tlElapsed(); return s; }
+  tlPassiveToday(){ if(!this.TL) return 0; return this.TL.days[this.dayKey(Date.now())]||0; }
+  tlBillToday(){ if(!this.TL) return 0; const L=this.TL.log[this.dayKey(Date.now())]; return L?Number(L.billable||0):0; }
   tlSave(){ try{ if(this.TL) localStorage.setItem('thrive_timelog', JSON.stringify(this.TL)); }catch(e){} }
   tlBump(){ if(this.TL) this.TL.ts=Date.now(); }
   async tlPush(){ const url=this.timeUrl(); if(!url||!this.TL) return; try{ await fetch(url,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(this.TL)}); }catch(e){} }
   async tlSyncPull(){ const url=this.timeUrl(); if(!url||!this.TL) return; try{ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) return; const r=await res.json(); if(!r||typeof r!=='object') return; let changed=false;
-    if((r.ts||0) > (this.TL.ts||0)){ this.TL.ts=r.ts; this.TL.running=!!r.running; this.TL.paused=!!r.paused; this.TL.accumSec=r.accumSec||0; this.TL.segStart=r.segStart||0; this.TL.startMs=r.startMs||0; this.TL.sessions=Array.isArray(r.sessions)?r.sessions:(this.TL.sessions||[]); changed=true; }
-    const rd=(r.days&&typeof r.days==='object')?r.days:{}; Object.keys(rd).forEach(k=>{ const v=Math.max(this.TL.days[k]||0, rd[k]||0); if(v!==(this.TL.days[k]||0)){ this.TL.days[k]=v; changed=true; } });
+    if((r.ts||0) > (this.TL.ts||0)){ this.TL.ts=r.ts; this.TL.running=!!r.running; this.TL.paused=!!r.paused; this.TL.accumSec=r.accumSec||0; this.TL.segStart=r.segStart||0; this.TL.startMs=r.startMs||0; if((r.lastActive||0)>(this.TL.lastActive||0)) this.TL.lastActive=r.lastActive; changed=true; }
+    const merge=(dst,src)=>{ const s=(src&&typeof src==='object')?src:{}; Object.keys(s).forEach(k=>{ const v=Math.max(dst[k]||0, s[k]||0); if(v!==(dst[k]||0)){ dst[k]=v; changed=true; } }); };
+    merge(this.TL.days, r.days); merge(this.TL.active, r.active);
+    const rl=(r.log&&typeof r.log==='object')?r.log:{}; Object.keys(rl).forEach(k=>{ if(!this.TL.log[k] || ((rl[k]&&rl[k].ts||0)>(this.TL.log[k].ts||0))){ this.TL.log[k]=rl[k]; changed=true; } });
     if(changed){ this.tlSave(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
   }catch(e){} }
   tlTick(){
     if(!this.TL) return;
-    if(this.TL.running && this.dayKey(this.TL.startMs||Date.now())!==this.dayKey(Date.now()) && !this.state.billModal){ this.tlStop(); return; }
-    const idleMs=Date.now()-(this._lastAct||0);
-    const active=(typeof document!=='undefined' && document.visibilityState==='visible') && idleMs < 15*60*1000;
-    if(active){ const k=this.dayKey(Date.now()); this.TL.days[k]=(this.TL.days[k]||0)+1; }
-    this._tlSaveTick=(this._tlSaveTick||0)+1; if(this._tlSaveTick%15===0) this.tlSave();
+    const now=Date.now(), today=this.dayKey(now);
+    // end-of-day: auto-finalize (log) any earlier day that still has time but no log yet
+    this.tlAutoFinalize(today);
+    // active task timer left running across midnight → bank it into that day and stop
+    if(this.TL.running && this.dayKey(this.TL.startMs||now)!==today){ this.tlStop(true); }
+    // Passive "work day" clock — accumulates presence; bridges short gaps (tab closed/backgrounded ≤15 min) so it never restarts
+    const idleMs=now-(this._lastAct||0);
+    const present=(typeof document==='undefined' || document.visibilityState==='visible') && idleMs < 15*60*1000;
+    if(present){ const gap=now-(this.TL.lastActive||now); const credit=(gap>0 && gap<=15*60*1000)?gap:1000; this.TL.days[today]=(this.TL.days[today]||0)+Math.round(credit/1000); }
+    this.TL.lastActive=now;
+    this._tlSaveTick=(this._tlSaveTick||0)+1; if(this._tlSaveTick%15===0){ this.tlBump(); this.tlSave(); }
     if((this.TL.running&&!this.TL.paused) || this._tlSaveTick%5===0) this.setState({tlTick:(this.state.tlTick||0)+1});
   }
+  tlAutoFinalize(today){ if(!this.TL) return; const dates={}; Object.keys(this.TL.days).forEach(d=>dates[d]=1); Object.keys(this.TL.active).forEach(d=>dates[d]=1); Object.keys(dates).forEach(d=>{ if(d<today && !this.TL.log[d]){ const actH=(this.TL.active[d]||0)/3600; this.TL.log[d]={billable:Math.round(actH*100)/100, desc:'Auto-finalized at end of day', ts:Date.now(), auto:true}; this.tlBump(); this.tlSave(); this.tlPush(); } }); }
   allDoneTasks(){ const m={}; this.PHASES.forEach(P=>{ (this.state.board[P.key]||[]).forEach(del=>{ (del&&del.tasks||[]).forEach(t=>{ if(t&&t.done) m[t.id]=t.label; }); }); }); return m; }
   tlCurrentFocus(){ for(const P of this.PHASES){ const dels=this.state.board[P.key]||[]; for(let di=0;di<dels.length;di++){ const del=dels[di]; const t=(del&&del.tasks||[]).find(x=>x&&!x.done); if(t) return P.label+' · '+del.title+' · '+t.label; } } return ''; }
   tlAutoDesc(){ const done=this.allDoneTasks(); const startIds=this._sessStartDone||[]; const newLabels=Object.keys(done).filter(id=>startIds.indexOf(id)<0).map(id=>done[id]); const focus=this.tlCurrentFocus(); let d=''; if(newLabels.length) d+='Completed: '+newLabels.join('; ')+'. '; if(focus) d+='Left off on: '+focus; return d.trim(); }
-  tlStart(){ if(!this.TL||this.TL.running) return; this.TL.running=true; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=Date.now(); this.TL.startMs=Date.now(); this._sessStartDone=Object.keys(this.allDoneTasks()); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Work timer started'); }
-  tlPause(){ if(!this.TL||!this.TL.running||this.TL.paused) return; this.TL.accumSec=(this.TL.accumSec||0)+Math.round((Date.now()-this.TL.segStart)/1000); this.TL.paused=true; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Paused — day’s clock kept'); }
+  tlStart(){ if(!this.TL||this.TL.running) return; this.TL.running=true; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=Date.now(); this.TL.startMs=Date.now(); this._sessStartDone=Object.keys(this.allDoneTasks()); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Active Task timer started'); }
+  tlPause(){ if(!this.TL||!this.TL.running||this.TL.paused) return; this.TL.accumSec=(this.TL.accumSec||0)+Math.round((Date.now()-this.TL.segStart)/1000); this.TL.paused=true; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Paused'); }
   tlResume(){ if(!this.TL||!this.TL.running||!this.TL.paused) return; this.TL.paused=false; this.TL.segStart=Date.now(); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Resumed'); }
-  tlStop(){ if(!this.TL||!this.TL.running) return; const sec=Math.max(1,this.tlElapsed()); const start=this.TL.startMs||Date.now(); const end=Date.now(); const desc=this.tlAutoDesc(); this.TL.running=false; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({billModal:{start,end,sec,hours:(sec/3600).toFixed(2),desc}, tlTick:(this.state.tlTick||0)+1}); }
-  tlSaveSession(){ const m=this.state.billModal; if(!m) return; const h=parseFloat(m.hours); const billable=isNaN(h)?0:Math.max(0,h); const id='s'+Math.random().toString(36).slice(2,9); this.TL.sessions.unshift({id, date:this.dayKey(m.end), start:m.start, end:m.end, sec:m.sec, billable, desc:(m.desc||'').trim()}); if(this.TL.sessions.length>500) this.TL.sessions=this.TL.sessions.slice(0,500); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({billModal:null}); this.toast('Session logged · '+billable.toFixed(2)+'h billable'); }
-  tlCancelSession(){ this.setState({billModal:null}); this.toast('Session discarded'); }
+  tlStop(silent){ if(!this.TL||!this.TL.running) return; const sec=Math.max(0,this.tlElapsed()); const day=this.dayKey(this.TL.startMs||Date.now()); this.TL.active[day]=(this.TL.active[day]||0)+sec; this.TL.running=false; this.TL.paused=false; this.TL.accumSec=0; this.TL.segStart=0; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); if(!silent) this.toast('Task timer stopped · '+this.fmtHM(sec)+' added to today'); }
+  finalizeWorkDay(){ if(!this.TL) return; if(this.TL.running) this.tlStop(true); const today=this.dayKey(Date.now()); const actSec=this.TL.active[today]||0; const pasSec=this.TL.days[today]||0; const cur=this.TL.log[today]||{}; const desc=(cur.desc&&!cur.auto)?cur.desc:this.tlAutoDesc(); const hours=(cur.billable!=null&&!cur.auto)?String(cur.billable):(actSec/3600).toFixed(2); this.setState({billModal:{finalize:true, date:today, actSec, pasSec, hours, desc}}); }
+  tlSaveSession(){ const m=this.state.billModal; if(!m) return; const h=parseFloat(m.hours); const billable=isNaN(h)?0:Math.max(0,h); const date=m.date||this.dayKey(Date.now()); this.TL.log[date]={billable, desc:(m.desc||'').trim(), ts:Date.now()}; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({billModal:null}); this.toast('Work day finalized · '+billable.toFixed(2)+'h billable'); }
+  tlCancelSession(){ this.setState({billModal:null}); this.toast('Not finalized'); }
+  setDayBill(date,v){ if(!this.TL) return; const n=parseFloat(v); const L=this.TL.log[date]||{billable:0,desc:''}; L.billable=isNaN(n)?0:Math.max(0,n); L.ts=Date.now(); delete L.auto; this.TL.log[date]=L; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
+  setDayNote(date,v){ if(!this.TL) return; const L=this.TL.log[date]||{billable:0,desc:''}; L.desc=v; L.ts=Date.now(); delete L.auto; this.TL.log[date]=L; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
+  clearDay(date){ if(!this.TL) return; delete this.TL.days[date]; delete this.TL.active[date]; delete this.TL.log[date]; this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Day cleared'); }
   setBill(field,v){ this.setState(s=>({billModal:Object.assign({},s.billModal,{[field]:v})})); }
   fmtHM(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60); return h>0?(h+'h '+m+'m'):(m+'m'); }
   fmtClock(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60; return (h>0?h+':':'')+String(m).padStart(h>0?2:1,'0')+':'+String(s).padStart(2,'0'); }
   tlExportCSV(){
-    const TL=this.TL||{sessions:[],days:{}};
+    const TL=this.TL||{days:{},active:{},log:{}};
     const esc=v=>{ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-    const days=TL.days||{}, sessions=TL.sessions||[];
-    const byDay={}; sessions.forEach(s=>{ const d=s.date||this.dayKey(s.start); if(!byDay[d]) byDay[d]={active:0,billable:0}; byDay[d].active+=(s.sec||0); byDay[d].billable+=Number(s.billable||0); });
-    const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(byDay)))).sort();
-    const rows=[['Daily comparison'],['Date','Active Task Clock (h)','Passive Clock (h)','Billable (h)']];
-    allDates.forEach(d=>rows.push([d, (((byDay[d]&&byDay[d].active)||0)/3600).toFixed(2), ((days[d]||0)/3600).toFixed(2), ((byDay[d]&&byDay[d].billable)||0).toFixed(2)]));
-    rows.push([]); rows.push(['Work sessions (Active Task Clock detail)']); rows.push(['Date','Start','End','Worked (h)','Billable (h)','Description']);
-    sessions.slice().reverse().forEach(s=>{ rows.push([s.date, new Date(s.start).toLocaleTimeString(), new Date(s.end).toLocaleTimeString(), (s.sec/3600).toFixed(2), Number(s.billable||0).toFixed(2), s.desc||'']); });
+    const days=TL.days||{}, active=TL.active||{}, log=TL.log||{};
+    const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(active)).concat(Object.keys(log)))).sort();
+    const rows=[['Date','Active Task Clock (h)','Passive Clock (h)','Billable (h)','Finalized','Notes']];
+    allDates.forEach(d=>{ const L=log[d]||{}; rows.push([d, ((active[d]||0)/3600).toFixed(2), ((days[d]||0)/3600).toFixed(2), Number(L.billable||0).toFixed(2), log[d]?'yes':'no', L.desc||'']); });
     const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
     try{ const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='thrive-time-log-'+this.dayKey(Date.now())+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); this.toast('CSV exported'); }catch(e){ this.toast('Export failed'); }
   }
-  editSession(i,field,v){ if(!this.TL||!this.TL.sessions[i]) return; if(field==='billable'){ const n=parseFloat(v); this.TL.sessions[i].billable=isNaN(n)?0:Math.max(0,n); } else { this.TL.sessions[i][field]=v; } this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); }
-  delSession(i){ if(!this.TL||!this.TL.sessions[i]) return; this.TL.sessions.splice(i,1); this.tlBump(); this.tlSave(); this.tlPush(); this.setState({tlTick:(this.state.tlTick||0)+1}); this.toast('Session removed'); }
   undoLast(){ const h=this.state.history||[]; if(!h.length){ this.toast('Nothing to undo'); return; } this.restoreVersion(0); }
 
   // ---- Comments (team link → Firebase → Dana inbox) ----
@@ -1656,20 +1669,19 @@ class Component extends DCLogic {
     const plItems=(meta.parkingLot||[]).map((x,i)=>({text:x,onInput:e=>this.setMetaArr('parkingLot',i,e.target.value),onDelete:()=>this.delMetaArr('parkingLot',i)}));
     const cmItems=(meta.commitments||[]).map((x,i)=>({title:x.title,time:x.time,onTitle:e=>this.setMetaObj('commitments',i,'title',e.target.value),onTime:e=>this.setMetaObj('commitments',i,'time',e.target.value),onDelete:()=>this.delMetaArr('commitments',i)}));
     const Ct=2*Math.PI*30;
-    const _tl=this.TL||{days:{},sessions:[]};
-    const _today=this.dayKey(Date.now());
-    const _todaySess=(_tl.sessions||[]).filter(s=>s.date===_today);
-    let _workSec=_todaySess.reduce((a,s)=>a+(s.sec||0),0);
-    if(_tl.running && this.dayKey(_tl.startMs||Date.now())===_today) _workSec+=this.tlElapsed();
-    const _billH=_todaySess.reduce((a,s)=>a+Number(s.billable||0),0);
-    const _activeSec=(_tl.days&&_tl.days[_today])||0;
+    const _activeSec=this.tlActiveToday();     // Active Task Clock (Start/Stop timer) today
+    const _passiveSec=this.tlPassiveToday();   // Passive Clock (ongoing dashboard presence) today
+    const _billH=this.tlBillToday();           // Billable (set when the day is finalized)
+    const _todayLogged=!!(this.TL&&this.TL.log&&this.TL.log[this.dayKey(Date.now())]);
     const _DAY=8*3600;
-    const focusRing=(Math.min(1,_workSec/_DAY)*Ct)+' '+Ct, billRing=(Math.min(1,(_billH*3600)/_DAY)*Ct)+' '+Ct;
-    const tlFocusDisp=this.fmtHM(_workSec), tlBillDisp=(_billH%1?_billH.toFixed(1):_billH.toFixed(0))+'h';
+    // hero rings: left = ongoing Passive (work day), right = Active Task
+    const focusRing=(Math.min(1,_passiveSec/_DAY)*Ct)+' '+Ct, billRing=(Math.min(1,_activeSec/_DAY)*Ct)+' '+Ct;
+    const tlFocusDisp=this.fmtHM(_passiveSec), tlBillDisp=this.fmtHM(_activeSec);
+    const tlBillTodayDisp=_todayLogged?(_billH.toFixed(2)+'h'):'—';
     const timeSummary=[
-      {label:'Active Task Clock · Start/Stop timer',val:this.fmtHM(_workSec),color:'#2E8B57',w:Math.round(Math.min(1,_workSec/_DAY)*100)+'%'},
-      {label:'Passive Clock · dashboard movement',val:this.fmtHM(_activeSec),color:'#8FAE48',w:Math.round(Math.min(1,_activeSec/_DAY)*100)+'%'},
-      {label:'Billable · your reconciled hours',val:_billH.toFixed(2)+'h',color:'#357A2B',w:Math.round(Math.min(1,(_billH*3600)/_DAY)*100)+'%'},
+      {label:'Passive Clock · ongoing all day (dashboard)',val:this.fmtHM(_passiveSec),color:'#8FAE48',w:Math.round(Math.min(1,_passiveSec/_DAY)*100)+'%'},
+      {label:'Active Task Clock · Start/Stop timer',val:this.fmtHM(_activeSec),color:'#2E8B57',w:Math.round(Math.min(1,_activeSec/_DAY)*100)+'%'},
+      {label:'Billable · set when you finalize the day',val:tlBillTodayDisp,color:'#357A2B',w:Math.round(Math.min(1,(_billH*3600)/_DAY)*100)+'%'},
     ];
 
     // ---- task workspace ----
@@ -1740,19 +1752,19 @@ class Component extends DCLogic {
       showWorkTimer:(this.state.view==='phase' && this.state.privateMode && !!this.TL),
       tlRunning:!!(this.TL&&this.TL.running), tlIdle:!(this.TL&&this.TL.running),
       tlPaused:!!(this.TL&&this.TL.running&&this.TL.paused), tlActive:!!(this.TL&&this.TL.running&&!this.TL.paused),
-      tl:{ running:!!(this.TL&&this.TL.running), paused:!!(this.TL&&this.TL.paused), runDisp:this.fmtClock(this.tlElapsed()), activeToday:this.fmtHM((this.TL&&this.TL.days&&this.TL.days[this.dayKey(Date.now())])||0), onStart:()=>this.tlStart(), onStop:()=>this.tlStop(), onPause:()=>this.tlPause(), onResume:()=>this.tlResume() },
-      bill:(this.state.billModal?{ open:true, worked:this.fmtClock(this.state.billModal.sec), hours:this.state.billModal.hours, desc:this.state.billModal.desc, onHours:e=>this.setBill('hours',e.target.value), onDesc:e=>this.setBill('desc',e.target.value), onSave:()=>this.tlSaveSession(), onCancel:()=>this.tlCancelSession() }:{ open:false }),
-      timeLog:(()=>{ const TL=this.TL||{days:{},sessions:[]}; const days=TL.days||{}; const sessions=TL.sessions||[]; const _tkey=this.dayKey(Date.now());
-        // per-day rollup of the Active Task Clock (manual sessions) + billable
-        const byDay={}; sessions.forEach(s=>{ const d=s.date||this.dayKey(s.start); if(!byDay[d]) byDay[d]={active:0,billable:0}; byDay[d].active+=(s.sec||0); byDay[d].billable+=Number(s.billable||0); });
-        // include a live running session in today's Active total
+      tl:{ running:!!(this.TL&&this.TL.running), paused:!!(this.TL&&this.TL.paused), runDisp:this.fmtClock(this.tlElapsed()), activeToday:this.fmtHM(this.tlActiveToday()), onStart:()=>this.tlStart(), onStop:()=>this.tlStop(), onPause:()=>this.tlPause(), onResume:()=>this.tlResume() },
+      onFinalizeDay:()=>this.finalizeWorkDay(),
+      bill:(this.state.billModal?{ open:true, activeStr:this.fmtHM(this.state.billModal.actSec||0), passiveStr:this.fmtHM(this.state.billModal.pasSec||0), hours:this.state.billModal.hours, desc:this.state.billModal.desc, onHours:e=>this.setBill('hours',e.target.value), onDesc:e=>this.setBill('desc',e.target.value), onSave:()=>this.tlSaveSession(), onCancel:()=>this.tlCancelSession() }:{ open:false }),
+      timeLog:(()=>{ const TL=this.TL||{days:{},active:{},log:{}}; const days=TL.days||{}, active=TL.active||{}, log=TL.log||{}; const _tkey=this.dayKey(Date.now());
         let _runToday=0; if(TL.running && this.dayKey(TL.startMs||Date.now())===_tkey) _runToday=this.tlElapsed();
-        const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(byDay)))).sort().reverse().slice(0,60);
-        const dailyRows=allDates.map(d=>{ const act=((byDay[d]&&byDay[d].active)||0)+(d===_tkey?_runToday:0); const pas=days[d]||0; const bil=(byDay[d]&&byDay[d].billable)||0;
-          return { date:d, isToday:d===_tkey, todayTag:(d===_tkey?'Today':''), active:this.fmtHM(act), passive:this.fmtHM(pas), billable:bil.toFixed(2), rowBg:(d===_tkey?'#F3F8EE':'#fff') }; });
-        const sessRows=sessions.slice(0,80).map((s,i)=>({date:s.date, time:new Date(s.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'–'+new Date(s.end).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), worked:this.fmtHM(s.sec), billable:Number(s.billable||0).toFixed(2), desc:s.desc||'', onBill:e=>this.editSession(i,'billable',e.target.value), onDesc:e=>this.editSession(i,'desc',e.target.value), onDelete:()=>this.delSession(i)}));
-        const billTotal=sessions.reduce((a,s)=>a+Number(s.billable||0),0).toFixed(2);
-        return { show:this.state.privateMode, dailyRows, sessions:sessRows, billTotal, hasDaily:dailyRows.length>0, hasSessions:sessions.length>0, onExport:()=>this.tlExportCSV() }; })(),
+        const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(active)).concat(Object.keys(log)))).sort().reverse().slice(0,60);
+        const dailyRows=allDates.map(d=>{ const act=(active[d]||0)+(d===_tkey?_runToday:0); const pas=days[d]||0; const L=log[d]||null;
+          return { date:d, isToday:d===_tkey, todayTag:(d===_tkey?'Today':''), active:this.fmtHM(act), passive:this.fmtHM(pas),
+            billable:(L?Number(L.billable||0):0).toFixed(2), note:(L&&!L.auto?L.desc:'')||'', finalized:!!L, statusTag:(L?(L.auto?'auto':'✓'):''),
+            rowBg:(d===_tkey?'#F3F8EE':'#fff'),
+            onBill:e=>this.setDayBill(d,e.target.value), onNote:e=>this.setDayNote(d,e.target.value), onClear:()=>this.clearDay(d) }; });
+        const billTotal=Object.keys(log).reduce((a,k)=>a+Number(log[k].billable||0),0).toFixed(2);
+        return { show:this.state.privateMode, dailyRows, billTotal, hasDaily:dailyRows.length>0, onExport:()=>this.tlExportCSV() }; })(),
       canUndo:(this.state.privateMode && (this.state.history||[]).length>0), onUndo:()=>this.undoLast(),
       locked:this.state.locked, notLocked:!this.state.locked,
       modeBadge:this.state.locked?'SHARED VIEW':(this.state.privateMode?'WORK':'PRESENTING'),
@@ -1762,7 +1774,7 @@ class Component extends DCLogic {
       presentToggleStyle:this.state.privateMode
         ?'background:#fff;border:1px solid #E2E8DE;color:#5B6B4E;'
         :'background:#FBF1DC;border:1px solid #F0E2C4;color:#B07D17;',
-      lp, naItems, woItems, plItems, cmItems, timeSummary, focusRing, billRing, tlFocusDisp, tlBillDisp,
+      lp, naItems, woItems, plItems, cmItems, timeSummary, focusRing, billRing, tlFocusDisp, tlBillDisp, tlBillTodayDisp, todayLogged:_todayLogged,
       onAddNA:()=>this.addMetaArr('needsAttention','New item'), onAddWO:()=>this.addMetaArr('waitingOn',{what:'New item',who:'\u2014'}),
       onAddPL:()=>this.addMetaArr('parkingLot','New idea'), onAddCM:()=>this.addMetaArr('commitments',{title:'New commitment',time:'\u2014'}),
       ws, wsShow:!!ws, wsOpen:this.state.wsOpen, onCloseWS:()=>this.closeWS(),
