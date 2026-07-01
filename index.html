@@ -488,37 +488,6 @@
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#A6B098;">↗</span>Evidence files</div><div style="font-size:31px;font-weight:800;color:#1E2A16;">{{ evLinked }}</div></div>
     </div>
 
-    <sc-if value="{{ inbox.show }}" hint-placeholder-val="{{ false }}">
-      <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:18px;">
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap;">
-          <span style="color:#3F6193;">💬</span>
-          <span style="font-size:14px;font-weight:800;color:#33402A;">Team Comments</span>
-          <sc-if value="{{ inbox.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#D9534F;border-radius:20px;padding:2px 9px;">{{ inbox.unreadStr }} new</span></sc-if>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <sc-for list="{{ inbox.items }}" as="c" hint-placeholder-count="3">
-            <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid #ECF0E8;border-radius:12px;background:#FCFDFB;">
-              <span style="width:8px;height:8px;border-radius:50%;background:{{ c.unreadDot }};flex:0 0 auto;margin-top:6px;"></span>
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
-                  <span style="font-size:12.5px;font-weight:800;color:#23311C;">{{ c.author }}</span>
-                  <span style="font-size:10.5px;color:#9AA68C;">{{ c.when }}</span>
-                  <span style="font-size:10px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:20px;padding:1px 8px;">{{ c.item }}</span>
-                </div>
-                <div style="font-size:12.5px;color:#3A4632;line-height:1.5;">{{ c.body }}</div>
-                <sc-if value="{{ c.hasReply }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#5B7A45;margin-top:5px;font-style:italic;">↳ You replied: {{ c.reply }}</div></sc-if>
-                <div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;">
-                  <button class="pbtn" onClick="{{ c.onReply }}" style="font-size:11px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;">Reply</button>
-                  <button class="pbtn" onClick="{{ c.onJump }}" style="font-size:11px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:7px;padding:5px 11px;cursor:pointer;">Jump to →</button>
-                  <button class="pbtn" onClick="{{ c.onRead }}" style="font-size:11px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 11px;cursor:pointer;">Mark read</button>
-                </div>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-      </div>
-    </sc-if>
-
     <div class="rg" style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:18px;">
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
@@ -551,15 +520,20 @@
         <sc-if value="{{ hasDec }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <sc-for list="{{ decItems }}" as="d" hint-placeholder-count="1">
-              <div style="background:#FFF8EC;border:1px solid #F0E2C4;border-left:4px solid #D99A2B;border-radius:12px;padding:13px 14px;">
+              <div style="background:{{ d.cardBg }};border:1px solid {{ d.cardBorder }};border-left:4px solid {{ d.leftBar }};border-radius:12px;padding:13px 14px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;">
-                  <span style="font-size:9.5px;font-weight:800;letter-spacing:.07em;color:#B07D17;text-transform:uppercase;">⏳ Waiting for Founder Decision</span>
-                  <button class="del" onClick="{{ d.onDelete }}" title="Resolve / remove" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#D2B884;cursor:pointer;flex:0 0 auto;font-size:11px;">✕</button>
+                  <span style="font-size:9.5px;font-weight:800;letter-spacing:.07em;color:{{ d.statusColor }};text-transform:uppercase;">{{ d.statusLabel }}</span>
+                  <button class="del" onClick="{{ d.onDelete }}" title="Remove decision" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#D2B884;cursor:pointer;flex:0 0 auto;font-size:11px;">✕</button>
                 </div>
-                <input class="edt" value="{{ d.title }}" onInput="{{ d.onTitle }}" style="font-size:15px;font-weight:800;color:#3A2E12;">
-                <div style="display:flex;align-items:center;gap:7px;margin-top:7px;">
-                  <span style="font-size:11px;color:#9A8748;font-weight:600;">Expected</span>
-                  <input class="edt" value="{{ d.expected }}" onInput="{{ d.onExpected }}" style="font-size:11.5px;font-weight:800;color:#7A5E12;max-width:130px;">
+                <div style="display:flex;align-items:flex-start;gap:9px;">
+                  <div class="cbx {{ d.cbcls }}" onClick="{{ d.onToggleDone }}" title="Mark this decision done" style="margin-top:3px;flex:0 0 auto;"><sc-if value="{{ d.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
+                  <div style="flex:1;min-width:0;">
+                    <input class="edt" value="{{ d.title }}" onInput="{{ d.onTitle }}" style="font-size:15px;font-weight:800;color:{{ d.titleColor }};text-decoration:{{ d.titleStrike }};">
+                    <div style="display:flex;align-items:center;gap:7px;margin-top:7px;">
+                      <span style="font-size:11px;color:#9A8748;font-weight:600;">Expected</span>
+                      <input class="edt" value="{{ d.expected }}" onInput="{{ d.onExpected }}" style="font-size:11.5px;font-weight:800;color:#7A5E12;max-width:130px;">
+                    </div>
+                  </div>
                 </div>
               </div>
             </sc-for>
@@ -628,6 +602,39 @@
         <span style="font-size:21px;font-weight:800;color:#45852B;letter-spacing:.01em;">{{ clockTime }}</span>
       </div>
     </div>
+
+    <sc-if value="{{ inbox.show }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;flex-wrap:wrap;">
+          <span style="color:#3F6193;">💬</span>
+          <span style="font-size:14px;font-weight:800;color:#33402A;">Team Comments</span>
+          <sc-if value="{{ inbox.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#fff;background:#D9534F;border-radius:20px;padding:2px 9px;">{{ inbox.unreadStr }} new</span></sc-if>
+          <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:#A88416;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:2px 8px;">PRIVATE · DANA ONLY</span>
+        </div>
+        <div style="font-size:11px;color:#9AA68C;margin-bottom:13px;">From your team's shared view. Only you see this.</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <sc-for list="{{ inbox.items }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid #ECF0E8;border-radius:12px;background:#FCFDFB;">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ c.unreadDot }};flex:0 0 auto;margin-top:6px;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                  <span style="font-size:12.5px;font-weight:800;color:#23311C;">{{ c.author }}</span>
+                  <span style="font-size:10.5px;color:#9AA68C;">{{ c.when }}</span>
+                  <span style="font-size:10px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:20px;padding:1px 8px;">{{ c.item }}</span>
+                </div>
+                <div style="font-size:12.5px;color:#3A4632;line-height:1.5;">{{ c.body }}</div>
+                <sc-if value="{{ c.hasReply }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#5B7A45;margin-top:5px;font-style:italic;">↳ You replied: {{ c.reply }}</div></sc-if>
+                <div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;">
+                  <button class="pbtn" onClick="{{ c.onReply }}" style="font-size:11px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;">Reply</button>
+                  <button class="pbtn" onClick="{{ c.onJump }}" style="font-size:11px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:7px;padding:5px 11px;cursor:pointer;">Jump to →</button>
+                  <button class="pbtn" onClick="{{ c.onRead }}" style="font-size:11px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 11px;cursor:pointer;">Mark read</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
 
     <div class="rg" style="background:linear-gradient(135deg,#34512C 0%,#2E8B57 100%);border-radius:22px;padding:26px 28px;color:#EAF2E1;box-shadow:0 10px 30px rgba(46,87,55,.22);margin-bottom:18px;display:grid;grid-template-columns:1fr 300px;gap:26px;">
       <div>
@@ -1390,6 +1397,7 @@ class Component extends DCLogic {
   setDec(i,f,v){ this.mut(b=>{ this.ensureMeta(b).decisions[i][f]=v; }); }
   addDec(){ this.mut(b=>{ const m=this.ensureMeta(b); m.decisions.push({title:'Decision needed',expected:'TBD'}); m.noDecisions=false; }); }
   delDec(i){ this.mut(b=>{ this.ensureMeta(b).decisions.splice(i,1); }); }
+  toggleDecDone(i){ this.mut(b=>{ const d=this.ensureMeta(b).decisions[i]; if(d) d.done=!d.done; }); }
   toggleNoDec(){ this.mut(b=>{ const m=this.ensureMeta(b); m.noDecisions=!m.noDecisions; }); }
 
   // ---- Time tracking (device-local: passive active tracker + manual work timer) ----
@@ -1591,7 +1599,12 @@ class Component extends DCLogic {
     const meta=board.meta||this.defMeta();
     const execList=meta.exec||[]; const decList=meta.decisions||[]; const noDec=!!meta.noDecisions;
     const execItems=execList.map((t,i)=>({text:t,onInput:(e)=>this.setExec(i,e.target.value),onDelete:()=>this.delExec(i)}));
-    const decItems=decList.map((d,i)=>({title:d.title,expected:d.expected,onTitle:(e)=>this.setDec(i,'title',e.target.value),onExpected:(e)=>this.setDec(i,'expected',e.target.value),onDelete:()=>this.delDec(i)}));
+    const decItems=decList.map((d,i)=>({title:d.title,expected:d.expected,done:!!d.done,cbcls:d.done?'on':'',
+      statusLabel:d.done?'✓ Resolved':'⏳ Waiting for Founder Decision', statusColor:d.done?'#5B8A3A':'#B07D17',
+      cardBg:d.done?'#F1F7EC':'#FFF8EC', cardBorder:d.done?'#CFE2BF':'#F0E2C4', leftBar:d.done?'#6FA34A':'#D99A2B',
+      titleColor:d.done?'#8A9678':'#3A2E12', titleStrike:d.done?'line-through':'none',
+      onToggleDone:()=>this.toggleDecDone(i),
+      onTitle:(e)=>this.setDec(i,'title',e.target.value),onExpected:(e)=>this.setDec(i,'expected',e.target.value),onDelete:()=>this.delDec(i)}));
     const decEmpty=(decList.length===0)||noDec;
 
     // ---- real-time clock ---- (reuses `now` declared above)
@@ -1702,7 +1715,7 @@ class Component extends DCLogic {
       profileAvatarBg:this.state.locked?'#3F6193':'#45852B',
       cm:(this.state.cmModal?{ open:true, label:this.state.cmModal.anchor.label, name:this.state.cmModal.name, body:this.state.cmModal.body, onName:e=>this.setCm('name',e.target.value), onBody:e=>this.setCm('body',e.target.value), onSend:()=>this.sendComment(), onCancel:()=>this.cancelComment() }:{ open:false }),
       reply:(this.state.replyModal?{ open:true, author:this.state.replyModal.c.author, quote:this.state.replyModal.c.body, itemLabel:this.state.replyModal.c.label||'', text:this.state.replyModal.body, onText:e=>this.setReply(e.target.value), onSend:()=>this.sendReply(), onCancel:()=>this.cancelReply() }:{ open:false }),
-      inbox:(()=>{ const cs=this.state.comments||[]; const items=cs.slice(0,60).map(c=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c) })); const unread=cs.filter(c=>!c.read).length; return { show:(this.state.privateMode && cs.length>0), items, count:cs.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0 }; })(),
+      inbox:(()=>{ const cs=this.state.comments||[]; const items=cs.slice(0,60).map(c=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c) })); const unread=cs.filter(c=>!c.read).length; return { show:(this.state.privateMode && this.state.view==='launchpad' && cs.length>0), items, count:cs.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0 }; })(),
       navCls:this.state.navOpen?'open':'', onOpenNav:()=>this.setState({navOpen:true}), onCloseNav:()=>this.setState({navOpen:false}),
       showWorkTimer:(this.state.view==='phase' && this.state.privateMode && !!this.TL),
       tlRunning:!!(this.TL&&this.TL.running), tlIdle:!(this.TL&&this.TL.running),
