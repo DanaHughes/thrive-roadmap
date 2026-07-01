@@ -661,7 +661,7 @@
               <svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/><circle cx="37" cy="37" r="30" fill="none" stroke="#C7E89A" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ focusRing }}" transform="rotate(-90 37 37)"/></svg>
               <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">{{ tlFocusDisp }}</div>
             </div>
-            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Worked today</div>
+            <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Active Task Clock</div>
           </div>
           <div style="text-align:center;">
             <div style="position:relative;width:74px;height:74px;margin:0 auto;">
@@ -671,7 +671,7 @@
             <div style="font-size:10.5px;color:#C7DCB8;margin-top:7px;font-weight:600;">Billable today</div>
           </div>
         </div>
-        <div style="font-size:10px;color:#A9C99A;text-align:center;line-height:1.4;">Active time pauses after 15 min idle. Run the Start/Stop timer on Phase pages.</div>
+        <div style="font-size:10px;color:#A9C99A;text-align:center;line-height:1.4;">Active Task Clock = the Start/Stop timer on Phase pages. Passive Clock (dashboard movement) tracks below in your Time Summary.</div>
       </div>
     </div>
 
@@ -766,7 +766,7 @@
       </div>
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
         <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;"><span style="color:#45852B;">◷</span><span style="font-size:14px;font-weight:800;color:#33402A;">Time Summary</span><span style="font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#A88416;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:2px 8px;margin-left:auto;">PRIVATE</span></div>
-        <div style="font-size:10.5px;color:#A6B098;margin-bottom:16px;">Today so far — resets at midnight. Times are tracked automatically &amp; from your work timer.</div>
+        <div style="font-size:10.5px;color:#A6B098;margin-bottom:16px;">Today so far — resets at midnight. Passive tracks automatically; Active is your Start/Stop timer.</div>
         <div style="display:flex;flex-direction:column;gap:14px;">
           <sc-for list="{{ timeSummary }}" as="t" hint-placeholder-count="4">
             <div>
@@ -786,9 +786,32 @@
         <span style="font-size:11px;color:#79866C;margin-left:4px;">Billable total <b style="color:#34672A;">{{ timeLog.billTotal }}h</b></span>
         <button class="pbtn" onClick="{{ timeLog.onExport }}" style="margin-left:auto;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
       </div>
-      <div style="font-size:10px;color:#A6B098;margin-bottom:13px;">Edit billable hours or the note below if the timer got it wrong.</div>
+      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#2E8B57;">Active Task Clock</b> = time you tracked with the Start/Stop timer on Phase pages. <b style="color:#8FAE48;">Passive Clock</b> = time the dashboard was open with cursor/keyboard movement (pauses after 15 min idle, adds up all day). <b style="color:#357A2B;">Billable</b> = the hours you reconciled.</div>
+
+      <!-- DAILY COMPARISON TABLE -->
+      <sc-if value="{{ timeLog.hasDaily }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px solid #E6EDDF;border-radius:12px;overflow:hidden;margin-bottom:18px;">
+          <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;background:#F4F7F0;border-bottom:1px solid #E6EDDF;">
+            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#79866C;padding:9px 12px;">DATE</div>
+            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#2E8B57;padding:9px 8px;text-align:right;">ACTIVE TASK</div>
+            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#8FAE48;padding:9px 8px;text-align:right;">PASSIVE</div>
+            <div style="font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#357A2B;padding:9px 12px;text-align:right;">BILLABLE</div>
+          </div>
+          <sc-for list="{{ timeLog.dailyRows }}" as="r" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;border-bottom:1px solid #EEF2EA;background:{{ r.rowBg }};align-items:center;">
+              <div style="font-size:11.5px;font-weight:700;color:#3A4632;padding:9px 12px;display:flex;align-items:center;gap:7px;">{{ r.date }}<sc-if value="{{ r.isToday }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.05em;color:#45852B;background:#E4F0DB;border-radius:20px;padding:1px 7px;">{{ r.todayTag }}</span></sc-if></div>
+              <div style="font-size:12px;font-weight:800;color:#2E8B57;padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.active }}</div>
+              <div style="font-size:12px;font-weight:700;color:#8FAE48;padding:9px 8px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.passive }}</div>
+              <div style="font-size:12px;font-weight:800;color:#357A2B;padding:9px 12px;text-align:right;font-variant-numeric:tabular-nums;">{{ r.billable }}h</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- EDITABLE WORK SESSIONS -->
       <sc-if value="{{ timeLog.hasSessions }}" hint-placeholder-val="{{ true }}">
-        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:8px;">WORK SESSIONS · edit billable hours or the note if the timer got it wrong</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
           <sc-for list="{{ timeLog.sessions }}" as="s" hint-placeholder-count="3">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid #ECF0E8;border-radius:10px;background:#FCFDFB;flex-wrap:wrap;">
               <span style="font-size:11px;font-weight:800;color:#3A4632;flex:0 0 auto;">{{ s.date }}</span>
@@ -804,12 +827,6 @@
           </sc-for>
         </div>
       </sc-if>
-      <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:8px;">DAILY ACTIVE TIME (app open &amp; in use)</div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px;">
-        <sc-for list="{{ timeLog.days }}" as="d" hint-placeholder-count="3">
-          <span style="font-size:11px;font-weight:700;color:#3A4632;background:#F4F7F0;border:1px solid #E6EDDF;border-radius:8px;padding:5px 10px;">{{ d.date }} · {{ d.active }}</span>
-        </sc-for>
-      </div>
     </div>
   </main>
   </sc-if>
@@ -1453,10 +1470,13 @@ class Component extends DCLogic {
   tlExportCSV(){
     const TL=this.TL||{sessions:[],days:{}};
     const esc=v=>{ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-    const rows=[['Date','Start','End','Worked (h)','Billable (h)','Description']];
-    (TL.sessions||[]).slice().reverse().forEach(s=>{ rows.push([s.date, new Date(s.start).toLocaleTimeString(), new Date(s.end).toLocaleTimeString(), (s.sec/3600).toFixed(2), Number(s.billable||0).toFixed(2), s.desc||'']); });
-    rows.push([]); rows.push(['Daily active time (app open & active)']); rows.push(['Date','Active (h)']);
-    Object.keys(TL.days||{}).sort().forEach(d=>rows.push([d,((TL.days[d]||0)/3600).toFixed(2)]));
+    const days=TL.days||{}, sessions=TL.sessions||[];
+    const byDay={}; sessions.forEach(s=>{ const d=s.date||this.dayKey(s.start); if(!byDay[d]) byDay[d]={active:0,billable:0}; byDay[d].active+=(s.sec||0); byDay[d].billable+=Number(s.billable||0); });
+    const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(byDay)))).sort();
+    const rows=[['Daily comparison'],['Date','Active Task Clock (h)','Passive Clock (h)','Billable (h)']];
+    allDates.forEach(d=>rows.push([d, (((byDay[d]&&byDay[d].active)||0)/3600).toFixed(2), ((days[d]||0)/3600).toFixed(2), ((byDay[d]&&byDay[d].billable)||0).toFixed(2)]));
+    rows.push([]); rows.push(['Work sessions (Active Task Clock detail)']); rows.push(['Date','Start','End','Worked (h)','Billable (h)','Description']);
+    sessions.slice().reverse().forEach(s=>{ rows.push([s.date, new Date(s.start).toLocaleTimeString(), new Date(s.end).toLocaleTimeString(), (s.sec/3600).toFixed(2), Number(s.billable||0).toFixed(2), s.desc||'']); });
     const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
     try{ const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='thrive-time-log-'+this.dayKey(Date.now())+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); this.toast('CSV exported'); }catch(e){ this.toast('Export failed'); }
   }
@@ -1647,9 +1667,9 @@ class Component extends DCLogic {
     const focusRing=(Math.min(1,_workSec/_DAY)*Ct)+' '+Ct, billRing=(Math.min(1,(_billH*3600)/_DAY)*Ct)+' '+Ct;
     const tlFocusDisp=this.fmtHM(_workSec), tlBillDisp=(_billH%1?_billH.toFixed(1):_billH.toFixed(0))+'h';
     const timeSummary=[
-      {label:'Work (timer)',val:this.fmtHM(_workSec),color:'#2E8B57',w:Math.round(Math.min(1,_workSec/_DAY)*100)+'%'},
-      {label:'Billable',val:_billH.toFixed(2)+'h',color:'#357A2B',w:Math.round(Math.min(1,(_billH*3600)/_DAY)*100)+'%'},
-      {label:'Active (app open)',val:this.fmtHM(_activeSec),color:'#8FAE48',w:Math.round(Math.min(1,_activeSec/_DAY)*100)+'%'},
+      {label:'Active Task Clock · Start/Stop timer',val:this.fmtHM(_workSec),color:'#2E8B57',w:Math.round(Math.min(1,_workSec/_DAY)*100)+'%'},
+      {label:'Passive Clock · dashboard movement',val:this.fmtHM(_activeSec),color:'#8FAE48',w:Math.round(Math.min(1,_activeSec/_DAY)*100)+'%'},
+      {label:'Billable · your reconciled hours',val:_billH.toFixed(2)+'h',color:'#357A2B',w:Math.round(Math.min(1,(_billH*3600)/_DAY)*100)+'%'},
     ];
 
     // ---- task workspace ----
@@ -1722,7 +1742,17 @@ class Component extends DCLogic {
       tlPaused:!!(this.TL&&this.TL.running&&this.TL.paused), tlActive:!!(this.TL&&this.TL.running&&!this.TL.paused),
       tl:{ running:!!(this.TL&&this.TL.running), paused:!!(this.TL&&this.TL.paused), runDisp:this.fmtClock(this.tlElapsed()), activeToday:this.fmtHM((this.TL&&this.TL.days&&this.TL.days[this.dayKey(Date.now())])||0), onStart:()=>this.tlStart(), onStop:()=>this.tlStop(), onPause:()=>this.tlPause(), onResume:()=>this.tlResume() },
       bill:(this.state.billModal?{ open:true, worked:this.fmtClock(this.state.billModal.sec), hours:this.state.billModal.hours, desc:this.state.billModal.desc, onHours:e=>this.setBill('hours',e.target.value), onDesc:e=>this.setBill('desc',e.target.value), onSave:()=>this.tlSaveSession(), onCancel:()=>this.tlCancelSession() }:{ open:false }),
-      timeLog:(()=>{ const TL=this.TL||{days:{},sessions:[]}; const days=Object.assign({},TL.days||{}); const _tkey=this.dayKey(Date.now()); const dayRows=Object.keys(days).sort().reverse().slice(0,30).map(d=>({date:d, active:this.fmtHM(days[d])})); const sessRows=(TL.sessions||[]).slice(0,80).map((s,i)=>({date:s.date, time:new Date(s.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'–'+new Date(s.end).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), worked:this.fmtHM(s.sec), billable:Number(s.billable||0).toFixed(2), desc:s.desc||'', onBill:e=>this.editSession(i,'billable',e.target.value), onDesc:e=>this.editSession(i,'desc',e.target.value), onDelete:()=>this.delSession(i)})); const billTotal=(TL.sessions||[]).reduce((a,s)=>a+Number(s.billable||0),0).toFixed(2); return { show:this.state.privateMode, days:dayRows, sessions:sessRows, billTotal, activeToday:this.fmtHM(days[_tkey]||0), hasSessions:(TL.sessions||[]).length>0, hasDays:dayRows.length>0, onExport:()=>this.tlExportCSV() }; })(),
+      timeLog:(()=>{ const TL=this.TL||{days:{},sessions:[]}; const days=TL.days||{}; const sessions=TL.sessions||[]; const _tkey=this.dayKey(Date.now());
+        // per-day rollup of the Active Task Clock (manual sessions) + billable
+        const byDay={}; sessions.forEach(s=>{ const d=s.date||this.dayKey(s.start); if(!byDay[d]) byDay[d]={active:0,billable:0}; byDay[d].active+=(s.sec||0); byDay[d].billable+=Number(s.billable||0); });
+        // include a live running session in today's Active total
+        let _runToday=0; if(TL.running && this.dayKey(TL.startMs||Date.now())===_tkey) _runToday=this.tlElapsed();
+        const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(byDay)))).sort().reverse().slice(0,60);
+        const dailyRows=allDates.map(d=>{ const act=((byDay[d]&&byDay[d].active)||0)+(d===_tkey?_runToday:0); const pas=days[d]||0; const bil=(byDay[d]&&byDay[d].billable)||0;
+          return { date:d, isToday:d===_tkey, todayTag:(d===_tkey?'Today':''), active:this.fmtHM(act), passive:this.fmtHM(pas), billable:bil.toFixed(2), rowBg:(d===_tkey?'#F3F8EE':'#fff') }; });
+        const sessRows=sessions.slice(0,80).map((s,i)=>({date:s.date, time:new Date(s.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'–'+new Date(s.end).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), worked:this.fmtHM(s.sec), billable:Number(s.billable||0).toFixed(2), desc:s.desc||'', onBill:e=>this.editSession(i,'billable',e.target.value), onDesc:e=>this.editSession(i,'desc',e.target.value), onDelete:()=>this.delSession(i)}));
+        const billTotal=sessions.reduce((a,s)=>a+Number(s.billable||0),0).toFixed(2);
+        return { show:this.state.privateMode, dailyRows, sessions:sessRows, billTotal, hasDaily:dailyRows.length>0, hasSessions:sessions.length>0, onExport:()=>this.tlExportCSV() }; })(),
       canUndo:(this.state.privateMode && (this.state.history||[]).length>0), onUndo:()=>this.undoLast(),
       locked:this.state.locked, notLocked:!this.state.locked,
       modeBadge:this.state.locked?'SHARED VIEW':(this.state.privateMode?'WORK':'PRESENTING'),
