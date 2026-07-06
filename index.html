@@ -363,13 +363,14 @@
           <div class="rg" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:11px 18px 6px;font-size:10px;font-weight:700;letter-spacing:.08em;color:#A6B098;">
             <div>TASK</div><div style="padding-left:13px;">NOTES &amp; FILES</div>
           </div>
-          <div style="padding:0 18px 4px;display:flex;flex-direction:column;gap:9px;">
+          <div style="padding:0 18px 4px;display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ d.tasks }}" as="t" hint-placeholder-count="3">
-              <div class="rg" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid #ECF0E8;border-radius:11px;overflow:hidden;background:#fff;">
-                <div style="padding:11px 13px;background:{{ t.bg }};">
+              <div class="rg" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
+                <div style="padding:9px 12px;background:{{ t.bg }};">
                   <div style="display:flex;align-items:center;gap:10px;">
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
                     <textarea rows="1" class="edt gtext" value="{{ t.label }}" onInput="{{ t.onRename }}" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
+                    <sc-if value="{{ t.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 7px;flex:0 0 auto;white-space:nowrap;">{{ t.doneTag }}</span></sc-if>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
@@ -1080,7 +1081,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v31 · Jul 1';
+    this.BUILD='v32 · Jul 1';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1589,8 +1590,8 @@ class Component extends DCLogic {
         onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes,
-          color:t.done?'#94A3B8':'#334155', strike:t.done?'line-through':'none',
-          cbcls:t.done?'on':'', bg:t.done?active.iconBg:'#FFFFFF',
+          color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
+          cbcls:t.done?'on':'', bg:t.done?active.iconBg:'#FFFFFF', rowBorder:t.done?active.color:'#ECF0E8',
           files:(t.files||[]).map(n=>({name:n})),
           onToggle:()=>this.toggleTask(ph,di,ti),
           onRename:(e)=>this.renameTask(ph,di,ti,e.target.value),
@@ -1604,7 +1605,7 @@ class Component extends DCLogic {
           onComment:()=>this.openComment({ph, msId:del.id, taskId:t.id, label:t.label}),
           subs:(t.subs||[]).map((s,si)=>({
             label:s.label, done:s.done,
-            color:s.done?'#A6AE9A':'#56624A', strike:s.done?'line-through':'none', cbcls:s.done?'on':'',
+            color:s.done?'#6B7A60':'#56624A', strike:'none', cbcls:s.done?'on':'',
             onToggle:()=>this.toggleSub(ph,di,ti,si),
             onRename:(e)=>this.renameSub(ph,di,ti,si,e.target.value),
             onDelete:()=>this.delSub(ph,di,ti,si),
