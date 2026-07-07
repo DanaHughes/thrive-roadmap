@@ -59,6 +59,20 @@
   .wsfld:focus{border-color:#BFD6AE;box-shadow:0 0 0 3px rgba(143,174,72,.12);}
   .wsfld.big{min-height:340px;}
   .boardnote{min-height:34px;}
+  /* rich-text notes: bold, highlight, lists, tables — inline throughout the OS */
+  .richnote{min-height:34px;border:1px solid #E8EDE4;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;background:#fff;width:100%;line-height:1.55;outline:none;overflow-wrap:break-word;word-break:break-word;box-sizing:border-box;}
+  .richnote:focus{border-color:#BFD6AE;box-shadow:0 0 0 3px rgba(143,174,72,.12);}
+  .richnote:empty:before{content:attr(data-ph);color:#AEB8A6;pointer-events:none;}
+  .richnote b,.richnote strong{font-weight:800;color:#23311C;}
+  .richnote mark{background:#FFF3A3;padding:0 2px;border-radius:2px;}
+  .richnote ul,.richnote ol{margin:4px 0;padding-left:20px;}
+  .richnote table{border-collapse:collapse;margin:5px 0;}
+  .richnote td,.richnote th{border:1px solid #CBD8BC;padding:3px 7px;font-size:11px;min-width:44px;vertical-align:top;}
+  .richnote th{background:#EDF3E6;font-weight:800;}
+  .rntoolbar{position:fixed;z-index:130;display:flex;gap:3px;background:#23311C;border-radius:9px;padding:5px 6px;box-shadow:0 8px 24px rgba(20,30,12,.3);}
+  .rntoolbar button{min-width:26px;height:26px;border:none;background:#3C4F30;color:#EAF2E1;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;padding:0 7px;font-weight:800;}
+  .rntoolbar button:hover{background:#4C6440;}
+  .team-mode .richnote{pointer-events:none;border-color:transparent;background:transparent;padding-left:0;}
   .wsfld.big{overflow-y:auto;}
   .phasehead{padding-right:240px;}
   @media (max-width:820px){ .phasehead{padding-right:0 !important;} }
@@ -408,9 +422,7 @@
                   </div>
                 </div>
                 <div style="padding:9px 12px;border-left:1px solid #ECF0E8;display:flex;flex-direction:column;gap:7px;justify-content:center;background:#FCFDFB;">
-                  <div>
-                    <textarea rows="1" class="boardnote gtext" value="{{ t.notes }}" onInput="{{ t.onNote }}" placeholder="Add notes…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;width:100%;line-height:1.55;"></textarea>
-                  </div>
+                  <div class="richnote" data-np="{{ t.np }}" data-ph="Add notes…"></div>
                   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
                     <label class="pbtn" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5B6B4E;border:1px solid #E2E8DE;border-radius:7px;padding:4px 9px;cursor:pointer;background:#fff;">+ File<input type="file" onChange="{{ t.onAddFile }}" style="display:none;"></label>
                     <sc-for list="{{ t.files }}" as="f" hint-placeholder-count="0">
@@ -1079,7 +1091,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v33 · Jul 1';
+    this.BUILD='v34 · Jul 1';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1169,11 +1181,45 @@ class Component extends DCLogic {
     this.cloudInit();
     this.tlInit();
     this.commentsInit();
-    this._growAll(); setTimeout(()=>this._growAll(),120);
+    this._rnInit();
+    this._growAll(); setTimeout(()=>{ this._growAll(); this._rnRender(); },120);
   }
-  componentDidUpdate(){ this._growAll(); }
+  componentDidUpdate(){ this._growAll(); this._rnRender(); }
   _growAll(){ try{ const ns=document.querySelectorAll('textarea.gtext'); for(let i=0;i<ns.length;i++){ const t=ns[i]; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; } }catch(e){} }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } this.tlSave(); }
+  // ---- Rich-text inline notes (bold, highlight, lists, tables) — managed outside React's vdom so re-renders never wipe them ----
+  _rnEsc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  _rnToHtml(v){ if(!v) return ''; if(/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(v)) return v; return this._rnEsc(v).replace(/\n/g,'<br>'); }
+  _rnGet(np){ if(!np) return ''; const a=np.split('|'); const ph=a[0], di=+a[1], ti=+a[2]; const del=(this.state.board[ph]||[])[di]; const t=del&&del.tasks&&del.tasks[ti]; return t?(t.notes||''):''; }
+  _rnEditable(){ return this.state.privateMode && !this.state.locked; }
+  _rnRender(){ try{ const editable=this._rnEditable(); const ns=document.querySelectorAll('.richnote'); for(let i=0;i<ns.length;i++){ const el=ns[i]; el.contentEditable=editable?'true':'false'; if(el===document.activeElement) continue; const html=this._rnToHtml(this._rnGet(el.getAttribute('data-np'))); if(el.getAttribute('data-h')!==html){ el.innerHTML=html; el.setAttribute('data-h', html); } } }catch(e){} }
+  _rnInit(){
+    this._rnInput=(e)=>{ const el=e.target && e.target.closest && e.target.closest('.richnote'); if(!el) return; const np=el.getAttribute('data-np'); this._rnPend={np, html:el.innerHTML, el}; clearTimeout(this._rnT); this._rnT=setTimeout(()=>this._rnSave(), 500); };
+    this._rnFocusIn=(e)=>{ const el=e.target && e.target.closest && e.target.closest('.richnote'); if(el && this._rnEditable()){ this._rnCur=el; this._rnShowBar(el); } };
+    this._rnFocusOut=(e)=>{ setTimeout(()=>{ const a=document.activeElement; if(a && a.closest && (a.closest('.richnote')||a.closest('.rntoolbar'))) return; this._rnSave(); this._rnHideBar(); this._rnCur=null; }, 180); };
+    document.addEventListener('input', this._rnInput, true);
+    document.addEventListener('focusin', this._rnFocusIn, true);
+    document.addEventListener('focusout', this._rnFocusOut, true);
+    this._rnRender();
+  }
+  _rnSave(){ if(!this._rnPend) return; const {np,html}=this._rnPend; this._rnPend=null; const a=np.split('|'); const ph=a[0], di=+a[1], ti=+a[2]; const clean=(html==='<br>'||html==='<div><br></div>')?'':html; this.mut(b=>{ if(b[ph]&&b[ph][di]&&b[ph][di].tasks[ti]) b[ph][di].tasks[ti].notes=clean; }); const el=document.querySelector('.richnote[data-np="'+np+'"]'); if(el) el.setAttribute('data-h', el.innerHTML); }
+  _rnBar(){ if(this._rnBarEl) return this._rnBarEl; const bar=document.createElement('div'); bar.className='rntoolbar'; bar.style.display='none';
+    const btns=[['bold','','B'],['hilite','','🖍'],['ul','','• List'],['ol','','1.'],['table','','▦ Table'],['clear','','Clear']];
+    bar.innerHTML=btns.map(x=>'<button data-c="'+x[0]+'">'+x[2]+'</button>').join('');
+    bar.querySelectorAll('button').forEach(btn=>{ btn.addEventListener('mousedown',e=>e.preventDefault()); btn.addEventListener('click',()=>this._rnCmd(btn.getAttribute('data-c'))); });
+    document.body.appendChild(bar); this._rnBarEl=bar; return bar; }
+  _rnShowBar(el){ const bar=this._rnBar(); bar.style.display='flex'; const r=el.getBoundingClientRect(); let top=r.top-40; if(top<6) top=r.bottom+6; bar.style.top=top+'px'; bar.style.left=Math.max(6,Math.min(r.left, window.innerWidth-260))+'px'; }
+  _rnHideBar(){ if(this._rnBarEl) this._rnBarEl.style.display='none'; }
+  _rnCmd(c){ const el=this._rnCur; if(!el) return; el.focus(); try{
+      if(c==='bold') document.execCommand('bold',false,null);
+      else if(c==='hilite') document.execCommand('hiliteColor',false,'#FFF3A3');
+      else if(c==='ul') document.execCommand('insertUnorderedList',false,null);
+      else if(c==='ol') document.execCommand('insertOrderedList',false,null);
+      else if(c==='clear'){ document.execCommand('removeFormat',false,null); document.execCommand('hiliteColor',false,'transparent'); }
+      else if(c==='table'){ const t='<table><tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table><div><br></div>'; document.execCommand('insertHTML',false,t); }
+    }catch(e){}
+    this._rnPend={np:el.getAttribute('data-np'), html:el.innerHTML, el}; clearTimeout(this._rnT); this._rnT=setTimeout(()=>this._rnSave(), 300);
+  }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } if(this._rnInput){ document.removeEventListener('input', this._rnInput, true); document.removeEventListener('focusin', this._rnFocusIn, true); document.removeEventListener('focusout', this._rnFocusOut, true); } if(this._rnBarEl){ this._rnBarEl.remove(); this._rnBarEl=null; } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1245,7 +1291,7 @@ class Component extends DCLogic {
     const del=(this.state.board[ph]||[])[di]; const t=del&&del.tasks[ti]; if(!t) return;
     const old=document.getElementById('thrive-doc-overlay'); if(old) old.remove();
     const esc=this._docEsc2;
-    const TB=[['bold','','B','font-weight:800;'],['italic','','I','font-style:italic;'],['underline','','U','text-decoration:underline;'],['formatBlock','H1','Title',''],['formatBlock','H2','Heading',''],['formatBlock','P','Body',''],['insertUnorderedList','','• List',''],['insertOrderedList','','1. List',''],['createLink','','🔗 Link',''],['removeFormat','','Clear','']];
+    const TB=[['bold','','B','font-weight:800;'],['italic','','I','font-style:italic;'],['underline','','U','text-decoration:underline;'],['hilite','','🖍 Highlight',''],['formatBlock','H1','Title',''],['formatBlock','H2','Heading',''],['formatBlock','P','Body',''],['insertUnorderedList','','• List',''],['insertOrderedList','','1. List',''],['table','','▦ Table',''],['createLink','','🔗 Link',''],['removeFormat','','Clear','']];
     const tb=TB.map(b=>'<button data-cmd="'+b[0]+'" data-val="'+b[1]+'" style="min-width:30px;height:30px;border:1px solid #E2E8DE;background:#fff;border-radius:7px;color:#33402A;cursor:pointer;font-size:12px;font-family:inherit;padding:0 9px;'+b[3]+'">'+b[2]+'</button>').join('');
     const ov=document.createElement('div'); ov.id='thrive-doc-overlay';
     ov.setAttribute('style','position:fixed;inset:0;z-index:140;background:#EEF1EA;display:flex;flex-direction:column;font-family:inherit;');
@@ -1257,6 +1303,7 @@ class Component extends DCLogic {
       +  '<button id="thrive-doc-google" style="font-size:12px;font-weight:800;color:#fff;background:#3F6193;border:none;border-radius:9px;padding:8px 14px;cursor:pointer;font-family:inherit;white-space:nowrap;">Send to Google Docs ↗</button>'
       +'</div>'
       +'<div style="flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:8px 14px;background:#fff;border-bottom:1px solid #E2E8DE;flex-wrap:wrap;">'+tb+'</div>'
+      +'<style>#thrive-doc-edit table{border-collapse:collapse;margin:8px 0;}#thrive-doc-edit td,#thrive-doc-edit th{border:1px solid #C6D3B8;padding:5px 10px;min-width:60px;vertical-align:top;}#thrive-doc-edit th{background:#EDF3E6;font-weight:800;}#thrive-doc-edit mark{background:#FFF3A3;}#thrive-doc-edit h1{font-size:24px;}#thrive-doc-edit h2{font-size:19px;}#thrive-doc-edit:empty:before{content:"Start writing your document…";color:#AEB8A6;}</style>'
       +'<div style="flex:1;overflow-y:auto;padding:26px 16px 60px;display:flex;justify-content:center;">'
       +  '<div id="thrive-doc-edit" contenteditable="true" style="width:100%;max-width:780px;min-height:64vh;background:#fff;border:1px solid #E2E8DE;border-radius:8px;box-shadow:0 2px 14px rgba(20,30,12,.08);padding:52px 60px;font-size:15px;line-height:1.7;color:#1E2A16;outline:none;"></div>'
       +'</div>';
@@ -1275,6 +1322,8 @@ class Component extends DCLogic {
         try{
           if(c==='formatBlock'){ document.execCommand('formatBlock', false, btn.getAttribute('data-val')); }
           else if(c==='createLink'){ const u=prompt('Link address (https://…):','https://'); if(u){ document.execCommand('createLink', false, u); } }
+          else if(c==='hilite'){ document.execCommand('hiliteColor', false, '#FFF3A3'); }
+          else if(c==='table'){ document.execCommand('insertHTML', false, '<table class="dtable"><tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table><p><br></p>'); }
           else { document.execCommand(c, false, null); }
         }catch(e){}
         save();
@@ -1528,7 +1577,7 @@ class Component extends DCLogic {
     const m=this.state.replyModal; if(!m||!m.c) return; const c=m.c; const reply=(m.body||'').trim(); if(!reply){ this.toast('Write a reply first'); return; }
     const line='In response to '+c.author+'’s comment “'+c.body+'”: '+reply;
     const ph=c.ph; const arr=this.state.board[ph]||[]; let placed=false;
-    if(c.taskId){ for(let di=0;di<arr.length&&!placed;di++){ const ti=(arr[di].tasks||[]).findIndex(t=>t.id===c.taskId); if(ti>=0){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; t.notes=(t.notes&&String(t.notes).trim()?String(t.notes).trim()+'\n\n':'')+line; }); placed=true; } } }
+    if(c.taskId){ for(let di=0;di<arr.length&&!placed;di++){ const ti=(arr[di].tasks||[]).findIndex(t=>t.id===c.taskId); if(ti>=0){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; const cur=t.notes&&String(t.notes).trim()?String(t.notes):''; const isHtml=/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(cur); const block='<div style="color:#3F6193;">'+this._rnEsc(line)+'</div>'; t.notes=isHtml?(cur+block):((cur?this._rnEsc(cur).replace(/\n/g,'<br>')+block:block)); }); placed=true; } } }
     else if(c.msId){ const di=arr.findIndex(d=>d.id===c.msId); if(di>=0){ this.mut(b=>{ const d=b[ph][di]; d.desc=(d.desc&&String(d.desc).trim()?String(d.desc).trim()+'\n\n':'')+line; }); placed=true; } }
     const upd=Object.assign({}, c, {read:true, reply:reply, repliedTs:Date.now()});
     try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){}
@@ -1587,7 +1636,7 @@ class Component extends DCLogic {
         onAddDelFile:(e)=>this.addDelFile(ph,di,e),
         onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
         tasks:del.tasks.map((t,ti)=>({
-          label:t.label, done:t.done, notes:t.notes,
+          label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
           cbcls:t.done?'on':'', bg:t.done?active.iconBg:'#FFFFFF', rowBorder:t.done?active.color:'#ECF0E8',
           files:(t.files||[]).map(n=>({name:n})),
