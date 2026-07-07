@@ -58,8 +58,7 @@
   .wsfld{border:1px solid #E2E8DE;background:#fff;font-family:inherit;outline:none;border-radius:10px;padding:9px 11px;width:100%;color:#33402A;font-size:12.5px;resize:vertical;line-height:1.5;}
   .wsfld:focus{border-color:#BFD6AE;box-shadow:0 0 0 3px rgba(143,174,72,.12);}
   .wsfld.big{min-height:340px;}
-  .boardnote{height:34px;transition:height .15s ease;overflow-y:auto;}
-  .boardnote.big{height:180px;}
+  .boardnote{min-height:34px;}
   .wsfld.big{overflow-y:auto;}
   .phasehead{padding-right:240px;}
   @media (max-width:820px){ .phasehead{padding-right:0 !important;} }
@@ -386,7 +385,7 @@
                         </div>
                         <sc-if value="{{ s.expanded }}" hint-placeholder-val="{{ false }}">
                           <div style="margin-left:23px;border-left:2px solid #E8EDE4;padding:2px 0 6px 10px;display:flex;flex-direction:column;gap:7px;">
-                            <textarea value="{{ s.notes }}" onInput="{{ s.onNote }}" placeholder="Note for this subtask…" rows="2" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11px;color:#3A4633;outline:none;background:#fff;width:100%;resize:vertical;line-height:1.5;"></textarea>
+                            <textarea rows="1" class="gtext" value="{{ s.notes }}" onInput="{{ s.onNote }}" placeholder="Note for this subtask…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11px;color:#3A4633;outline:none;background:#fff;width:100%;line-height:1.5;"></textarea>
                             <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
                               <label class="pbtn" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#5B6B4E;border:1px solid #E2E8DE;border-radius:7px;padding:4px 9px;cursor:pointer;background:#fff;">+ File<input type="file" onChange="{{ s.onAddFile }}" style="display:none;"></label>
                               <button class="pbtn" onClick="{{ s.onAddLink }}" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#34672A;border:1px solid #CBDDBC;border-radius:7px;padding:4px 9px;cursor:pointer;background:#EDF3E6;">🔗 + Link</button>
@@ -409,9 +408,8 @@
                   </div>
                 </div>
                 <div style="padding:9px 12px;border-left:1px solid #ECF0E8;display:flex;flex-direction:column;gap:7px;justify-content:center;background:#FCFDFB;">
-                  <div style="position:relative;">
-                    <textarea class="boardnote {{ t.noteCls }}" value="{{ t.notes }}" onInput="{{ t.onNote }}" placeholder="Add notes…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 28px 6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;width:100%;resize:vertical;line-height:1.55;"></textarea>
-                    <button class="pbtn" onClick="{{ t.onToggleNote }}" title="Expand / collapse notes" style="position:absolute;top:4px;right:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #E2E8DE;border-radius:6px;background:#fff;color:#7C8C6C;font-size:11px;cursor:pointer;padding:0;line-height:1;">{{ t.noteToggleGlyph }}</button>
+                  <div>
+                    <textarea rows="1" class="boardnote gtext" value="{{ t.notes }}" onInput="{{ t.onNote }}" placeholder="Add notes…" style="border:1px solid #E8EDE4;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;width:100%;line-height:1.55;"></textarea>
                   </div>
                   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
                     <label class="pbtn" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5B6B4E;border:1px solid #E2E8DE;border-radius:7px;padding:4px 9px;cursor:pointer;background:#fff;">+ File<input type="file" onChange="{{ t.onAddFile }}" style="display:none;"></label>
@@ -1081,7 +1079,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v32 · Jul 1';
+    this.BUILD='v33 · Jul 1';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
