@@ -160,6 +160,28 @@
     </div>
   </sc-if>
 
+  <!-- ===== SETTINGS MODAL (AI key) ===== -->
+  <sc-if value="{{ settings.open }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:480px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
+        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:4px;">Settings · AI Assistant</div>
+        <div style="font-size:12px;color:#79866C;margin-bottom:16px;line-height:1.5;">Paste your Anthropic API key to turn on the AI buttons in your tasks. It's saved <b>only on this device</b> — never synced to the cloud, never visible to your team.</div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">ANTHROPIC API KEY</div>
+        <input value="{{ settings.key }}" onInput="{{ settings.onKey }}" type="password" placeholder="sk-ant-…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">MODEL</div>
+        <select value="{{ settings.model }}" onChange="{{ settings.onModel }}" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:8px;background:#FBFCFA;box-sizing:border-box;">
+          <option value="claude-sonnet-5">Claude Sonnet 5 — best quality (recommended)</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — fastest & cheapest</option>
+        </select>
+        <div style="font-size:10.5px;color:#9AA68C;line-height:1.5;margin-bottom:16px;">Get a key at <b>console.anthropic.com</b> → API Keys. Pay-as-you-go; typical AI actions here cost a fraction of a cent.</div>
+        <div style="display:flex;gap:8px;">
+          <button class="pbtn" onClick="{{ settings.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
+          <button class="pbtn" onClick="{{ settings.onClose }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Close</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ===== TEAM COMMENT MODAL ===== -->
   <sc-if value="{{ cm.open }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
@@ -1050,12 +1072,29 @@
         <div><div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">RELATED TASKS</div><textarea rows="1" class="wsfld gtext" value="{{ ws.relatedTasks }}" onInput="{{ ws.onRelatedTasks }}" placeholder="Dependencies / linked work"></textarea></div>
       </div>
       <div style="background:#F4F7F0;border:1px solid #E6EDDF;border-radius:14px;padding:15px 16px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;"><span style="color:#45852B;">✦</span><span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#33402A;">AI ASSIST</span><span style="font-size:9px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:20px;padding:2px 8px;">PLACEHOLDER</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap;"><span style="color:#45852B;">✦</span><span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#33402A;">AI ASSIST</span>
+          <sc-if value="{{ aiOn }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:800;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 8px;">ON</span></sc-if>
+          <sc-if value="{{ aiOff }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ onOpenSettings }}" style="font-size:9px;font-weight:800;color:#B07D17;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:2px 9px;cursor:pointer;font-family:inherit;">⚙ Add your key to turn on</button></sc-if>
+        </div>
         <div class="rg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <sc-for list="{{ aiButtons }}" as="a" hint-placeholder-count="8">
             <button class="aibtn" onClick="{{ a.onClick }}">✦ {{ a.label }}</button>
           </sc-for>
         </div>
+        <sc-if value="{{ aiPanel.open }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:11px;background:#fff;border:1px solid #CBDDBC;border-radius:12px;padding:12px 13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <span style="font-size:10px;font-weight:800;letter-spacing:.06em;color:#34672A;">✦ AI · {{ aiPanel.title }}</span>
+              <div style="display:flex;gap:6px;">
+                <sc-if value="{{ aiPanel.hasText }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ aiPanel.onInsert }}" style="font-size:10.5px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 10px;cursor:pointer;">↳ Insert</button><button class="pbtn" onClick="{{ aiPanel.onCopy }}" style="font-size:10.5px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">⧉ Copy</button></sc-if>
+                <button class="pbtn" onClick="{{ aiPanel.onClose }}" style="font-size:10.5px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 9px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+            <sc-if value="{{ aiPanel.loading }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#7C8C6C;padding:14px 4px;text-align:center;">✦ Thinking… generating your {{ aiPanel.title }}…</div></sc-if>
+            <sc-if value="{{ aiPanel.hasError }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#B4452E;background:#FCF1F0;border:1px solid #F3DAD8;border-radius:8px;padding:9px 11px;line-height:1.5;">{{ aiPanel.error }}</div></sc-if>
+            <sc-if value="{{ aiPanel.hasText }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#2A3623;line-height:1.6;white-space:pre-wrap;max-height:340px;overflow-y:auto;">{{ aiPanel.text }}</div></sc-if>
+          </div>
+        </sc-if>
         <button class="aibtn" onClick="{{ ws.onGenEmail }}" style="width:100%;margin-top:8px;text-align:center;background:#45852B;color:#fff;border-color:#45852B;font-weight:800;">✉ Create Completion Report Email</button>
         <sc-if value="{{ ws.hasEmail }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:11px;background:#fff;border:1px solid #E2E8DE;border-radius:12px;padding:12px 13px;">
@@ -1152,7 +1191,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1188,6 +1227,7 @@ class Component extends DCLogic {
     this.tlInit();
     this.commentsInit();
     this._rnInit();
+    this.aiLoadKey();
     this._growAll(); setTimeout(()=>{ this._growAll(); this._rnRender(); },120);
   }
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
@@ -1466,6 +1506,56 @@ class Component extends DCLogic {
     L.push('Education Program & Systems Architect');
     this.setState({emailDraft:L.join('\n'), emailFor:t.id});
   }
+
+  // ---- AI assistant (your own Anthropic key, stored locally per device — never synced, never reachable by the team) ----
+  aiLoadKey(){ try{ this.AIKEY=localStorage.getItem('thrive_ai_key')||''; }catch(e){ this.AIKEY=''; } }
+  aiSaveKey(v){ this.AIKEY=(v||'').trim(); try{ if(this.AIKEY) localStorage.setItem('thrive_ai_key', this.AIKEY); else localStorage.removeItem('thrive_ai_key'); }catch(e){} this.setState({tlTick:(this.state.tlTick||0)+1}); }
+  openSettings(){ this.setState({settingsModal:{key:this.AIKEY||'', model:(this.aiModel()||'')}}); }
+  setSettings(field,v){ this.setState(s=>({settingsModal:Object.assign({},s.settingsModal,{[field]:v})})); }
+  saveSettings(){ const m=this.state.settingsModal; if(!m) return; this.aiSaveKey(m.key); try{ localStorage.setItem('thrive_ai_model', m.model||'claude-sonnet-5'); }catch(e){} this.setState({settingsModal:null}); this.toast(this.AIKEY?'AI turned on ✓':'AI key removed'); }
+  closeSettings(){ this.setState({settingsModal:null}); }
+  aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-sonnet-5'; }catch(e){ return 'claude-sonnet-5'; } }
+  _stripHtml(h){ return String(h==null?'':h).replace(/<\/(p|div|h[1-6]|li|tr)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<td[^>]*>/gi,'\t').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim(); }
+  aiContext(ph,di,ti){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; const t=del&&del.tasks[ti]; if(!t) return '';
+    const L=[]; L.push('PROJECT: Thrive Hybrid Academy — a hybrid/virtual school launch & accreditation roadmap.');
+    L.push('PHASE: '+(P?P.label:ph)); L.push('MILESTONE: '+(del?del.title:'')); L.push('TASK: '+t.label+(t.done?' (marked complete)':''));
+    if(t.dod&&t.dod.trim()) L.push('DEFINITION OF DONE: '+t.dod.trim());
+    const notes=this._stripHtml(t.notes); const doc=this._stripHtml(t.doc);
+    if(notes) L.push('NOTES:\n'+notes);
+    if(doc && doc!==notes) L.push('DOCUMENT:\n'+doc);
+    if(t.questions&&t.questions.trim()) L.push('OPEN QUESTIONS: '+t.questions.trim());
+    if(t.subs&&t.subs.length) L.push('SUBTASKS:\n'+t.subs.map(s=>'- ['+(s.done?'x':' ')+'] '+s.label+(s.notes?(' — '+this._stripHtml(s.notes)):'')).join('\n'));
+    if(t.links&&t.links.length) L.push('LINKS:\n'+t.links.map(l=>'- '+(l.label||'')+': '+(l.url||'')).join('\n'));
+    if(t.contact&&t.contact.trim()) L.push('CONTACT: '+t.contact.trim());
+    if(t.waitingOn&&t.waitingOn.trim()) L.push('WAITING ON: '+t.waitingOn.trim());
+    return L.join('\n'); }
+  aiSpec(kind){ const M={
+    summarize:{title:'Summary', ins:'Write a concise, well-organized summary of this task and its notes. Use short bullet points grouped by theme. Plain, professional language.'},
+    email:{title:'Draft Email', ins:'Draft a clear, professional email Dana can send about this task (e.g., to a vendor, partner, or the founders). Include a subject line. Keep it warm but efficient.'},
+    vendor:{title:'Vendor Questions', ins:'Generate a thorough list of smart questions Dana should ask vendors related to this task — covering pricing, licensing, implementation, support, and fit for a hybrid school. Group by category.'},
+    agenda:{title:'Meeting Agenda', ins:'Create a focused meeting agenda for this task, with timed sections, discussion points, decisions needed, and clear next steps.'},
+    sop:{title:'SOP', ins:'Write a clear step-by-step Standard Operating Procedure (SOP) for accomplishing this task, numbered, that someone else on the team could follow.'},
+    rewrite:{title:'Rewritten', ins:'Rewrite the notes for this task in polished, professional language, keeping all the facts and figures exact. Preserve any numbers/prices precisely.'},
+    compare:{title:'Vendor Comparison', ins:'Using the vendors and details in the notes, build a clear comparison. If there is pricing, present it as a simple table (Vendor | Pricing | Notes) plus a short recommendation. Keep all numbers exact.'},
+    missing:{title:'Missing Steps', ins:'Act as an experienced operations advisor. Identify gaps, missing steps, risks, and anything Dana may have overlooked for this task. Give a prioritized checklist.'}
+  }; return M[kind]||M.summarize; }
+  aiTitle(kind){ return this.aiSpec(kind).title; }
+  async aiCall(prompt){ const key=this.AIKEY; if(!key) throw new Error('no-key');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1600, messages:[{role:'user', content:prompt}] }) });
+    if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||JSON.stringify(j).slice(0,200); }catch(e){ msg=await res.text(); } if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+': '+String(msg).slice(0,200)); }
+    const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
+  async aiRun(kind,ph,di,ti){ if(!this.AIKEY){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
+    const spec=this.aiSpec(kind); const ctx=this.aiContext(ph,di,ti);
+    const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble.';
+    this.setState({aiPanel:{loading:true, title:spec.title, text:'', error:'', ph,di,ti}});
+    try{ const text=await this.aiCall(prompt); this.setState({aiPanel:{loading:false, title:spec.title, text:text, error:'', ph,di,ti}}); }
+    catch(e){ const msg=String(e&&e.message||e); this.setState({aiPanel:{loading:false, title:spec.title, text:'', error:(msg==='no-key'?'Add your AI key in Settings first.':msg), ph,di,ti}}); }
+  }
+  aiClose(){ this.setState({aiPanel:null}); }
+  aiCopy(){ const a=this.state.aiPanel; if(!a||!a.text) return; try{ navigator.clipboard.writeText(a.text); }catch(e){} this.toast('Copied to clipboard'); }
+  aiInsert(){ const a=this.state.aiPanel; if(!a||!a.text) return; const {ph,di,ti}=a; const block='<div style="border-left:3px solid #CBDDBC;padding-left:8px;margin:4px 0;"><div style="font-size:9px;font-weight:800;color:#8FAE48;letter-spacing:.05em;">AI · '+this._rnEsc(a.title).toUpperCase()+'</div>'+this._rnEsc(a.text).replace(/\n/g,'<br>')+'</div>';
+    this.mut(b=>{ const t=b[ph]&&b[ph][di]&&b[ph][di].tasks[ti]; if(!t) return; const cur=t.notes&&String(t.notes).trim()?String(t.notes):''; const isHtml=/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(cur); t.notes=isHtml?(cur+block):((cur?this._rnEsc(cur).replace(/\n/g,'<br>'):'')+block); });
+    this.toast('Inserted into notes ✓'); }
   setExec(i,v){ this.mut(b=>{ this.ensureMeta(b).exec[i]=v; }); }
   addExec(){ this.mut(b=>{ this.ensureMeta(b).exec.push('New update'); }); }
   delExec(i){ this.mut(b=>{ this.ensureMeta(b).exec.splice(i,1); }); }
@@ -1616,7 +1706,7 @@ class Component extends DCLogic {
       {glyph:'\u25A4',label:'Notes & Documents Library', onClick:()=>this.toast('Notes & Documents Library \u00B7 coming next'), style:resStyle(false)},
       {glyph:'\u25A6',label:'Reports', onClick:()=>this.toast('Reports \u00B7 coming soon'), style:resStyle(false)},
       {glyph:'\u25A3',label:'Calendar', onClick:()=>this.toast('Calendar \u00B7 coming soon'), style:resStyle(false)},
-      {glyph:'\u2699',label:'Settings', onClick:()=>this.toast('Settings \u00B7 coming soon'), style:resStyle(false)},
+      {glyph:'\u2699',label:'Settings', onClick:()=>this.openSettings(), style:resStyle(false)},
     ];
 
     const arr=board[ph]||[];
@@ -1788,7 +1878,11 @@ class Component extends DCLogic {
         };
       }
     }
-    const aiButtons=['Summarize Notes','Draft Email','Generate Vendor Questions','Create Meeting Agenda','Create SOP','Rewrite Professionally','Compare Vendors','Find Missing Steps'].map(l=>({label:l,onClick:()=>this.toast(l+' \u00b7 AI assist coming soon')}));
+    const _wp=this.state.wsPath||{};
+    const aiButtons=[['Summarize Notes','summarize'],['Draft Email','email'],['Generate Vendor Questions','vendor'],['Create Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite Professionally','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], _wp.ph, _wp.di, _wp.ti)}));
+    const aiOn=!!this.AIKEY;
+    const aiPanel=(this.state.aiPanel?{ open:true, loading:!!this.state.aiPanel.loading, title:this.state.aiPanel.title||'AI', text:this.state.aiPanel.text||'', hasText:!!(this.state.aiPanel.text&&this.state.aiPanel.text.trim()), error:this.state.aiPanel.error||'', hasError:!!this.state.aiPanel.error, onCopy:()=>this.aiCopy(), onInsert:()=>this.aiInsert(), onClose:()=>this.aiClose() }:{ open:false });
+    const settings=(this.state.settingsModal?{ open:true, key:this.state.settingsModal.key||'', model:this.state.settingsModal.model||'claude-sonnet-5', onKey:e=>this.setSettings('key',e.target.value), onModel:e=>this.setSettings('model',e.target.value), onSave:()=>this.saveSettings(), onClose:()=>this.closeSettings() }:{ open:false });
 
     // ---- roadmap overview (all phases) ----
     const overviewPhases=this.PHASES.map(p=>{
@@ -1851,7 +1945,7 @@ class Component extends DCLogic {
       onAddPL:()=>this.addMetaArr('parkingLot','New idea'), onAddCM:()=>this.addMetaArr('commitments',{title:'New commitment',time:'\u2014'}),
       ws, wsShow:!!ws, wsOpen:this.state.wsOpen, onCloseWS:()=>this.closeWS(),
       wsCls:this.state.wsOpen?'show':'', wsBackCls:this.state.wsOpen?'show':'', toastCls:this.state.toast?'show':'',
-      aiButtons, onScheduleFollow:()=>this.toast('Schedule Follow-Up \u00b7 Google Calendar coming soon'),
+      aiButtons, aiOn, aiOff:!aiOn, aiPanel, settings, onOpenSettings:()=>this.openSettings(), onScheduleFollow:()=>this.toast('Schedule Follow-Up \u00b7 Google Calendar coming soon'),
       onAddReminder:()=>this.toast('Reminder \u00b7 coming soon'),
       toast:this.state.toast, hasToast:!!this.state.toast,
       execItems, onAddExec:()=>this.addExec(),
