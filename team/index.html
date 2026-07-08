@@ -454,8 +454,12 @@
                   <div class="richnote" data-np="{{ t.np }}" data-ph="Add notes…"></div>
                   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
                     <label class="pbtn" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#5B6B4E;border:1px solid #E2E8DE;border-radius:7px;padding:4px 9px;cursor:pointer;background:#fff;">+ File<input type="file" onChange="{{ t.onAddFile }}" style="display:none;"></label>
+                    <button class="pbtn" onClick="{{ t.onAddLink }}" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#34672A;border:1px solid #CBDDBC;border-radius:7px;padding:4px 9px;cursor:pointer;background:#EDF3E6;">🔗 Link</button>
                     <sc-for list="{{ t.files }}" as="f" hint-placeholder-count="0">
                       <span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#3C7A2E;background:#EDF3E6;border-radius:7px;padding:3px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">▤ {{ f.name }}</span>
+                    </sc-for>
+                    <sc-for list="{{ t.links }}" as="l" hint-placeholder-count="0">
+                      <a href="{{ l.href }}" target="_blank" rel="noopener" onClick="{{ l.onClick }}" style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:7px;padding:3px 8px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;">🔗 {{ l.label }}</a>
                     </sc-for>
                   </div>
                 </div>
@@ -517,6 +521,19 @@
           <span style="font-size:21px;font-weight:800;color:#45852B;letter-spacing:.01em;">{{ clockTime }}</span>
         </div>
         <button class="pbtn" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E2E8DE;border-radius:11px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;color:#3C5A2E;cursor:pointer;">⬆ Import roadmap / data</button>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><span style="color:#9AA68C;">⚑</span><span style="font-size:14px;font-weight:800;color:#33402A;">Six-phase roadmap · 3–4 year horizon</span></div>
+      <div style="display:flex;gap:13px;overflow-x:auto;padding-bottom:6px;">
+        <sc-for list="{{ roadmap }}" as="r" hint-placeholder-count="6">
+          <div onClick="{{ r.onClick }}" style="flex:0 0 234px;background:#FAFBF8;border:1px solid #EAEFE4;border-left:4px solid {{ r.color }};border-radius:12px;padding:15px 16px;cursor:pointer;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px;"><span style="font-size:11px;font-weight:800;letter-spacing:.07em;color:#8A957C;">{{ r.ph }}</span><span style="font-size:10.5px;font-weight:700;color:{{ r.color }};background:{{ r.badgeBg }};border-radius:20px;padding:2px 9px;">{{ r.year }}</span></div>
+            <div style="font-size:13.5px;font-weight:700;color:#2A3520;line-height:1.32;min-height:54px;">{{ r.title }}</div>
+            <div style="height:6px;border-radius:5px;background:#EAEFE2;overflow:hidden;margin-top:10px;"><div style="height:100%;border-radius:5px;width:{{ r.pctW }};background:{{ r.color }};"></div></div>
+          </div>
+        </sc-for>
       </div>
     </div>
 
@@ -588,19 +605,6 @@
             <button class="pbtn" onClick="{{ onToggleNoDec }}" style="font-size:11px;font-weight:600;color:#9AA68C;background:transparent;border:none;cursor:pointer;text-align:left;padding:3px 1px;">✓ Mark all clear — no decisions needed</button>
           </div>
         </sc-if>
-      </div>
-    </div>
-
-    <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><span style="color:#9AA68C;">⚑</span><span style="font-size:14px;font-weight:800;color:#33402A;">Six-phase roadmap · four-year horizon</span></div>
-      <div style="display:flex;gap:13px;overflow-x:auto;padding-bottom:6px;">
-        <sc-for list="{{ roadmap }}" as="r" hint-placeholder-count="6">
-          <div onClick="{{ r.onClick }}" style="flex:0 0 234px;background:#FAFBF8;border:1px solid #EAEFE4;border-left:4px solid {{ r.color }};border-radius:12px;padding:15px 16px;cursor:pointer;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px;"><span style="font-size:11px;font-weight:800;letter-spacing:.07em;color:#8A957C;">{{ r.ph }}</span><span style="font-size:10.5px;font-weight:700;color:{{ r.color }};background:{{ r.badgeBg }};border-radius:20px;padding:2px 9px;">{{ r.year }}</span></div>
-            <div style="font-size:13.5px;font-weight:700;color:#2A3520;line-height:1.32;min-height:54px;">{{ r.title }}</div>
-            <div style="height:6px;border-radius:5px;background:#EAEFE2;overflow:hidden;margin-top:10px;"><div style="height:100%;border-radius:5px;width:{{ r.pctW }};background:{{ r.color }};"></div></div>
-          </div>
-        </sc-for>
       </div>
     </div>
 
@@ -1031,13 +1035,10 @@
       </div>
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;">
-          <span style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;">NOTES</span>
-          <div style="display:flex;align-items:center;gap:6px;flex:0 0 auto;">
-            <button class="pbtn" onClick="{{ ws.onOpenDoc }}" title="Open a full-screen document editor (write like a Google Doc)" style="font-size:10px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:3px 10px;cursor:pointer;">📄 {{ ws.docBtnLabel }}</button>
-            <button class="pbtn" onClick="{{ ws.onToggleNote }}" style="font-size:10px;font-weight:700;color:#5B6B4E;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:3px 9px;cursor:pointer;">{{ ws.noteToggleLabel }}</button>
-          </div>
+          <span style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;">NOTES <span style="color:#8FAE48;font-weight:700;letter-spacing:0;text-transform:none;">· select text for bold, highlight &amp; tables</span></span>
+          <button class="pbtn" onClick="{{ ws.onOpenDoc }}" title="Open a full-screen document editor (write like a Google Doc)" style="font-size:10px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:3px 10px;cursor:pointer;flex:0 0 auto;">📄 {{ ws.docBtnLabel }}</button>
         </div>
-        <textarea class="wsfld {{ ws.noteCls }}" rows="3" value="{{ ws.notes }}" onInput="{{ ws.onNotes }}" placeholder="Working notes…"></textarea>
+        <div class="richnote" data-np="{{ ws.np }}" data-ph="Working notes…" style="min-height:120px;font-size:12.5px;"></div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">QUESTIONS / TALKING POINTS</div>
@@ -1137,7 +1138,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v37 · Jul 8';
+    this.BUILD='v38 · Jul 8';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1749,6 +1750,8 @@ class Component extends DCLogic {
           onAddFile:(e)=>this.addTaskFile(ph,di,ti,e),
           onDelete:()=>this.delTask(ph,di,ti),
           onAddSub:()=>this.addSub(ph,di,ti),
+          onAddLink:()=>{ this.addLink(ph,di,ti); this.openWS(ph,di,ti); },
+          links:(t.links||[]).map(l=>({ label:(l.label||'Link'), href:((l.url&&l.url.trim())?l.url:'#'), onClick:((l.url&&l.url.trim())?(()=>{}):(e=>{ e.preventDefault(); this.openWS(ph,di,ti); })) })),
           onOpen:()=>this.openWS(ph,di,ti),
           onComment:()=>this.openComment({ph, msId:del.id, taskId:t.id, label:t.label}),
           subs:(t.subs||[]).map((s,si)=>({
@@ -1851,7 +1854,7 @@ class Component extends DCLogic {
           phaseLabel:P.label, color:P.color, iconBg:P.iconBg, glyph:P.glyph,
           msTitle:del.title, ms:wdi+1,
           label:t.label, done:t.done, cbcls:t.done?'on':'', statusTxt:t.done?'Done':'In progress',
-          dod:t.dod||'', notes:t.notes||'', questions:t.questions||'',
+          dod:t.dod||'', notes:t.notes||'', questions:t.questions||'', np:wph+'|'+wdi+'|'+wti,
           docBtnLabel:(t.doc&&String(t.doc).replace(/<[^>]*>/g,'').trim())?'Open document':'New document',
           onOpenDoc:()=>this.openDocEditor(wph,wdi,wti),
           contact:t.contact||'', related:t.related||'', relatedTasks:t.relatedTasks||'', waitingOn:t.waitingOn||'',
