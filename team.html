@@ -93,6 +93,13 @@
     .rg{grid-template-columns:1fr !important;}
     .hdr-actions{width:100% !important;}
     .hdr-search{min-width:0 !important;flex:1 1 100% !important;}
+    /* stop the whole page scrolling sideways; wide tables scroll inside their own box instead */
+    html,body{overflow-x:hidden;}
+    .app{max-width:100vw;overflow-x:hidden;}
+    .tablescroll{overflow-x:auto !important;-webkit-overflow-scrolling:touch;}
+    .tablescroll > div{min-width:520px;}
+    /* bump the tiniest text a touch so nothing needs zooming */
+    .mainview [style*="font-size:9px"],.mainview [style*="font-size:9.5px"]{font-size:10.5px !important;}
   }
 </style>
 </helmet>
@@ -642,8 +649,8 @@
   <!-- ===== ROADMAP LAUNCHPAD (Dana-only) ===== -->
   <sc-if value="{{ showLaunchpad }}" hint-placeholder-val="{{ false }}">
   <main class="mainview" style="flex:1;min-width:0;padding:26px 34px 52px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;">
-      <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <div style="font-size:11px;font-weight:800;letter-spacing:.13em;color:#45852B;">ROADMAP LAUNCHPAD</div>
         <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:#A88416;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:3px 9px;">PRIVATE · DANA ONLY</span>
       </div>
@@ -847,7 +854,7 @@
 
       <!-- DAILY TABLE -->
       <sc-if value="{{ timeLog.hasDaily }}" hint-placeholder-val="{{ true }}">
-        <div style="border:1px solid #E6EDDF;border-radius:12px;overflow:hidden;">
+        <div class="tablescroll" style="border:1px solid #E6EDDF;border-radius:12px;overflow:hidden;">
           <div style="display:grid;grid-template-columns:1.15fr 0.8fr 0.8fr 0.75fr 1.5fr 24px;background:#F4F7F0;border-bottom:1px solid #E6EDDF;">
             <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#79866C;padding:9px 10px;">DATE</div>
             <div style="font-size:9px;font-weight:800;letter-spacing:.05em;color:#2E8B57;padding:9px 6px;text-align:right;">ACTIVE</div>
