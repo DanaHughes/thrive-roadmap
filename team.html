@@ -335,6 +335,7 @@
           <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search…" style="border:none;outline:none;font-family:inherit;font-size:13px;color:#1E293B;width:100%;background:transparent;">
         </div>
         <button class="add" onClick="{{ onAddCard }}" style="display:flex;align-items:center;gap:7px;background:{{ phaseColor }};border:1px solid {{ phaseColor }};border-radius:10px;padding:9px 15px;font-family:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">+ Add Milestone</button>
+        <button class="add" onClick="{{ onExportPhase }}" title="Export this whole phase to a Google Doc" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD8E8;border-radius:10px;padding:9px 14px;font-family:inherit;font-size:13px;font-weight:700;color:#3F6193;cursor:pointer;">⇪ Export phase</button>
         <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E7ECF4;border-radius:11px;padding:9px 14px;flex:0 0 auto;">
           <span style="color:#8FAE48;font-size:13px;">◷</span>
           <span style="font-size:13.5px;font-weight:700;color:#3A4632;">{{ clockDay }}, {{ clockDate }}</span>
@@ -404,6 +405,7 @@
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
+              <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
               <button class="pbtn" onClick="{{ d.onToggleCollapse }}" title="{{ d.collapseTitle }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ d.collapseGlyph }}</button>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
@@ -1141,6 +1143,81 @@
     </sc-if>
   </aside>
 
+  <!-- ===== MILESTONE WORKSPACE ===== -->
+  <div class="ws-back {{ msWsBackCls }}" onClick="{{ msWs.onClose }}"></div>
+  <aside class="ws {{ msWsCls }}">
+    <sc-if value="{{ msWsShow }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:20px 24px 16px;background:{{ msWs.iconBg }};border-bottom:1px solid #E8EDE4;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+          <span style="width:30px;height:30px;border-radius:9px;background:#fff;color:{{ msWs.color }};display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;">{{ msWs.glyph }}</span>
+          <div style="min-width:0;line-height:1.3;">
+            <div style="font-size:11px;font-weight:700;color:{{ msWs.color }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ msWs.phaseLabel }} · Milestone {{ msWs.ms }}</div>
+            <div style="font-size:10.5px;color:#7C8C6C;">{{ msWs.pctStr }} · {{ msWs.doneStr }}</div>
+          </div>
+        </div>
+        <button class="pbtn" onClick="{{ msWs.onClose }}" style="width:30px;height:30px;border-radius:9px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;cursor:pointer;font-size:14px;flex:0 0 auto;">✕</button>
+      </div>
+      <textarea rows="1" class="edt gtext" value="{{ msWs.title }}" onInput="{{ msWs.onTitle }}" style="font-size:17px;font-weight:800;color:#23311C;background:#fff;border:1px solid #E2E8DE;"></textarea>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:18px 24px 28px;display:flex;flex-direction:column;gap:18px;">
+      <div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">MILESTONE NOTES <span style="color:#8FAE48;font-weight:700;letter-spacing:0;text-transform:none;">· select text for bold, highlight &amp; tables</span></div>
+        <div class="richnote" data-np="{{ msWs.np }}" data-ph="Notes for this whole milestone…" style="min-height:120px;font-size:12.5px;"></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;">LINKS</span><button class="pbtn" onClick="{{ msWs.onAddLink }}" style="font-size:11px;font-weight:700;color:#5B6B4E;background:#F4F7F0;border:1px solid #E2E8DE;border-radius:8px;padding:4px 9px;cursor:pointer;">＋ Add link</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <sc-for list="{{ msWs.links }}" as="l" hint-placeholder-count="0">
+            <div style="display:flex;align-items:center;gap:7px;border:1px solid #E2E8DE;border-radius:10px;padding:7px 10px;background:#fff;">
+              <span style="color:#45852B;flex:0 0 auto;">🔗</span>
+              <textarea rows="1" class="edt gtext" value="{{ l.label }}" onInput="{{ l.onLabel }}" placeholder="Link name" style="font-size:12px;font-weight:700;color:#33402A;flex:0 0 34%;"></textarea>
+              <textarea rows="1" class="edt gtext" value="{{ l.url }}" onInput="{{ l.onUrl }}" placeholder="Paste URL" style="font-size:11.5px;color:#6E8AAE;flex:1;"></textarea>
+              <sc-if value="{{ l.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ l.url }}" target="_blank" rel="noopener" class="pbtn" style="text-decoration:none;font-size:10.5px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 9px;flex:0 0 auto;">Open ↗</a></sc-if>
+              <button class="del" onClick="{{ l.onDelete }}" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C2CCB6;cursor:pointer;font-size:11px;flex:0 0 auto;">✕</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:8px;">FILES</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <label class="pbtn" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#3C5A2E;border:1px solid #D7E2CE;border-radius:9px;padding:8px 12px;cursor:pointer;background:#F3F8EE;">＋ Add file<input type="file" onChange="{{ msWs.onAddFile }}" style="display:none;"></label>
+          <sc-for list="{{ msWs.files }}" as="f" hint-placeholder-count="0">
+            <span style="display:inline-flex;align-items:center;gap:7px;color:#4A5A3E;border:1px solid #E8EDE4;border-radius:9px;padding:7px 10px;background:#fff;font-size:11.5px;font-weight:600;">▤ {{ f.name }}<button class="del" onClick="{{ f.onDelete }}" style="width:16px;height:16px;border-radius:4px;border:none;background:transparent;color:#C2CCB6;cursor:pointer;font-size:10px;">✕</button></span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:#F4F7F0;border:1px solid #E6EDDF;border-radius:14px;padding:15px 16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap;"><span style="color:#45852B;">✦</span><span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#33402A;">AI ASSIST · MILESTONE</span>
+          <sc-if value="{{ aiOn }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:800;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 8px;">ON</span></sc-if>
+          <sc-if value="{{ aiOff }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ onOpenSettings }}" style="font-size:9px;font-weight:800;color:#B07D17;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:2px 9px;cursor:pointer;font-family:inherit;">⚙ Add your key to turn on</button></sc-if>
+        </div>
+        <div class="rg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <sc-for list="{{ msWs.aiButtons }}" as="a" hint-placeholder-count="8">
+            <button class="aibtn" onClick="{{ a.onClick }}">✦ {{ a.label }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ aiPanel.open }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:11px;background:#fff;border:1px solid #CBDDBC;border-radius:12px;padding:12px 13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <span style="font-size:10px;font-weight:800;letter-spacing:.06em;color:#34672A;">✦ AI · {{ aiPanel.title }}</span>
+              <div style="display:flex;gap:6px;">
+                <sc-if value="{{ aiPanel.hasText }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ aiPanel.onInsert }}" style="font-size:10.5px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 10px;cursor:pointer;">↳ Insert</button><button class="pbtn" onClick="{{ aiPanel.onCopy }}" style="font-size:10.5px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">⧉ Copy</button></sc-if>
+                <button class="pbtn" onClick="{{ aiPanel.onClose }}" style="font-size:10.5px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 9px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+            <sc-if value="{{ aiPanel.loading }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#7C8C6C;padding:14px 4px;text-align:center;">✦ Thinking… generating your {{ aiPanel.title }}…</div></sc-if>
+            <sc-if value="{{ aiPanel.hasError }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#B4452E;background:#FCF1F0;border:1px solid #F3DAD8;border-radius:8px;padding:9px 11px;line-height:1.5;">{{ aiPanel.error }}</div></sc-if>
+            <sc-if value="{{ aiPanel.hasText }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#2A3623;line-height:1.6;white-space:pre-wrap;max-height:340px;overflow-y:auto;">{{ aiPanel.text }}</div></sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <button class="pbtn" onClick="{{ msWs.onExport }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#3F6193;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">⇪ Export this milestone → Google Doc</button>
+    </div>
+    </sc-if>
+  </aside>
+
   <!-- ===== FLOATING AI ASSISTANT (any page, Dana only) ===== -->
   <sc-if value="{{ showAiFab }}" hint-placeholder-val="{{ false }}">
     <button class="aifab" onClick="{{ onAiFab }}" title="Ask your AI assistant" aria-label="AI assistant">✦</button>
@@ -1179,7 +1256,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v39 · Jul 8';
+    this.BUILD='v40 · Jul 8';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1234,7 +1311,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1278,7 +1355,7 @@ class Component extends DCLogic {
   // ---- Rich-text inline notes (bold, highlight, lists, tables) — managed outside React's vdom so re-renders never wipe them ----
   _rnEsc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   _rnToHtml(v){ if(!v) return ''; if(/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(v)) return v; return this._rnEsc(v).replace(/\n/g,'<br>'); }
-  _rnGet(np){ if(!np) return ''; const a=np.split('|'); const ph=a[0], di=+a[1], ti=+a[2]; const del=(this.state.board[ph]||[])[di]; const t=del&&del.tasks&&del.tasks[ti]; return t?(t.notes||''):''; }
+  _rnGet(np){ if(!np) return ''; const a=np.split('|'); const ph=a[0], di=+a[1]; const del=(this.state.board[ph]||[])[di]; if(!del) return ''; if(a[2]==='m') return del.notes||''; const t=del.tasks&&del.tasks[+a[2]]; return t?(t.notes||''):''; }
   _rnEditable(){ return this.state.privateMode && !this.state.locked; }
   _rnRender(){ try{ const editable=this._rnEditable(); const ns=document.querySelectorAll('.richnote'); for(let i=0;i<ns.length;i++){ const el=ns[i]; el.contentEditable=editable?'true':'false'; if(el===document.activeElement) continue; const html=this._rnToHtml(this._rnGet(el.getAttribute('data-np'))); if(el.getAttribute('data-h')!==html){ el.innerHTML=html; el.setAttribute('data-h', html); } } }catch(e){} }
   _rnInit(){
@@ -1290,7 +1367,7 @@ class Component extends DCLogic {
     document.addEventListener('focusout', this._rnFocusOut, true);
     this._rnRender();
   }
-  _rnSave(){ if(!this._rnPend) return; const {np,html}=this._rnPend; this._rnPend=null; const a=np.split('|'); const ph=a[0], di=+a[1], ti=+a[2]; const clean=(html==='<br>'||html==='<div><br></div>')?'':html; this.mut(b=>{ if(b[ph]&&b[ph][di]&&b[ph][di].tasks[ti]) b[ph][di].tasks[ti].notes=clean; }); const el=document.querySelector('.richnote[data-np="'+np+'"]'); if(el) el.setAttribute('data-h', el.innerHTML); }
+  _rnSave(){ if(!this._rnPend) return; const {np,html}=this._rnPend; this._rnPend=null; const a=np.split('|'); const ph=a[0], di=+a[1], ti=a[2]; const clean=(html==='<br>'||html==='<div><br></div>')?'':html; this.mut(b=>{ if(!(b[ph]&&b[ph][di])) return; if(ti==='m') b[ph][di].notes=clean; else if(b[ph][di].tasks[+ti]) b[ph][di].tasks[+ti].notes=clean; }); const el=document.querySelector('.richnote[data-np="'+np+'"]'); if(el) el.setAttribute('data-h', el.innerHTML); }
   _rnBar(){ if(this._rnBarEl) return this._rnBarEl; const bar=document.createElement('div'); bar.className='rntoolbar'; bar.style.display='none';
     const btns=[['bold','','B'],['hilite','','🖍'],['ul','','• List'],['ol','','1.'],['table','','▦ Table'],['clear','','Clear']];
     bar.innerHTML=btns.map(x=>'<button data-c="'+x[0]+'">'+x[2]+'</button>').join('');
@@ -1445,6 +1522,27 @@ class Component extends DCLogic {
     this.toast(copied ? 'Opened a new Google Doc — press Cmd/Ctrl+V to paste your document (a .doc copy also downloaded)' : 'Downloaded a .doc — open it in Google Docs from your Drive');
   }
 
+  // ---- Export: aesthetically formatted Phase / Milestone reports → Google Docs (email/text to your boss) ----
+  _rptMilestoneHtml(del, di, phaseColor){
+    const esc=this._docEsc2; const tt=(del.tasks||[]).length, dd=(del.tasks||[]).filter(t=>t.done).length; const pct=tt?Math.round(dd/tt*100):0;
+    let h='<h2 style="color:'+phaseColor+';border-bottom:2px solid '+phaseColor+';padding-bottom:4px;">Milestone '+(di+1)+': '+esc(del.title)+' — '+pct+'% complete</h2>';
+    if(del.desc&&del.desc.trim()) h+='<p style="color:#555;"><i>'+esc(del.desc)+'</i></p>';
+    h+='<table style="border-collapse:collapse;width:100%;margin:8px 0;"><tr><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;text-align:left;">Task</th><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;">Status</th></tr>';
+    (del.tasks||[]).forEach(t=>{ h+='<tr><td style="border:1px solid #cbd8bc;padding:5px 9px;">'+esc(t.label)+'</td><td style="border:1px solid #cbd8bc;padding:5px 9px;text-align:center;">'+(t.done?'✓ Done':'In progress')+'</td></tr>';
+      const noteHtml=(t.notes&&String(t.notes).trim())?(/<[a-z]/i.test(t.notes)?t.notes:('<div>'+esc(t.notes).replace(/\n/g,'<br>')+'</div>')):'';
+      if(noteHtml) h+='<tr><td colspan="2" style="border:1px solid #cbd8bc;padding:5px 9px 9px 20px;font-size:10pt;color:#333;background:#fafcf8;">'+noteHtml+'</td></tr>';
+    });
+    h+='</table>';
+    const links=(del.delLinks||[]).filter(l=>l.url&&l.url.trim()); const files=(del.files||[]);
+    if(links.length||files.length){ h+='<p style="font-weight:bold;margin:6px 0 2px;">Deliverables & links:</p><ul>'; links.forEach(l=>h+='<li><a href="'+esc(l.url)+'">'+esc(l.label||l.url)+'</a></li>'); files.forEach(f=>h+='<li>'+esc(f)+' (file)</li>'); h+='</ul>'; }
+    return h;
+  }
+  exportMilestone(ph,di){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; if(!del) return; const html='<p style="color:#666;">'+this._docEsc2(P?P.label:'')+' · Thrive Hybrid Academy · '+new Date().toLocaleDateString()+'</p>'+this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); this.docSendToGoogle('Milestone '+(di+1)+' — '+del.title, html); }
+  exportPhase(ph){ const P=this.PHASES.find(x=>x.key===ph); const dels=this.state.board[ph]||[]; let tt=0,dd=0; dels.forEach(del=>{ tt+=(del.tasks||[]).length; dd+=(del.tasks||[]).filter(t=>t.done).length; }); const pct=tt?Math.round(dd/tt*100):0;
+    let html='<p style="color:#666;">Thrive Hybrid Academy · Progress report · '+new Date().toLocaleDateString()+'</p><p style="font-size:13pt;"><b>Overall: '+pct+'% complete</b> ('+dd+' of '+tt+' tasks across '+dels.length+' milestones)</p>';
+    dels.forEach((del,di)=>{ html+=this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); });
+    this.docSendToGoogle((P?P.label:'Phase')+' — Progress Report', html); }
+
   // ---- Version history: synced across devices via Firebase (merge by snapshot ts) ----
   histUrl(){ return this.SYNC_URL ? (this.SYNC_URL.replace(/\/+$/,'')+'/thrivehist/'+this.CTOKEN+'.json') : ''; }
   histMerge(a,b){ const map={}; (a||[]).concat(b||[]).forEach(h=>{ if(h&&typeof h.ts==='number'){ const k=h.ts+(h.manual?'m':''); if(!map[k]) map[k]=h; } }); return Object.keys(map).map(k=>map[k]).sort((x,y)=>(y.ts||0)-(x.ts||0)).slice(0,40); }
@@ -1452,7 +1550,9 @@ class Component extends DCLogic {
   histPush(){ const url=this.histUrl(); if(!url) return; clearTimeout(this._histT); this._histT=setTimeout(async()=>{ try{ await fetch(url,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({items:this.state.history||[]})}); }catch(e){} }, 1200); }
   async histPull(){ const url=this.histUrl(); if(!url) return; try{ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) return; const data=await res.json(); const remote=(data&&Array.isArray(data.items))?data.items:[]; if(!remote.length) return; const merged=this.histMerge(this.state.history, remote); if(JSON.stringify(merged)!==JSON.stringify(this.state.history)){ this.persistHistory(merged); this.setState({history:merged}); } }catch(e){} }
   toast(msg){ this.setState({toast:msg}); clearTimeout(this._t); this._t=setTimeout(()=>this.setState({toast:''}),2600); }
-  openWS(ph,di,ti){ this.setState({wsOpen:true, wsPath:{ph,di,ti}}); }
+  openWS(ph,di,ti){ this.setState({wsOpen:true, wsPath:{ph,di,ti}, msWsOpen:false}); }
+  openMsWS(ph,di){ this.setState({msWsOpen:true, msWsPath:{ph,di}, wsOpen:false}); }
+  closeMsWS(){ this.setState({msWsOpen:false}); }
   closeWS(){ this.setState({wsOpen:false}); }
   setTaskField(ph,di,ti,field,v){ this.mut(b=>{ b[ph][di].tasks[ti][field]=v; }); }
   delTaskFile(ph,di,ti,fi){ this.mut(b=>{ b[ph][di].tasks[ti].files.splice(fi,1); }); }
@@ -1559,7 +1659,9 @@ class Component extends DCLogic {
   closeSettings(){ this.setState({settingsModal:null}); }
   aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-sonnet-5'; }catch(e){ return 'claude-sonnet-5'; } }
   _stripHtml(h){ return String(h==null?'':h).replace(/<\/(p|div|h[1-6]|li|tr)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<td[^>]*>/gi,'\t').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim(); }
-  aiContext(ph,di,ti){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; const t=del&&del.tasks[ti]; if(!t) return '';
+  aiContext(ph,di,ti){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di];
+    if(ti==='m'){ if(!del) return ''; const L=[]; L.push('PROJECT: Thrive Hybrid Academy — a hybrid/virtual school launch & accreditation roadmap.'); L.push('PHASE: '+(P?P.label:ph)); L.push('MILESTONE: '+del.title); if(del.desc&&del.desc.trim()) L.push('MILESTONE GOAL: '+del.desc.trim()); const mn=this._stripHtml(del.notes); if(mn) L.push('MILESTONE NOTES:\n'+mn); if(del.tasks&&del.tasks.length) L.push('TASKS:\n'+del.tasks.map(t=>'- ['+(t.done?'x':' ')+'] '+t.label+(t.notes?(' — '+this._stripHtml(t.notes)):'')).join('\n')); const links=(del.delLinks||[]).filter(l=>l.url&&l.url.trim()); if(links.length) L.push('LINKS:\n'+links.map(l=>'- '+(l.label||'')+': '+l.url).join('\n')); return L.join('\n'); }
+    const t=del&&del.tasks[ti]; if(!t) return '';
     const L=[]; L.push('PROJECT: Thrive Hybrid Academy — a hybrid/virtual school launch & accreditation roadmap.');
     L.push('PHASE: '+(P?P.label:ph)); L.push('MILESTONE: '+(del?del.title:'')); L.push('TASK: '+t.label+(t.done?' (marked complete)':''));
     if(t.dod&&t.dod.trim()) L.push('DEFINITION OF DONE: '+t.dod.trim());
@@ -1597,7 +1699,7 @@ class Component extends DCLogic {
   aiClose(){ this.setState({aiPanel:null}); }
   aiCopy(){ const a=this.state.aiPanel; if(!a||!a.text) return; try{ navigator.clipboard.writeText(a.text); }catch(e){} this.toast('Copied to clipboard'); }
   aiInsert(){ const a=this.state.aiPanel; if(!a||!a.text) return; const {ph,di,ti}=a; const block='<div style="border-left:3px solid #CBDDBC;padding-left:8px;margin:4px 0;"><div style="font-size:9px;font-weight:800;color:#8FAE48;letter-spacing:.05em;">AI · '+this._rnEsc(a.title).toUpperCase()+'</div>'+this._rnEsc(a.text).replace(/\n/g,'<br>')+'</div>';
-    this.mut(b=>{ const t=b[ph]&&b[ph][di]&&b[ph][di].tasks[ti]; if(!t) return; const cur=t.notes&&String(t.notes).trim()?String(t.notes):''; const isHtml=/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(cur); t.notes=isHtml?(cur+block):((cur?this._rnEsc(cur).replace(/\n/g,'<br>'):'')+block); });
+    this.mut(b=>{ const del=b[ph]&&b[ph][di]; if(!del) return; const t=(ti==='m')?del:del.tasks[ti]; if(!t) return; const cur=t.notes&&String(t.notes).trim()?String(t.notes):''; const isHtml=/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(cur); t.notes=isHtml?(cur+block):((cur?this._rnEsc(cur).replace(/\n/g,'<br>'):'')+block); });
     this.toast('Inserted into notes ✓'); }
 
   // ---- Floating AI assistant (any page) ----
@@ -1797,6 +1899,7 @@ class Component extends DCLogic {
         onAddTask:()=>this.addTask(ph,di),
         onAddDelFile:(e)=>this.addDelFile(ph,di,e),
         onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
+        onOpenMs:()=>this.openMsWS(ph,di), onExportMs:()=>this.exportMilestone(ph,di),
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
@@ -2009,6 +2112,17 @@ class Component extends DCLogic {
       onAddPL:()=>this.addMetaArr('parkingLot','New idea'), onAddCM:()=>this.addMetaArr('commitments',{title:'New commitment',time:'\u2014'}),
       ws, wsShow:!!ws, wsOpen:this.state.wsOpen, onCloseWS:()=>this.closeWS(),
       wsCls:this.state.wsOpen?'show':'', wsBackCls:this.state.wsOpen?'show':'', toastCls:this.state.toast?'show':'',
+      onExportPhase:()=>this.exportPhase(ph),
+      msWs:(()=>{ if(!(this.state.msWsOpen&&this.state.msWsPath)) return null; const mph=this.state.msWsPath.ph, mdi=this.state.msWsPath.di; const MP=this.PHASES.find(x=>x.key===mph); const del=(board[mph]||[])[mdi]; if(!MP||!del) return null; const tt=del.tasks.length,dd=del.tasks.filter(t=>t.done).length; const pct=tt?Math.round(dd/tt*100):0;
+        return { phaseLabel:MP.label, color:MP.color, iconBg:MP.iconBg, glyph:MP.glyph, title:del.title, ms:mdi+1, pctStr:pct+'%', doneStr:dd+' / '+tt+' tasks done', np:mph+'|'+mdi+'|m',
+          onTitle:e=>this.renameDel(mph,mdi,e.target.value),
+          links:(del.delLinks||[]).map((l,li)=>({ label:l.label, url:l.url, hasUrl:!!(l.url&&l.url.trim()), onLabel:e=>this.setDelLink(mph,mdi,li,'label',e.target.value), onUrl:e=>this.setDelLink(mph,mdi,li,'url',e.target.value), onDelete:()=>this.delDelLink(mph,mdi,li) })),
+          onAddLink:()=>this.addDelLink(mph,mdi),
+          files:(del.files||[]).map((n,fi)=>({ name:n, onDelete:()=>this.delDelFile(mph,mdi,fi) })),
+          onAddFile:e=>this.addDelFile(mph,mdi,e),
+          aiButtons:[['Summarize','summarize'],['Draft Email','email'],['Vendor Questions','vendor'],['Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], mph, mdi, 'm')})),
+          onExport:()=>this.exportMilestone(mph,mdi), onClose:()=>this.closeMsWS() }; })(),
+      msWsShow:!!(this.state.msWsOpen&&this.state.msWsPath), msWsCls:this.state.msWsOpen?'show':'', msWsBackCls:this.state.msWsOpen?'show':'',
       aiButtons, aiOn, aiOff:!aiOn, aiPanel, settings, onOpenSettings:()=>this.openSettings(),
       showAiFab:(this.state.privateMode && !this.state.locked),
       onAiFab:()=>this.aiChatToggle(),
