@@ -1349,12 +1349,12 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v47 · Jul 9';
+    this.BUILD='v48 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
     // Leave blank until the Worker is deployed; then paste its URL here.
-    this.AI_WORKER='';
+    this.AI_WORKER='https://thrive-ai.dana2andrea.workers.dev';
     this.AI_APP_TOKEN='thrive-os-6q2v9';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
