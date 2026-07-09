@@ -70,7 +70,10 @@
   .richnote table{border-collapse:collapse;margin:5px 0;}
   .richnote td,.richnote th{border:1px solid #CBD8BC;padding:3px 7px;font-size:11px;min-width:44px;vertical-align:top;}
   .richnote th{background:#EDF3E6;font-weight:800;}
-  .richnote img{max-width:100%;height:auto;border-radius:7px;display:block;margin:6px 0;border:1px solid #E8EDE4;}
+  .richnote img{max-width:100%;height:auto;border-radius:7px;display:block;margin:6px 0;border:1px solid #E8EDE4;cursor:pointer;}
+  .richnote a{color:#3F6193;}
+  .richnote a img{border-color:#B7CBE6;box-shadow:0 0 0 2px rgba(63,97,147,.14);}
+  .team-mode .richnote a{pointer-events:auto;cursor:pointer;}
   .richnote.rndrag{border-color:#8FAE48;box-shadow:0 0 0 3px rgba(143,174,72,.18);background:#FCFEF9;}
   .rntoolbar{position:fixed;z-index:130;display:flex;gap:3px;background:#23311C;border-radius:9px;padding:5px 6px;box-shadow:0 8px 24px rgba(20,30,12,.3);}
   .rntoolbar button{min-width:26px;height:26px;border:none;background:#3C4F30;color:#EAF2E1;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;padding:0 7px;font-weight:800;}
@@ -1428,7 +1431,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v57 · Jul 9';
+    this.BUILD='v58 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1600,6 +1603,13 @@ class Component extends DCLogic {
     this._rnDragLeave=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('.richnote'); if(el){ try{ el.classList.remove('rndrag'); }catch(_){} } };
     this._rnDrop=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('.richnote'); if(!el||!this._rnEditable()) return; const dt=e.dataTransfer; if(!dt) return; const files=dt.files?Array.prototype.slice.call(dt.files):[]; const imgs=files.filter(f=>/^image\//.test(f.type)); try{ el.classList.remove('rndrag'); }catch(_){} if(!imgs.length) return; e.preventDefault(); e.stopPropagation(); this._rnCur=el; imgs.forEach(f=>this._rnInsertImageFile(f, el)); };
     this._rnPaste=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('.richnote'); if(!el||!this._rnEditable()) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; let handled=false; for(let i=0;i<items.length;i++){ const it=items[i]; if(it.kind==='file'){ const f=it.getAsFile(); if(f&&/^image\//.test(f.type)){ this._rnCur=el; this._rnInsertImageFile(f, el); handled=true; } } } if(handled) e.preventDefault(); };
+    // Click an image in a note to attach/edit a link (owner only). In view mode the link just opens.
+    this._rnImgClick=(e)=>{ const img=e.target; if(!img||img.tagName!=='IMG') return; const note=img.closest&&img.closest('.richnote'); if(!note) return; if(!this._rnEditable()) return; /* viewers: let the <a> open normally */
+      e.preventDefault(); e.stopPropagation(); const a=(img.closest&&img.closest('a'))||null; const cur=a?(a.getAttribute('href')||''):'';
+      const url=window.prompt('Link this image to a web address (opens in a new tab).\nLeave blank to remove the link:', cur); if(url===null) return; const u=(url||'').trim(); this._rnCur=note;
+      if(!u){ if(a){ const parent=a.parentNode; while(a.firstChild) parent.insertBefore(a.firstChild, a); parent.removeChild(a); } }
+      else { let href=u; if(!/^(https?:\/\/|mailto:|tel:)/i.test(href)) href='https://'+href; if(a){ a.setAttribute('href',href); a.setAttribute('target','_blank'); a.setAttribute('rel','noopener'); } else { const link=document.createElement('a'); link.setAttribute('href',href); link.setAttribute('target','_blank'); link.setAttribute('rel','noopener'); img.parentNode.insertBefore(link, img); link.appendChild(img); } }
+      this._rnPend={np:note.getAttribute('data-np'), html:note.innerHTML, el:note}; clearTimeout(this._rnT); this._rnT=setTimeout(()=>this._rnSave(),200); this.toast(u?'Image linked ✓':'Link removed'); };
     document.addEventListener('input', this._rnInput, true);
     document.addEventListener('focusin', this._rnFocusIn, true);
     document.addEventListener('focusout', this._rnFocusOut, true);
@@ -1607,6 +1617,7 @@ class Component extends DCLogic {
     document.addEventListener('dragleave', this._rnDragLeave, true);
     document.addEventListener('drop', this._rnDrop, true);
     document.addEventListener('paste', this._rnPaste, true);
+    document.addEventListener('click', this._rnImgClick, true);
     this._rnRender();
   }
   _rnInsertImageFile(file, el){ if(!el) el=this._rnCur; if(!el) return; if(file.size>5*1024*1024){ this.toast('Image too large (5MB max)'); return; }
@@ -1650,7 +1661,7 @@ class Component extends DCLogic {
     }catch(e){}
     this._rnPend={np:el.getAttribute('data-np'), html:el.innerHTML, el}; clearTimeout(this._rnT); this._rnT=setTimeout(()=>this._rnSave(), 300);
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } if(this._rnInput){ document.removeEventListener('input', this._rnInput, true); document.removeEventListener('focusin', this._rnFocusIn, true); document.removeEventListener('focusout', this._rnFocusOut, true); } if(this._rnDrop){ document.removeEventListener('dragover', this._rnDragOver, true); document.removeEventListener('dragleave', this._rnDragLeave, true); document.removeEventListener('drop', this._rnDrop, true); document.removeEventListener('paste', this._rnPaste, true); } if(this._rnBarEl){ this._rnBarEl.remove(); this._rnBarEl=null; } if(this._onDragStart){ document.removeEventListener('dragstart',this._onDragStart,true); document.removeEventListener('dragend',this._onDragEnd,true); document.removeEventListener('dragover',this._onDragOver,true); document.removeEventListener('drop',this._onDrop,true); } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } if(this._rnInput){ document.removeEventListener('input', this._rnInput, true); document.removeEventListener('focusin', this._rnFocusIn, true); document.removeEventListener('focusout', this._rnFocusOut, true); } if(this._rnDrop){ document.removeEventListener('dragover', this._rnDragOver, true); document.removeEventListener('dragleave', this._rnDragLeave, true); document.removeEventListener('drop', this._rnDrop, true); document.removeEventListener('paste', this._rnPaste, true); } if(this._rnImgClick){ document.removeEventListener('click', this._rnImgClick, true); } if(this._rnBarEl){ this._rnBarEl.remove(); this._rnBarEl=null; } if(this._onDragStart){ document.removeEventListener('dragstart',this._onDragStart,true); document.removeEventListener('dragend',this._onDragEnd,true); document.removeEventListener('dragover',this._onDragOver,true); document.removeEventListener('drop',this._onDrop,true); } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
