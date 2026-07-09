@@ -1284,15 +1284,41 @@
             <div style="text-align:center;color:#9AA68C;font-size:12px;line-height:1.6;padding:22px 10px;">{{ aiChat.greeting }}</div>
           </sc-if>
           <sc-for list="{{ aiChat.msgs }}" as="m" hint-placeholder-count="0">
-            <div style="{{ m.rowStyle }}"><div style="max-width:82%;font-size:12.5px;line-height:1.55;padding:9px 12px;white-space:pre-wrap;word-break:break-word;{{ m.bubbleStyle }}">{{ m.text }}</div></div>
+            <div style="{{ m.rowStyle }}"><div style="max-width:82%;font-size:12.5px;line-height:1.55;padding:9px 12px;white-space:pre-wrap;word-break:break-word;{{ m.bubbleStyle }}">
+              <sc-if value="{{ m.hasAtts }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;justify-content:{{ m.attRowJustify }};">
+                  <sc-for list="{{ m.atts }}" as="a" hint-placeholder-count="0">
+                    <sc-if value="{{ a.hasPreview }}" hint-placeholder-val="{{ true }}"><div style="width:52px;height:52px;border-radius:8px;border:1px solid rgba(255,255,255,.35);{{ a.thumbStyle }}"></div></sc-if>
+                    <sc-if value="{{ a.noPreview }}" hint-placeholder-val="{{ false }}"><div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:5px 8px;border-radius:8px;background:rgba(0,0,0,.12);">{{ a.icon }} {{ a.name }}</div></sc-if>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.hasText }}" hint-placeholder-val="{{ true }}"><span>{{ m.text }}</span></sc-if>
+            </div></div>
           </sc-for>
           <sc-if value="{{ aiChat.loading }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;justify-content:flex-start;"><div style="font-size:12px;color:#7C8C6C;padding:9px 12px;background:#F1F4ED;border-radius:13px;">✦ Thinking…</div></div>
           </sc-if>
         </div>
-        <div style="flex:0 0 auto;display:flex;gap:8px;padding:11px 12px;border-top:1px solid #E8EDE4;background:#fff;">
-          <textarea rows="1" class="gtext" value="{{ aiChat.input }}" onInput="{{ aiChat.onInput }}" onKeyDown="{{ aiChat.onKey }}" placeholder="Ask anything…" style="flex:1;border:1px solid #D7E2CE;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#23311C;outline:none;background:#FBFCFA;max-height:120px;"></textarea>
-          <button class="pbtn" onClick="{{ aiChat.onSend }}" style="flex:0 0 auto;background:#45852B;color:#fff;border:none;border-radius:10px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Send</button>
+        <div style="flex:0 0 auto;padding:9px 12px 11px;border-top:1px solid #E8EDE4;background:#fff;">
+          <sc-if value="{{ aiChat.hasFiles }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;">
+              <sc-for list="{{ aiChat.files }}" as="f" hint-placeholder-count="0">
+                <div style="position:relative;display:inline-flex;align-items:center;gap:5px;background:#F1F4ED;border:1px solid #DCE6D3;border-radius:9px;padding:4px 6px;">
+                  <sc-if value="{{ f.hasPreview }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:6px;{{ f.thumbStyle }}"></div></sc-if>
+                  <sc-if value="{{ f.noPreview }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;">{{ f.icon }}</span></sc-if>
+                  <span style="font-size:10.5px;color:#4A5A3D;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.name }}</span>
+                  <button class="pbtn" onClick="{{ f.onRemove }}" title="Remove" style="border:none;background:#D8E2CE;color:#3C4F30;border-radius:50%;width:17px;height:17px;font-size:11px;line-height:1;cursor:pointer;padding:0;flex:0 0 auto;">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:flex;gap:7px;align-items:flex-end;">
+            <label for="aichat-file" title="Attach image, screenshot, or PDF" style="flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #D7E2CE;border-radius:10px;background:#FBFCFA;color:#5C6E4C;font-size:17px;cursor:pointer;">📎</label>
+            <input id="aichat-file" type="file" accept="image/*,application/pdf" multiple onChange="{{ aiChat.onFiles }}" style="display:none;">
+            <textarea rows="1" class="gtext" value="{{ aiChat.input }}" onInput="{{ aiChat.onInput }}" onKeyDown="{{ aiChat.onKey }}" onPaste="{{ aiChat.onPaste }}" placeholder="Ask anything, or attach a file…" style="flex:1;border:1px solid #D7E2CE;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#23311C;outline:none;background:#FBFCFA;max-height:120px;"></textarea>
+            <button class="pbtn" onClick="{{ aiChat.onSend }}" style="flex:0 0 auto;background:#45852B;color:#fff;border:none;border-radius:10px;padding:0 15px;height:38px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Send</button>
+          </div>
         </div>
         </sc-if>
         <sc-if value="{{ aiChat.memView }}" hint-placeholder-val="{{ false }}">
@@ -1324,7 +1350,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v46 · Jul 9';
+    this.BUILD='v47 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1390,7 +1416,7 @@ class Component extends DCLogic {
     this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, msWsOpen:false, msWsPath:null, moveModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1830,7 +1856,25 @@ class Component extends DCLogic {
   aiChatToggle(){ if(!this.state.aiChatOpen && !this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings first'); return; } this.setState({aiChatOpen:!this.state.aiChatOpen}); }
   aiChatMin(){ this.setState({aiChatOpen:false, aiChatMemView:false}); }
   setAiChatInput(v){ this.setState({aiChatInput:v}); }
-  // ---- Chat history + memory persistence (Dana's device only; never synced, never in team view) ----
+  // ---- Attachments (images, screenshots, PDFs) ----
+  _aiReadFile(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>{ const s=String(r.result||''); const c=s.indexOf(','); resolve(c>=0?s.slice(c+1):s); }; r.onerror=reject; r.readAsDataURL(file); }); }
+  async aiChatAddFiles(fileList){
+    const files=Array.prototype.slice.call(fileList||[]); if(!files.length) return;
+    const cur=(this.state.aiChatFiles||[]).slice();
+    for(const f of files){
+      const isImg=/^image\//.test(f.type||''); const isPdf=(f.type==='application/pdf')||/\.pdf$/i.test(f.name||'');
+      if(!isImg && !isPdf){ this.toast('Only images and PDFs can be attached'); continue; }
+      if(f.size > 4*1024*1024){ this.toast((f.name||'That file')+' is too big (4MB max)'); continue; }
+      try{ const data=await this._aiReadFile(f); const mt=f.type||(isPdf?'application/pdf':'image/png');
+        cur.push({ name:f.name||(isPdf?'document.pdf':'screenshot.png'), kind:isImg?'image':'document', media_type:mt, data, preview:isImg?('data:'+mt+';base64,'+data):'' });
+      }catch(e){ this.toast('Could not read '+(f.name||'file')); }
+    }
+    this.setState({aiChatFiles:cur.slice(0,6)});
+  }
+  aiChatPickFiles(e){ const inp=e&&e.target; if(inp&&inp.files){ this.aiChatAddFiles(inp.files); try{ inp.value=''; }catch(_){} } }
+  aiChatPaste(e){ const items=(e.clipboardData&&e.clipboardData.items)||[]; const imgs=[]; for(let i=0;i<items.length;i++){ const it=items[i]; if(it.kind==='file'){ const f=it.getAsFile(); if(f && /^image\//.test(f.type)) imgs.push(f); } } if(imgs.length){ e.preventDefault(); this.aiChatAddFiles(imgs); this.toast('Screenshot attached ✓'); } }
+  aiChatRemoveFile(i){ const cur=(this.state.aiChatFiles||[]).slice(); cur.splice(i,1); this.setState({aiChatFiles:cur}); }
+  // ---- Chat history + memory persistence (this device only; never synced) ----
   aiChatLoad(){
     let msgs=null, mem='';
     try{ const raw=localStorage.getItem('thrive_ai_chat'); const a=raw?JSON.parse(raw):null; if(Array.isArray(a)) msgs=a; }catch(e){}
@@ -1839,9 +1883,16 @@ class Component extends DCLogic {
     this.setState(patch);
   }
   aiChatPersist(msgs, mem){
-    const m=(msgs!==undefined)?msgs:(this.state.aiChatMsgs||[]);
+    const src=(msgs!==undefined)?msgs:(this.state.aiChatMsgs||[]);
+    // Strip heavy base64 attachment data before saving so localStorage stays small
+    const slim=src.slice(-200).map(m=>{
+      let content=m.content;
+      if(Array.isArray(content)){ const tb=content.find(b=>b.type==='text'); const nAtt=content.filter(b=>b.type!=='text').length; content=(tb?tb.text:'')+(nAtt?('\n[📎 '+nAtt+' attachment'+(nAtt>1?'s':'')+']'):''); }
+      const atts=(m._atts||[]).map(a=>({name:a.name, kind:a.kind}));
+      return {role:m.role, content, _atts:atts};
+    });
     const mm=(mem!==undefined)?mem:(this.state.aiChatMem||'');
-    try{ localStorage.setItem('thrive_ai_chat', JSON.stringify(m.slice(-200))); }catch(e){}
+    try{ localStorage.setItem('thrive_ai_chat', JSON.stringify(slim)); }catch(e){}
     try{ localStorage.setItem('thrive_ai_memory', mm||''); }catch(e){}
   }
   aiChatExtractMemory(reply, curMem){
@@ -1871,9 +1922,18 @@ class Component extends DCLogic {
     const res=await this.aiRequest({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
-  async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); if(!q||this.state.aiChatLoading) return; if(!this.aiReady()){ this.openSettings(); return; }
-    const msgs=(this.state.aiChatMsgs||[]).concat([{role:'user',content:q}]);
-    this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatLoading:true, aiChatMemView:false});
+  async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); const files=(this.state.aiChatFiles||[]); if((!q && !files.length)||this.state.aiChatLoading) return; if(!this.aiReady()){ this.openSettings(); return; }
+    let content, atts=[];
+    if(files.length){
+      const blocks=files.map(f=> f.kind==='image'
+        ? { type:'image', source:{ type:'base64', media_type:f.media_type, data:f.data } }
+        : { type:'document', source:{ type:'base64', media_type:'application/pdf', data:f.data } });
+      blocks.push({ type:'text', text:(q||'Please take a look at the attached file(s).') });
+      content=blocks; atts=files.map(f=>({name:f.name, kind:f.kind, preview:f.preview}));
+    } else { content=q; }
+    const userMsg={role:'user', content, _atts:atts};
+    const msgs=(this.state.aiChatMsgs||[]).concat([userMsg]);
+    this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatFiles:[], aiChatLoading:true, aiChatMemView:false});
     this.aiChatPersist(msgs);
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },30);
     try{ const raw=await this.aiChatCall(msgs); const ext=this.aiChatExtractMemory(raw, this.state.aiChatMem||''); const next=msgs.concat([{role:'assistant',content:ext.text}]); this.setState({aiChatMsgs:next, aiChatMem:ext.mem, aiChatLoading:false}); this.aiChatPersist(next, ext.mem); }
@@ -2308,7 +2368,11 @@ class Component extends DCLogic {
           onDi:e=>this.setMove('toDi',e.target.value), onConfirm:()=>this.confirmMove(), onCancel:()=>this.closeMove() }; })():{ open:false }),
       showAiFab:(this.aiReady() && ((this.state.privateMode && !this.state.locked) || this.state.teamMode)),
       onAiFab:()=>this.aiChatToggle(),
-      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), greeting:(this.state.teamMode?'Hi 👋 I\'m the Thrive Assistant. Ask me anything about the roadmap — summarize a phase, explain a milestone, or help draft an update. I can see the current progress.':'Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.'), msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onMin:()=>this.aiChatMin(), onClose:()=>this.aiChatMin(), onClear:()=>this.aiChatClear(), onMem:()=>this.aiChatToggleMem(), onMemInput:e=>this.setAiChatMem(e.target.value), onMemSave:()=>this.aiChatSaveMem(), onMemClear:()=>this.aiChatClearMem() }; })(),
+      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), greeting:(this.state.teamMode?'Hi 👋 I\'m the Thrive Assistant. Ask me anything about the roadmap — summarize a phase, explain a milestone, or help draft an update. I can see the current progress.':'Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.'), msgs:ms.map(m=>{ let text=''; let atts=(m._atts||[]).slice();
+        if(typeof m.content==='string'){ text=m.content; }
+        else if(Array.isArray(m.content)){ const tb=m.content.find(b=>b&&b.type==='text'); text=tb?tb.text:''; if(!atts.length) atts=m.content.filter(b=>b&&(b.type==='image'||b.type==='document')).map(b=>({name:(b.type==='image'?'Image':'PDF'), kind:b.type, preview:''})); }
+        return { me:m.role==='user', text:text, hasText:!!(text&&text.trim()), hasAtts:atts.length>0, attRowJustify:(m.role==='user'?'flex-end':'flex-start'), atts:atts.map(a=>{ const hasPrev=!!a.preview; return { name:a.name, hasPreview:hasPrev, noPreview:!hasPrev, icon:(a.kind==='image'?'🖼':'📄'), thumbStyle:(hasPrev?('background-image:url('+a.preview+');background-size:cover;background-position:center;'):'') }; }), rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') };
+      }), files:(this.state.aiChatFiles||[]).map((f,i)=>{ const hasPrev=!!f.preview; return { name:f.name, hasPreview:hasPrev, noPreview:!hasPrev, icon:(f.kind==='image'?'🖼':'📄'), thumbStyle:(hasPrev?('background-image:url('+f.preview+');background-size:cover;background-position:center;'):''), onRemove:()=>this.aiChatRemoveFile(i) }; }), hasFiles:(this.state.aiChatFiles||[]).length>0, onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onFiles:e=>this.aiChatPickFiles(e), onPaste:e=>this.aiChatPaste(e), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onMin:()=>this.aiChatMin(), onClose:()=>this.aiChatMin(), onClear:()=>this.aiChatClear(), onMem:()=>this.aiChatToggleMem(), onMemInput:e=>this.setAiChatMem(e.target.value), onMemSave:()=>this.aiChatSaveMem(), onMemClear:()=>this.aiChatClearMem() }; })(),
       onScheduleFollow:()=>this.toast('Schedule Follow-Up \u00b7 Google Calendar coming soon'),
       onAddReminder:()=>this.toast('Reminder \u00b7 coming soon'),
       toast:this.state.toast, hasToast:!!this.state.toast,
