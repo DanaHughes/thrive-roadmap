@@ -448,9 +448,9 @@
             <div style="min-width:0;flex:1;">
               <div style="display:flex;align-items:center;gap:7px;">
                 <span style="font-size:14.5px;font-weight:800;color:{{ d.iconColor }};white-space:nowrap;">Milestone {{ d.ms }} ·</span>
-                <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onRename }}" style="font-size:14.5px;font-weight:800;color:#23311C;"></textarea>
+                <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onRename }}" placeholder="Name this milestone" style="font-size:14.5px;font-weight:800;color:#23311C;"></textarea>
               </div>
-              <textarea rows="1" class="edt gtext" value="{{ d.desc }}" onInput="{{ d.onRenameDesc }}" style="font-size:12px;color:#6E7C63;margin-top:1px;"></textarea>
+              <textarea rows="1" class="edt gtext" value="{{ d.desc }}" onInput="{{ d.onRenameDesc }}" placeholder="Short description (optional)" style="font-size:12px;color:#6E7C63;margin-top:1px;"></textarea>
             </div>
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
@@ -474,16 +474,21 @@
           </div>
           <div style="padding:0 18px 4px;display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ d.tasks }}" as="t" hint-placeholder-count="3">
-              <div class="rg" style="display:grid;grid-template-columns:{{ t.rowGrid }};border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
+              <div class="rg" data-tk="{{ t.tkDrag }}" style="display:grid;grid-template-columns:{{ t.rowGrid }};border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
                 <div style="padding:9px 12px;background:{{ t.bg }};">
                   <div style="display:flex;align-items:center;gap:10px;">
+                    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span data-tkgrip="1" draggable="true" title="Drag to reorder this task" style="cursor:grab;color:#C4CFB6;font-size:13px;line-height:1;flex:0 0 auto;user-select:none;">⠿</span></sc-if>
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                    <textarea rows="1" class="edt gtext" value="{{ t.label }}" onInput="{{ t.onRename }}" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
+                    <textarea rows="1" class="edt gtext" value="{{ t.label }}" onInput="{{ t.onRename }}" placeholder="Describe this task" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
                     <sc-if value="{{ t.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 7px;flex:0 0 auto;white-space:nowrap;">{{ t.doneTag }}</span></sc-if>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
                     <button class="pbtn" onClick="{{ t.onMove }}" title="Move this task to another milestone or phase" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">⇄</button>
                     <button class="pbtn" onClick="{{ t.onToggleTCol }}" title="{{ t.tcolTitle }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ t.tcolGlyph }}</button>
+                    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:1px;flex:0 0 auto;">
+                      <button class="pbtn" onClick="{{ t.onTkUp }}" title="Move task up" style="width:22px;height:12px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;border-radius:5px 5px 0 0;cursor:pointer;font-size:7px;line-height:1;padding:0;font-family:inherit;">▲</button>
+                      <button class="pbtn" onClick="{{ t.onTkDown }}" title="Move task down" style="width:22px;height:12px;border:1px solid #E2E8DE;border-top:none;background:#fff;color:#7C8C6C;border-radius:0 0 5px 5px;cursor:pointer;font-size:7px;line-height:1;padding:0;font-family:inherit;">▼</button>
+                    </div></sc-if>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
                   </div>
                   <sc-if value="{{ t.texp }}" hint-placeholder-val="{{ true }}">
@@ -492,7 +497,7 @@
                       <div style="display:flex;flex-direction:column;gap:5px;">
                         <div style="display:flex;align-items:center;gap:8px;">
                           <div class="cbs {{ s.cbcls }}" onClick="{{ s.onToggle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                          <textarea rows="1" class="edt gtext" value="{{ s.label }}" onInput="{{ s.onRename }}" style="font-size:11.5px;color:{{ s.color }};text-decoration:{{ s.strike }};"></textarea>
+                          <textarea rows="1" class="edt gtext" value="{{ s.label }}" onInput="{{ s.onRename }}" placeholder="Subtask" style="font-size:11.5px;color:{{ s.color }};text-decoration:{{ s.strike }};"></textarea>
                           <button class="pbtn" onClick="{{ s.onToggleExp }}" title="Add files, links & a note to this subtask" style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:#5B6B4E;background:#fff;border:1px solid #E2E8DE;border-radius:6px;padding:3px 7px;cursor:pointer;flex:0 0 auto;white-space:nowrap;">{{ s.expGlyph }} 📎</button>
                           <button class="del" onClick="{{ s.onDelete }}" title="Delete subtask" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;">✕</button>
                         </div>
@@ -1420,7 +1425,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v55 · Jul 9';
+    this.BUILD='v56 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1502,7 +1507,7 @@ class Component extends DCLogic {
     b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x));
     return b;
   }
-  addPhase(){ const key='px'+Math.random().toString(36).slice(2,7); this.mut(b=>{ if(!Array.isArray(b._phases)) b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x)); const n=b._phases.length; const c=this._phaseColors[n%this._phaseColors.length]; const tint=this._phaseTints[n%this._phaseTints.length]; b._phases.push({key, name:'New Phase', color:c, iconBg:tint, glyph:'◆', year:'', rmTitle:'New phase'}); b[key]=[{id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[{id:this.uid(), label:'New task', done:false, notes:'', files:[], subs:[]}]}]; }); this.setState({active:key, view:'phase'}); this.persist({active:key, view:'phase'}); this.toast('Phase added — drag it into position & rename it'); }
+  addPhase(){ const key='px'+Math.random().toString(36).slice(2,7); this.mut(b=>{ if(!Array.isArray(b._phases)) b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x)); const n=b._phases.length; const c=this._phaseColors[n%this._phaseColors.length]; const tint=this._phaseTints[n%this._phaseTints.length]; b._phases.push({key, name:'New Phase', color:c, iconBg:tint, glyph:'◆', year:'', rmTitle:'New phase'}); b[key]=[{id:this.uid(), title:'', desc:'', files:[], tasks:[{id:this.uid(), label:'', done:false, notes:'', files:[], subs:[]}]}]; }); this.setState({active:key, view:'phase'}); this.persist({active:key, view:'phase'}); this.toast('Phase added — drag it into position & rename it'); }
   delPhase(key){ const list=this.PHASES; if(list.length<=1){ this.toast('You need at least one phase'); return; } const idx=list.findIndex(p=>p.key===key); const nextKey=(list[idx+1]||list[idx-1]||list[0]).key; this.mut(b=>{ if(Array.isArray(b._phases)) b._phases=b._phases.filter(p=>p.key!==key); delete b[key]; }); this.setState({active:nextKey, view:'phase'}); this.persist({active:nextKey, view:'phase'}); this.toast('Phase deleted · undo from Version History if needed'); }
   renamePhase(key,v){ this.mut(b=>{ const p=(b._phases||[]).find(x=>x.key===key); if(p){ const nm=this._phaseName(v)||v; p.name=nm; p.rmTitle=nm; delete p.label; delete p.heading; } }); }
   movePhase(key,dir){ this.mut(b=>{ const a=b._phases; if(!Array.isArray(a)) return; const i=a.findIndex(p=>p.key===key); if(i<0) return; const j=i+dir; if(j<0||j>=a.length) return; const t=a[i]; a[i]=a[j]; a[j]=t; }); }
@@ -1512,7 +1517,10 @@ class Component extends DCLogic {
   // Reorder milestones WITHIN a phase (drag handle + up/down arrows)
   moveMsOrder(ph,di,dir){ this.mut(b=>{ const a=b[ph]; if(!Array.isArray(a)) return; const j=di+dir; if(j<0||j>=a.length) return; const t=a[di]; a[di]=a[j]; a[j]=t; }); }
   moveMsTo(ph,fromDi,toDi){ this.mut(b=>{ const a=b[ph]; if(!Array.isArray(a)||fromDi<0||fromDi>=a.length) return; const item=a.splice(fromDi,1)[0]; const j=Math.max(0,Math.min(a.length,toDi)); a.splice(j,0,item); }); this.toast('Milestone reordered'); }
-  moveTask(fromPh,fromDi,ti,toPh,toDi){ this.mut(b=>{ if(!b[fromPh]||!b[fromPh][fromDi]) return; const t=b[fromPh][fromDi].tasks[ti]; if(!t) return; let target; if(toDi==='new'){ const nm={id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[]}; if(!Array.isArray(b[toPh])) return; b[toPh].push(nm); target=nm; } else { if(!b[toPh]||!b[toPh][+toDi]) return; target=b[toPh][+toDi]; } if(!Array.isArray(target.tasks)) target.tasks=[]; b[fromPh][fromDi].tasks.splice(ti,1); target.tasks.push(t); }); this.setState({moveModal:null}); this.toast('Task moved'); }
+  // Reorder tasks WITHIN a milestone (drag handle + up/down arrows)
+  moveTaskOrder(ph,di,ti,dir){ this.mut(b=>{ const a=b[ph]&&b[ph][di]&&b[ph][di].tasks; if(!Array.isArray(a)) return; const j=ti+dir; if(j<0||j>=a.length) return; const t=a[ti]; a[ti]=a[j]; a[j]=t; }); }
+  moveTaskTo(ph,di,fromTi,toTi){ this.mut(b=>{ const a=b[ph]&&b[ph][di]&&b[ph][di].tasks; if(!Array.isArray(a)||fromTi<0||fromTi>=a.length) return; const item=a.splice(fromTi,1)[0]; const j=Math.max(0,Math.min(a.length,toTi)); a.splice(j,0,item); }); this.toast('Task reordered'); }
+  moveTask(fromPh,fromDi,ti,toPh,toDi){ this.mut(b=>{ if(!b[fromPh]||!b[fromPh][fromDi]) return; const t=b[fromPh][fromDi].tasks[ti]; if(!t) return; let target; if(toDi==='new'){ const nm={id:this.uid(), title:'', desc:'', files:[], tasks:[]}; if(!Array.isArray(b[toPh])) return; b[toPh].push(nm); target=nm; } else { if(!b[toPh]||!b[toPh][+toDi]) return; target=b[toPh][+toDi]; } if(!Array.isArray(target.tasks)) target.tasks=[]; b[fromPh][fromDi].tasks.splice(ti,1); target.tasks.push(t); }); this.setState({moveModal:null}); this.toast('Task moved'); }
   openMove(kind,ph,di,ti){ this.setState({moveModal:{kind, ph, di, ti, toPh:ph, toDi:(kind==='task'?String(di):'')}}); }
   setMove(field,v){ this.setState(s=>({moveModal:Object.assign({},s.moveModal,{[field]:v})})); }
   closeMove(){ this.setState({moveModal:null}); }
@@ -1551,17 +1559,21 @@ class Component extends DCLogic {
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
   // ---- Drag-and-drop reordering for phases (desktop); up/down arrows cover mobile ----
   _dndInit(){
-    this._dragKey=null; this._dragMs=null;
-    const clear=()=>{ try{ document.querySelectorAll('[data-pk],[data-ms]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
+    this._dragKey=null; this._dragMs=null; this._dragTk=null;
+    const clear=()=>{ try{ document.querySelectorAll('[data-pk],[data-ms],[data-tk]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
     this._onDragStart=(e)=>{
+      const tgrip=e.target&&e.target.closest&&e.target.closest('[data-tkgrip]');
+      if(tgrip){ const tk=e.target.closest('[data-tk]'); if(tk){ this._dragTk=tk.getAttribute('data-tk'); this._dragMs=null; this._dragKey=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragTk); }catch(_){} tk.style.opacity='0.5'; return; } }
       const grip=e.target&&e.target.closest&&e.target.closest('[data-msgrip]');
-      if(grip){ const ms=e.target.closest('[data-ms]'); if(ms){ this._dragMs=ms.getAttribute('data-ms'); this._dragKey=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragMs); }catch(_){} ms.style.opacity='0.5'; return; } }
-      const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); this._dragMs=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
-    this._onDragEnd=()=>{ this._dragKey=null; this._dragMs=null; clear(); };
+      if(grip){ const ms=e.target.closest('[data-ms]'); if(ms){ this._dragMs=ms.getAttribute('data-ms'); this._dragKey=null; this._dragTk=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragMs); }catch(_){} ms.style.opacity='0.5'; return; } }
+      const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); this._dragMs=null; this._dragTk=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
+    this._onDragEnd=()=>{ this._dragKey=null; this._dragMs=null; this._dragTk=null; clear(); };
     this._onDragOver=(e)=>{
+      if(this._dragTk){ const el=e.target&&e.target.closest&&e.target.closest('[data-tk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-tk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; return; }
       if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-ms]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; return; }
       if(!this._dragKey) return; const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-pk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; };
     this._onDrop=(e)=>{
+      if(this._dragTk){ const el=e.target&&e.target.closest&&e.target.closest('[data-tk]'); const dt=this._dragTk; this._dragTk=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-tk'); if(!to||to===dt) return; const fa=dt.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]||fa[1]!==ta[1]) return; this.moveTaskTo(fa[0], +fa[1], +fa[2], +ta[2]); return; }
       if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); const dm=this._dragMs; this._dragMs=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-ms'); if(!to||to===dm) return; const fa=dm.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]) return; this.moveMsTo(fa[0], +fa[1], +ta[1]); return; }
       const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); clear(); if(!el||!this._dragKey) return; e.preventDefault(); const targetKey=el.getAttribute('data-pk'); const dk=this._dragKey; this._dragKey=null; if(targetKey===dk) return; const list=this.PHASES; const toIndex=list.findIndex(p=>p.key===targetKey); if(toIndex<0) return; this.movePhaseTo(dk, toIndex); };
     document.addEventListener('dragstart',this._onDragStart,true);
@@ -1748,10 +1760,11 @@ class Component extends DCLogic {
   // ---- Export: aesthetically formatted Phase / Milestone reports → Google Docs (email/text to your boss) ----
   _rptMilestoneHtml(del, di, phaseColor){
     const esc=this._docEsc2; const tt=(del.tasks||[]).length, dd=(del.tasks||[]).filter(t=>t.done).length; const pct=tt?Math.round(dd/tt*100):0;
-    let h='<h2 style="color:'+phaseColor+';border-bottom:2px solid '+phaseColor+';padding-bottom:4px;">Milestone '+(di+1)+': '+esc(del.title)+' — '+pct+'% complete</h2>';
+    const _mt=(del.title&&del.title.trim())?(': '+esc(del.title)):'';
+    let h='<h2 style="color:'+phaseColor+';border-bottom:2px solid '+phaseColor+';padding-bottom:4px;">Milestone '+(di+1)+_mt+' — '+pct+'% complete</h2>';
     if(del.desc&&del.desc.trim()) h+='<p style="color:#555;"><i>'+esc(del.desc)+'</i></p>';
     h+='<table style="border-collapse:collapse;width:100%;margin:8px 0;"><tr><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;text-align:left;">Task</th><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;">Status</th></tr>';
-    (del.tasks||[]).forEach(t=>{ h+='<tr><td style="border:1px solid #cbd8bc;padding:5px 9px;">'+esc(t.label)+'</td><td style="border:1px solid #cbd8bc;padding:5px 9px;text-align:center;">'+(t.done?'✓ Done':'In progress')+'</td></tr>';
+    (del.tasks||[]).forEach(t=>{ if(!(t.label&&t.label.trim()) && !(t.notes&&String(t.notes).trim()) && !t.done) return; h+='<tr><td style="border:1px solid #cbd8bc;padding:5px 9px;">'+esc(t.label)+'</td><td style="border:1px solid #cbd8bc;padding:5px 9px;text-align:center;">'+(t.done?'✓ Done':'In progress')+'</td></tr>';
       const noteHtml=(t.notes&&String(t.notes).trim())?(/<[a-z]/i.test(t.notes)?t.notes:('<div>'+esc(t.notes).replace(/\n/g,'<br>')+'</div>')):'';
       if(noteHtml) h+='<tr><td colspan="2" style="border:1px solid #cbd8bc;padding:5px 9px 9px 20px;font-size:10pt;color:#333;background:#fafcf8;">'+noteHtml+'</td></tr>';
     });
@@ -1760,7 +1773,7 @@ class Component extends DCLogic {
     if(links.length||files.length){ h+='<p style="font-weight:bold;margin:6px 0 2px;">Deliverables & links:</p><ul>'; links.forEach(l=>h+='<li><a href="'+esc(l.url)+'">'+esc(l.label||l.url)+'</a></li>'); files.forEach(f=>h+='<li>'+esc(f)+' (file)</li>'); h+='</ul>'; }
     return h;
   }
-  exportMilestone(ph,di){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; if(!del) return; const html='<p style="color:#666;">'+this._docEsc2(P?P.label:'')+' · Thrive Hybrid Academy · '+new Date().toLocaleDateString()+'</p>'+this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); this.docSendToGoogle('Milestone '+(di+1)+' — '+del.title, html); }
+  exportMilestone(ph,di){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; if(!del) return; const html='<p style="color:#666;">'+this._docEsc2(P?P.label:'')+' · Thrive Hybrid Academy · '+new Date().toLocaleDateString()+'</p>'+this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); this.docSendToGoogle('Milestone '+(di+1)+((del.title&&del.title.trim())?(' — '+del.title):''), html); }
   exportPhase(ph){ const P=this.PHASES.find(x=>x.key===ph); const dels=this.state.board[ph]||[]; let tt=0,dd=0; dels.forEach(del=>{ tt+=(del.tasks||[]).length; dd+=(del.tasks||[]).filter(t=>t.done).length; }); const pct=tt?Math.round(dd/tt*100):0;
     let html='<p style="color:#666;">Thrive Hybrid Academy · Progress report · '+new Date().toLocaleDateString()+'</p><p style="font-size:13pt;"><b>Overall: '+pct+'% complete</b> ('+dd+' of '+tt+' tasks across '+dels.length+' milestones)</p>';
     dels.forEach((del,di)=>{ html+=this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); });
@@ -1820,11 +1833,11 @@ class Component extends DCLogic {
   addDelLink(ph,di){ this.mut(b=>{ if(!b[ph][di].delLinks)b[ph][di].delLinks=[]; b[ph][di].delLinks.push({label:'New link',url:''}); }); }
   setDelLink(ph,di,li,f,v){ this.mut(b=>{ b[ph][di].delLinks[li][f]=v; }); }
   delDelLink(ph,di,li){ this.mut(b=>{ b[ph][di].delLinks.splice(li,1); }); }
-  addCard(ph){ this.mut(b=>{ b[ph].push({id:this.uid(),title:'New Milestone',desc:'Describe this deliverable…',files:[],tasks:[{id:this.uid(),label:'New task',done:false,notes:'',files:[],subs:[]}]}); }); }
+  addCard(ph){ this.mut(b=>{ b[ph].push({id:this.uid(),title:'',desc:'',files:[],tasks:[{id:this.uid(),label:'',done:false,notes:'',files:[],subs:[]}]}); }); }
   delCard(ph,di){ this.mut(b=>{ b[ph].splice(di,1); }); }
-  addTask(ph,di){ this.mut(b=>{ b[ph][di].tasks.push({id:this.uid(),label:'New task',done:false,notes:'',files:[],subs:[]}); }); }
+  addTask(ph,di){ this.mut(b=>{ b[ph][di].tasks.push({id:this.uid(),label:'',done:false,notes:'',files:[],subs:[]}); }); }
   delTask(ph,di,ti){ this.mut(b=>{ b[ph][di].tasks.splice(ti,1); }); }
-  addSub(ph,di,ti){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; if(!Array.isArray(t.subs)) t.subs=[]; t.subs.push({id:this.uid(),label:'New subtask',done:false,notes:'',files:[],links:[]}); }); }
+  addSub(ph,di,ti){ this.mut(b=>{ const t=b[ph][di].tasks[ti]; if(!Array.isArray(t.subs)) t.subs=[]; t.subs.push({id:this.uid(),label:'',done:false,notes:'',files:[],links:[]}); }); }
   delSub(ph,di,ti,si){ this.mut(b=>{ b[ph][di].tasks[ti].subs.splice(si,1); }); }
   setSubNote(ph,di,ti,si,v){ this.mut(b=>{ b[ph][di].tasks[ti].subs[si].notes=v; }); }
   addSubFile(ph,di,ti,si,e){ const f=e.target.files&&e.target.files[0]; if(!f)return; const nm=f.name; e.target.value=''; this.mut(b=>{ const s=b[ph][di].tasks[ti].subs[si]; if(!s.files)s.files=[]; s.files.push(nm); }); }
@@ -2254,6 +2267,7 @@ class Component extends DCLogic {
         msDrag:(ph+'|'+di), onMsUp:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveMsOrder(ph,di,-1); }, onMsDown:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveMsOrder(ph,di,1); },
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
+          tkDrag:(ph+'|'+di+'|'+ti), onTkUp:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveTaskOrder(ph,di,ti,-1); }, onTkDown:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveTaskOrder(ph,di,ti,1); },
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
           tcol:!!this.state.taskCol[t.id], texp:!this.state.taskCol[t.id], tcolGlyph:this.state.taskCol[t.id]?'▸':'▾', tcolTitle:this.state.taskCol[t.id]?'Expand task':'Minimize task',
           rowGrid:this.state.taskCol[t.id]?'1fr':'minmax(0,1fr) minmax(0,1fr)',
