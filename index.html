@@ -310,7 +310,7 @@
     <sc-if value="{{ privateMode }}" hint-placeholder-val="{{ false }}">
     <div class="nav" onClick="{{ goTeamChats }}" style="{{ navTeamChatsStyle }}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      <span style="flex:1;">Team AI Chats</span>
+      <span style="flex:1;">AI Chat Assistant History</span>
       <span style="font-size:9px;font-weight:800;color:#3F6193;background:#EEF3FA;border-radius:20px;padding:2px 8px;">{{ teamChatsCount }}</span>
     </div>
     </sc-if>
@@ -911,7 +911,7 @@
         <span style="font-size:11px;color:#79866C;margin-left:4px;">Billable total <b style="color:#34672A;">{{ timeLog.billTotal }}h</b></span>
         <button class="pbtn" onClick="{{ timeLog.onExport }}" style="margin-left:auto;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
       </div>
-      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = your total time in ThriveOS — dashboard open &amp; in use, <i>plus</i> any Active Task time (pauses after 15 min idle). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages (a subset of Passive). <b style="color:#357A2B;">Billable</b> = what you reconcile when you finalize the day (editable anytime).</div>
+      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = your total time in ThriveOS — dashboard open &amp; in use (counts even while you work in other tabs), <i>plus</i> any Active Task time (pauses after 30 min with no activity). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages (a subset of Passive). <b style="color:#357A2B;">Billable</b> = what you reconcile when you finalize the day (editable anytime).</div>
 
       <!-- DAILY TABLE -->
       <sc-if value="{{ timeLog.hasDaily }}" hint-placeholder-val="{{ true }}">
@@ -1415,7 +1415,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v53 · Jul 9';
+    this.BUILD='v54 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2110,13 +2110,14 @@ class Component extends DCLogic {
     this.tlAutoFinalize(today);
     // active task timer left running across midnight → bank it into that day and stop
     if(this.TL.running && this.dayKey(this.TL.startMs||now)!==today){ this.tlStop(true); }
-    // Passive "work day" clock — accumulates presence; bridges short gaps (tab closed/backgrounded ≤15 min) so it never restarts.
+    // Passive "work day" clock — accumulates presence; bridges gaps (tab closed/backgrounded ≤ grace) so it never restarts.
     // The Active Task timer counts as presence too (so Passive always includes Active).
-    // Counts as long as there's been activity within the last 15 min — the tab does NOT have to be front-most.
+    // Counts as long as there's been activity within the grace window — the tab does NOT have to be front-most.
+    const GRACE=30*60*1000; // 30-minute idle grace (bridges tab-to-tab and short breaks)
     const idleMs=now-(this._lastAct||0);
     const timerActive=this.TL.running && !this.TL.paused;
-    const present=timerActive || (idleMs < 15*60*1000);
-    if(present){ const gap=now-(this.TL.lastActive||now); const credit=(gap>0 && gap<=15*60*1000)?gap:1000; this.TL.days[today]=(this.TL.days[today]||0)+Math.round(credit/1000); }
+    const present=timerActive || (idleMs < GRACE);
+    if(present){ const gap=now-(this.TL.lastActive||now); const credit=(gap>0 && gap<=GRACE)?gap:1000; this.TL.days[today]=(this.TL.days[today]||0)+Math.round(credit/1000); }
     this.TL.lastActive=now;
     this._tlSaveTick=(this._tlSaveTick||0)+1; if(this._tlSaveTick%15===0){ this.tlBump(); this.tlSave(); }
     if((this.TL.running&&!this.TL.paused) || this._tlSaveTick%5===0) this.setState({tlTick:(this.state.tlTick||0)+1});
