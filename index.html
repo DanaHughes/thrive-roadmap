@@ -181,10 +181,10 @@
         <input value="{{ settings.key }}" onInput="{{ settings.onKey }}" type="password" placeholder="sk-ant-…" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
         <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">MODEL</div>
         <select value="{{ settings.model }}" onChange="{{ settings.onModel }}" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:8px;background:#FBFCFA;box-sizing:border-box;">
-          <option value="claude-sonnet-5">Claude Sonnet 5 — best quality (recommended)</option>
-          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — fastest & cheapest</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 — fast & low-cost (recommended to start)</option>
+          <option value="claude-sonnet-5">Claude Sonnet 5 — best quality (switch up for tough tasks)</option>
         </select>
-        <div style="font-size:10.5px;color:#9AA68C;line-height:1.5;margin-bottom:16px;">Get a key at <b>console.anthropic.com</b> → API Keys. Pay-as-you-go; typical AI actions here cost a fraction of a cent.</div>
+        <div style="font-size:10.5px;color:#9AA68C;line-height:1.5;margin-bottom:16px;">Start on <b>Haiku</b> to keep costs low; switch to <b>Sonnet</b> anytime here for heavier planning or writing. Get a key at <b>console.anthropic.com</b> → API Keys. Pay-as-you-go; typical AI actions cost a fraction of a cent.</div>
         <div style="display:flex;gap:8px;">
           <button class="pbtn" onClick="{{ settings.onSave }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Save</button>
           <button class="pbtn" onClick="{{ settings.onClose }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Close</button>
@@ -1323,7 +1323,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v43 · Jul 8';
+    this.BUILD='v45 · Jul 9';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1763,9 +1763,11 @@ class Component extends DCLogic {
   aiSaveKey(v){ this.AIKEY=(v||'').trim(); try{ if(this.AIKEY) localStorage.setItem('thrive_ai_key', this.AIKEY); else localStorage.removeItem('thrive_ai_key'); }catch(e){} this.setState({tlTick:(this.state.tlTick||0)+1}); }
   openSettings(){ this.setState({settingsModal:{key:this.AIKEY||'', model:(this.aiModel()||'')}}); }
   setSettings(field,v){ this.setState(s=>({settingsModal:Object.assign({},s.settingsModal,{[field]:v})})); }
-  saveSettings(){ const m=this.state.settingsModal; if(!m) return; this.aiSaveKey(m.key); try{ localStorage.setItem('thrive_ai_model', m.model||'claude-sonnet-5'); }catch(e){} this.setState({settingsModal:null}); this.toast(this.AIKEY?'AI turned on ✓':'AI key removed'); }
+  saveSettings(){ const m=this.state.settingsModal; if(!m) return; this.aiSaveKey(m.key); try{ localStorage.setItem('thrive_ai_model', m.model||'claude-haiku-4-5'); }catch(e){} this.setState({settingsModal:null}); this.toast(this.AIKEY?'AI turned on ✓':'AI key removed'); }
   closeSettings(){ this.setState({settingsModal:null}); }
-  aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-sonnet-5'; }catch(e){ return 'claude-sonnet-5'; } }
+  aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-haiku-4-5'; }catch(e){ return 'claude-haiku-4-5'; } }
+  aiFundingMsg(){ return "Our Chat Option isn't available right now. Please contact dana2andrea@gmail.com for questions."; }
+  aiIsBillingError(status,msg){ const m=String(msg||'').toLowerCase(); if(status===402) return true; return /credit|billing|balance is too low|too low|spend limit|usage limit|monthly limit|quota|insufficient|payment required|out of funds|budget/.test(m); }
   _stripHtml(h){ return String(h==null?'':h).replace(/<\/(p|div|h[1-6]|li|tr)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<td[^>]*>/gi,'\t').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim(); }
   aiContext(ph,di,ti){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di];
     if(ti==='m'){ if(!del) return ''; const L=[]; L.push('PROJECT: Thrive Hybrid Academy — a hybrid/virtual school launch & accreditation roadmap.'); L.push('PHASE: '+(P?P.label:ph)); L.push('MILESTONE: '+del.title); if(del.desc&&del.desc.trim()) L.push('MILESTONE GOAL: '+del.desc.trim()); const mn=this._stripHtml(del.notes); if(mn) L.push('MILESTONE NOTES:\n'+mn); if(del.tasks&&del.tasks.length) L.push('TASKS:\n'+del.tasks.map(t=>'- ['+(t.done?'x':' ')+'] '+t.label+(t.notes?(' — '+this._stripHtml(t.notes)):'')).join('\n')); const links=(del.delLinks||[]).filter(l=>l.url&&l.url.trim()); if(links.length) L.push('LINKS:\n'+links.map(l=>'- '+(l.label||'')+': '+l.url).join('\n')); return L.join('\n'); }
@@ -1795,14 +1797,14 @@ class Component extends DCLogic {
   aiTitle(kind){ return this.aiSpec(kind).title; }
   async aiCall(prompt){ const key=this.AIKEY; if(!key) throw new Error('no-key');
     const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1600, messages:[{role:'user', content:prompt}] }) });
-    if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||JSON.stringify(j).slice(0,200); }catch(e){ msg=await res.text(); } if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+': '+String(msg).slice(0,200)); }
+    if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||JSON.stringify(j).slice(0,200); }catch(e){ msg=await res.text(); } if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+': '+String(msg).slice(0,200)); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
   async aiRun(kind,ph,di,ti){ if(!this.AIKEY){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
     const spec=this.aiSpec(kind); const ctx=this.aiContext(ph,di,ti);
     const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble.';
     this.setState({aiPanel:{loading:true, title:spec.title, text:'', error:'', ph,di,ti}});
     try{ const text=await this.aiCall(prompt); this.setState({aiPanel:{loading:false, title:spec.title, text:text, error:'', ph,di,ti}}); }
-    catch(e){ const msg=String(e&&e.message||e); this.setState({aiPanel:{loading:false, title:spec.title, text:'', error:(msg==='no-key'?'Add your AI key in Settings first.':msg), ph,di,ti}}); }
+    catch(e){ const msg=String(e&&e.message||e); this.setState({aiPanel:{loading:false, title:spec.title, text:'', error:(msg==='__FUNDING__'?this.aiFundingMsg():(msg==='no-key'?'Add your AI key in Settings first.':msg)), ph,di,ti}}); }
   }
   aiClose(){ this.setState({aiPanel:null}); }
   aiCopy(){ const a=this.state.aiPanel; if(!a||!a.text) return; try{ navigator.clipboard.writeText(a.text); }catch(e){} this.toast('Copied to clipboard'); }
@@ -1848,7 +1850,7 @@ class Component extends DCLogic {
     sys+='\n\nMEMORY: When you learn a durable fact, preference, or decision about Dana or Thrive that would help you assist her better in future chats, append it at the very end of your reply on its own line in EXACTLY this format: [[REMEMBER: the concise fact]]. You may add more than one. These lines are removed before Dana sees the reply, so never reference them in the visible text. Only record things worth remembering long-term — skip trivial or one-off details.';
     const sent=(msgs||[]).slice(-24); // cap history sent to control cost
     const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) }) });
-    if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
+    if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
   async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); if(!q||this.state.aiChatLoading) return; if(!this.AIKEY){ this.openSettings(); return; }
     const msgs=(this.state.aiChatMsgs||[]).concat([{role:'user',content:q}]);
@@ -1856,7 +1858,7 @@ class Component extends DCLogic {
     this.aiChatPersist(msgs);
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },30);
     try{ const raw=await this.aiChatCall(msgs); const ext=this.aiChatExtractMemory(raw, this.state.aiChatMem||''); const next=msgs.concat([{role:'assistant',content:ext.text}]); this.setState({aiChatMsgs:next, aiChatMem:ext.mem, aiChatLoading:false}); this.aiChatPersist(next, ext.mem); }
-    catch(e){ const m=String(e&&e.message||e); const next=msgs.concat([{role:'assistant',content:'⚠️ '+(m==='no-key'?'Add your AI key in Settings first.':m)}]); this.setState({aiChatMsgs:next, aiChatLoading:false}); this.aiChatPersist(next); }
+    catch(e){ const m=String(e&&e.message||e); const disp=(m==='__FUNDING__')?this.aiFundingMsg():('⚠️ '+(m==='no-key'?'Add your AI key in Settings first.':m)); const next=msgs.concat([{role:'assistant',content:disp}]); this.setState({aiChatMsgs:next, aiChatLoading:false}); this.aiChatPersist(next); }
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },40);
   }
   aiChatClear(){ if(typeof window!=='undefined' && window.confirm && !window.confirm('Clear this chat history? Your saved memory will be kept.')) return; this.setState({aiChatMsgs:[]}); this.aiChatPersist([]); this.toast('Chat history cleared'); }
@@ -2204,7 +2206,7 @@ class Component extends DCLogic {
     const aiButtons=[['Summarize Notes','summarize'],['Draft Email','email'],['Generate Vendor Questions','vendor'],['Create Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite Professionally','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], _wp.ph, _wp.di, _wp.ti)}));
     const aiOn=!!this.AIKEY;
     const aiPanel=(this.state.aiPanel?{ open:true, loading:!!this.state.aiPanel.loading, title:this.state.aiPanel.title||'AI', text:this.state.aiPanel.text||'', hasText:!!(this.state.aiPanel.text&&this.state.aiPanel.text.trim()), error:this.state.aiPanel.error||'', hasError:!!this.state.aiPanel.error, onCopy:()=>this.aiCopy(), onInsert:()=>this.aiInsert(), onClose:()=>this.aiClose() }:{ open:false });
-    const settings=(this.state.settingsModal?{ open:true, key:this.state.settingsModal.key||'', model:this.state.settingsModal.model||'claude-sonnet-5', onKey:e=>this.setSettings('key',e.target.value), onModel:e=>this.setSettings('model',e.target.value), onSave:()=>this.saveSettings(), onClose:()=>this.closeSettings() }:{ open:false });
+    const settings=(this.state.settingsModal?{ open:true, key:this.state.settingsModal.key||'', model:this.state.settingsModal.model||'claude-haiku-4-5', onKey:e=>this.setSettings('key',e.target.value), onModel:e=>this.setSettings('model',e.target.value), onSave:()=>this.saveSettings(), onClose:()=>this.closeSettings() }:{ open:false });
 
     // ---- roadmap overview (all phases) ----
     const overviewPhases=this.PHASES.map(p=>{
