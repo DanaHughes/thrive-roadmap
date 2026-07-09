@@ -194,6 +194,31 @@
     </div>
   </sc-if>
 
+  <!-- ===== MOVE MODAL (task / milestone → phase / milestone) ===== -->
+  <sc-if value="{{ move.open }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:96;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#fff;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;box-shadow:0 24px 64px rgba(20,30,12,.32);">
+        <div style="font-size:16px;font-weight:800;color:#23311C;margin-bottom:4px;">{{ move.title }}</div>
+        <div style="font-size:12px;color:#79866C;margin-bottom:16px;">Moving: <b style="color:#34672A;">{{ move.itemLabel }}</b></div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">MOVE TO PHASE</div>
+        <select value="{{ move.toPh }}" onChange="{{ move.onPhase }}" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
+          <sc-for list="{{ move.phases }}" as="p" hint-placeholder-count="5"><option value="{{ p.key }}">{{ p.label }}</option></sc-for>
+        </select>
+        <sc-if value="{{ move.isTask }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:#A6B098;margin-bottom:6px;">INTO MILESTONE</div>
+          <select value="{{ move.toDi }}" onChange="{{ move.onDi }}" style="width:100%;border:1px solid #D7E2CE;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;color:#23311C;outline:none;margin-bottom:14px;background:#FBFCFA;box-sizing:border-box;">
+            <sc-for list="{{ move.targetDels }}" as="d" hint-placeholder-count="3"><option value="{{ d.idx }}">{{ d.label }}</option></sc-for>
+            <option value="new">＋ New milestone</option>
+          </select>
+        </sc-if>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button class="pbtn" onClick="{{ move.onConfirm }}" style="flex:1;background:#45852B;color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Move</button>
+          <button class="pbtn" onClick="{{ move.onCancel }}" style="background:#fff;color:#9AA68C;border:1px solid #E2E8DE;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ===== TEAM COMMENT MODAL ===== -->
   <sc-if value="{{ cm.open }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(20,30,12,.42);z-index:95;display:flex;align-items:center;justify-content:center;padding:20px;">
@@ -286,9 +311,15 @@
 
     <div style="font-size:10px;font-weight:700;letter-spacing:.13em;color:#A3AEC0;padding:20px 10px 9px;">WORKSTREAMS</div>
     <sc-for list="{{ phaseNav }}" as="p" hint-placeholder-count="5">
-      <div class="nav" onClick="{{ p.onClick }}" style="{{ p.style }}">
+      <div class="nav" draggable="true" data-pk="{{ p.key }}" onClick="{{ p.onClick }}" style="{{ p.style }}">
         <span style="width:26px;height:26px;border-radius:8px;background:{{ p.iconBg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:{{ p.iconColor }};font-size:12px;font-weight:800;">{{ p.glyph }}</span>
-        <span style="font-size:13px;">{{ p.label }}</span>
+        <span style="font-size:13px;flex:1;min-width:0;">{{ p.label }}</span>
+        <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
+          <span style="display:flex;flex-direction:column;gap:1px;flex:0 0 auto;" title="Drag to reorder, or use arrows">
+            <button class="pbtn" onClick="{{ p.onUp }}" title="Move phase up" style="width:20px;height:14px;border:1px solid #E2E8DE;background:#fff;border-radius:5px 5px 0 0;color:#8A957C;cursor:pointer;font-size:8px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▲</button>
+            <button class="pbtn" onClick="{{ p.onDown }}" title="Move phase down" style="width:20px;height:14px;border:1px solid #E2E8DE;border-top:none;background:#fff;border-radius:0 0 5px 5px;color:#8A957C;cursor:pointer;font-size:8px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▼</button>
+          </span>
+        </sc-if>
       </div>
     </sc-for>
     <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
@@ -417,7 +448,7 @@
             <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
-              <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
+              <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onMoveMs }}" title="Move this milestone to another phase" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇄ Move</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
               <button class="pbtn" onClick="{{ d.onToggleCollapse }}" title="{{ d.collapseTitle }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ d.collapseGlyph }}</button>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
@@ -440,6 +471,7 @@
                     <sc-if value="{{ t.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 7px;flex:0 0 auto;white-space:nowrap;">{{ t.doneTag }}</span></sc-if>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
+                    <button class="pbtn" onClick="{{ t.onMove }}" title="Move this task to another milestone or phase" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">⇄</button>
                     <button class="pbtn" onClick="{{ t.onToggleTCol }}" title="{{ t.tcolTitle }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ t.tcolGlyph }}</button>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
                   </div>
@@ -1273,7 +1305,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v42 · Jul 8';
+    this.BUILD='v43 · Jul 8';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1329,15 +1361,17 @@ class Component extends DCLogic {
       ]},
     ];
     this._phaseYearMap={p1:['Year 1','Build the curriculum plan & map it out'],p2:['Year 1','Open hybrid virtual — enroll & begin operating'],p3:['Year 1–2','Document & build operational history archive'],p45:['Year 1–3','Cognia membership, binder & accreditation'],p6:['Year 3–4','TEFA eligibility & application (deadline Mar 2028)']};
-    this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,label:p.label,heading:p.heading,color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',p.label])[1]}));
+    this._phaseName=(lbl)=>String(lbl||'').replace(/^\s*phase\s+[\w\-–]+\s*·?\s*/i,'').trim();
+    this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
-  // Phases are editable (add/delete/rename) and live in the board so they sync. Falls back to the default set.
-  get PHASES(){ const p=this.state&&this.state.board&&this.state.board._phases; return (Array.isArray(p)&&p.length)?p:this._phaseMetaDefault; }
+  // Phases are editable (add/delete/rename/reorder) and live in the board so they sync. Numbers are POSITIONAL (auto-renumber on reorder).
+  get PHASES(){ const raw=this.state&&this.state.board&&this.state.board._phases; const list=(Array.isArray(raw)&&raw.length)?raw:this._phaseMetaDefault;
+    return list.map((p,i)=>{ const name=(p.name!=null&&p.name!=='')?p.name:(this._phaseName(p.label)||('Phase '+(i+1))); const label='Phase '+(i+1)+(name?(' · '+name):''); return { key:p.key, name, label, heading:label.toUpperCase(), color:p.color, iconBg:p.iconBg, glyph:p.glyph, year:p.year||'', rmTitle:(p.rmTitle||name), _idx:i }; }); }
   seedBoard(){
     const b={};
     this.PHASE_SEED.forEach(p=>{ b[p.key]=p.dels.map(del=>({
@@ -1347,9 +1381,18 @@ class Component extends DCLogic {
     b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x));
     return b;
   }
-  addPhase(){ const key='px'+Math.random().toString(36).slice(2,7); this.mut(b=>{ if(!Array.isArray(b._phases)) b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x)); const n=b._phases.length; const c=this._phaseColors[n%this._phaseColors.length]; const tint=this._phaseTints[n%this._phaseTints.length]; b._phases.push({key, label:'Phase '+(n+1)+' · New Phase', heading:'PHASE '+(n+1)+' · NEW PHASE', color:c, iconBg:tint, glyph:'◆', year:'', rmTitle:'New phase'}); b[key]=[{id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[{id:this.uid(), label:'New task', done:false, notes:'', files:[], subs:[]}]}]; }); this.setState({active:key, view:'phase'}); this.persist({active:key, view:'phase'}); this.toast('Phase added — rename it in its header'); }
+  addPhase(){ const key='px'+Math.random().toString(36).slice(2,7); this.mut(b=>{ if(!Array.isArray(b._phases)) b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x)); const n=b._phases.length; const c=this._phaseColors[n%this._phaseColors.length]; const tint=this._phaseTints[n%this._phaseTints.length]; b._phases.push({key, name:'New Phase', color:c, iconBg:tint, glyph:'◆', year:'', rmTitle:'New phase'}); b[key]=[{id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[{id:this.uid(), label:'New task', done:false, notes:'', files:[], subs:[]}]}]; }); this.setState({active:key, view:'phase'}); this.persist({active:key, view:'phase'}); this.toast('Phase added — drag it into position & rename it'); }
   delPhase(key){ const list=this.PHASES; if(list.length<=1){ this.toast('You need at least one phase'); return; } const idx=list.findIndex(p=>p.key===key); const nextKey=(list[idx+1]||list[idx-1]||list[0]).key; this.mut(b=>{ if(Array.isArray(b._phases)) b._phases=b._phases.filter(p=>p.key!==key); delete b[key]; }); this.setState({active:nextKey, view:'phase'}); this.persist({active:nextKey, view:'phase'}); this.toast('Phase deleted · undo from Version History if needed'); }
-  renamePhase(key,v){ this.mut(b=>{ const p=(b._phases||[]).find(x=>x.key===key); if(p){ p.label=v; p.heading=(v||'').toUpperCase(); p.rmTitle=v.replace(/^Phase\s*[\dA-Za-z\-]+\s*·\s*/,''); } }); }
+  renamePhase(key,v){ this.mut(b=>{ const p=(b._phases||[]).find(x=>x.key===key); if(p){ const nm=this._phaseName(v)||v; p.name=nm; p.rmTitle=nm; delete p.label; delete p.heading; } }); }
+  movePhase(key,dir){ this.mut(b=>{ const a=b._phases; if(!Array.isArray(a)) return; const i=a.findIndex(p=>p.key===key); if(i<0) return; const j=i+dir; if(j<0||j>=a.length) return; const t=a[i]; a[i]=a[j]; a[j]=t; }); }
+  movePhaseTo(key,toIndex){ this.mut(b=>{ const a=b._phases; if(!Array.isArray(a)) return; const i=a.findIndex(p=>p.key===key); if(i<0) return; const item=a.splice(i,1)[0]; let j=Math.max(0,Math.min(a.length,toIndex)); a.splice(j,0,item); }); this.toast('Phase moved · numbers updated'); }
+  // ---- Move a milestone to another phase, or a task to another milestone/phase ----
+  moveMilestone(fromPh,di,toPh){ if(fromPh===toPh) { this.setState({moveModal:null}); return; } this.mut(b=>{ if(!b[fromPh]||!b[fromPh][di]||!Array.isArray(b[toPh])) return; const m=b[fromPh].splice(di,1)[0]; b[toPh].push(m); }); this.setState({moveModal:null}); this.toast('Milestone moved'); }
+  moveTask(fromPh,fromDi,ti,toPh,toDi){ this.mut(b=>{ if(!b[fromPh]||!b[fromPh][fromDi]) return; const t=b[fromPh][fromDi].tasks[ti]; if(!t) return; let target; if(toDi==='new'){ const nm={id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[]}; if(!Array.isArray(b[toPh])) return; b[toPh].push(nm); target=nm; } else { if(!b[toPh]||!b[toPh][+toDi]) return; target=b[toPh][+toDi]; } if(!Array.isArray(target.tasks)) target.tasks=[]; b[fromPh][fromDi].tasks.splice(ti,1); target.tasks.push(t); }); this.setState({moveModal:null}); this.toast('Task moved'); }
+  openMove(kind,ph,di,ti){ this.setState({moveModal:{kind, ph, di, ti, toPh:ph, toDi:(kind==='task'?String(di):'')}}); }
+  setMove(field,v){ this.setState(s=>({moveModal:Object.assign({},s.moveModal,{[field]:v})})); }
+  closeMove(){ this.setState({moveModal:null}); }
+  confirmMove(){ const m=this.state.moveModal; if(!m) return; if(m.kind==='milestone') this.moveMilestone(m.ph,m.di,m.toPh); else this.moveTask(m.ph,m.di,m.ti,m.toPh,m.toDi); }
   componentDidMount(){
     try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:this.normalizeBoard(s.board), active:s.active||'p1'}); } }catch(e){}
     try{ const hh=JSON.parse(localStorage.getItem(this.HKEY)||'null'); if(Array.isArray(hh)){ this.setState({history:hh}); } }catch(e){}
@@ -1374,10 +1417,24 @@ class Component extends DCLogic {
     this.tlInit();
     this.commentsInit();
     this._rnInit();
+    this._dndInit();
     this.aiLoadKey();
     this._growAll(); setTimeout(()=>{ this._growAll(); this._rnRender(); },120);
   }
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
+  // ---- Drag-and-drop reordering for phases (desktop); up/down arrows cover mobile ----
+  _dndInit(){
+    this._dragKey=null;
+    const clear=()=>{ try{ document.querySelectorAll('[data-pk]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
+    this._onDragStart=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
+    this._onDragEnd=()=>{ this._dragKey=null; clear(); };
+    this._onDragOver=(e)=>{ if(!this._dragKey) return; const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-pk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; };
+    this._onDrop=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); clear(); if(!el||!this._dragKey) return; e.preventDefault(); const targetKey=el.getAttribute('data-pk'); const dk=this._dragKey; this._dragKey=null; if(targetKey===dk) return; const list=this.PHASES; const toIndex=list.findIndex(p=>p.key===targetKey); if(toIndex<0) return; this.movePhaseTo(dk, toIndex); };
+    document.addEventListener('dragstart',this._onDragStart,true);
+    document.addEventListener('dragend',this._onDragEnd,true);
+    document.addEventListener('dragover',this._onDragOver,true);
+    document.addEventListener('drop',this._onDrop,true);
+  }
   _growAll(){ try{ const ns=document.querySelectorAll('textarea.gtext'); for(let i=0;i<ns.length;i++){ const t=ns[i]; t.style.height='auto'; t.style.height=t.scrollHeight+'px'; } }catch(e){} }
   // ---- Rich-text inline notes (bold, highlight, lists, tables) — managed outside React's vdom so re-renders never wipe them ----
   _rnEsc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
@@ -1412,7 +1469,7 @@ class Component extends DCLogic {
     }catch(e){}
     this._rnPend={np:el.getAttribute('data-np'), html:el.innerHTML, el}; clearTimeout(this._rnT); this._rnT=setTimeout(()=>this._rnSave(), 300);
   }
-  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } if(this._rnInput){ document.removeEventListener('input', this._rnInput, true); document.removeEventListener('focusin', this._rnFocusIn, true); document.removeEventListener('focusout', this._rnFocusOut, true); } if(this._rnBarEl){ this._rnBarEl.remove(); this._rnBarEl=null; } this.tlSave(); }
+  componentWillUnmount(){ clearInterval(this._clock); clearTimeout(this._t); clearInterval(this._cloudPoll); clearTimeout(this._cloudT); clearTimeout(this._histT); clearInterval(this._tlInt); clearInterval(this._tlSyncInt); clearInterval(this._cmInt); window.removeEventListener('hashchange', this._onHash); if(this._onVis){ document.removeEventListener('visibilitychange', this._onVis); window.removeEventListener('focus', this._onVis); } if(this._tlVis){ document.removeEventListener('visibilitychange', this._tlVis); window.removeEventListener('focus', this._tlVis); } if(this._tlHide){ document.removeEventListener('visibilitychange', this._tlHide); window.removeEventListener('pagehide', this._tlHide); } if(this._tlAct){ ['mousemove','mousedown','keydown','scroll','touchstart'].forEach(ev=>window.removeEventListener(ev,this._tlAct)); } if(this._docKey) document.removeEventListener('keydown', this._docKey); if(this._docOv){ this._docOv.remove(); this._docOv=null; } if(this._rnInput){ document.removeEventListener('input', this._rnInput, true); document.removeEventListener('focusin', this._rnFocusIn, true); document.removeEventListener('focusout', this._rnFocusOut, true); } if(this._rnBarEl){ this._rnBarEl.remove(); this._rnBarEl=null; } if(this._onDragStart){ document.removeEventListener('dragstart',this._onDragStart,true); document.removeEventListener('dragend',this._onDragEnd,true); document.removeEventListener('dragover',this._onDragOver,true); document.removeEventListener('drop',this._onDrop,true); } this.tlSave(); }
 
   // ---- Cloud sync: single-user board sync via Firebase Realtime DB REST ----
   cloudUrl(){ return (this.SYNC_URL&&this.SYNC_PATH) ? (this.SYNC_URL.replace(/\/+$/,'')+'/'+this.SYNC_PATH+'.json') : ''; }
@@ -1887,12 +1944,14 @@ class Component extends DCLogic {
     const ph=active.key;
     const q=(this.state.search||'').trim().toLowerCase();
 
-    const phaseNav=this.PHASES.map(p=>({
-      label:p.label, glyph:p.glyph, iconColor:p.color, iconBg:p.iconBg,
+    const phaseNav=this.PHASES.map((p,i)=>({
+      key:p.key, label:p.label, glyph:p.glyph, iconColor:p.color, iconBg:p.iconBg,
       onClick:()=>this.setActive(p.key),
+      onUp:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.movePhase(p.key,-1); },
+      onDown:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.movePhase(p.key,1); },
       style:(this.state.view==='phase'&&p.key===this.state.active)
-        ? 'display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;background:#EDF3E6;color:#34512C;font-weight:700;margin-bottom:2px;'
-        : 'display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;color:#475569;font-weight:500;margin-bottom:2px;'
+        ? 'display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;cursor:pointer;background:#EDF3E6;color:#34512C;font-weight:700;margin-bottom:2px;'
+        : 'display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;cursor:pointer;color:#475569;font-weight:500;margin-bottom:2px;'
     }));
     const navItem=(on)=> on
       ? 'display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;background:#EDF3E6;color:#34512C;font-weight:700;margin-bottom:2px;'
@@ -1931,7 +1990,7 @@ class Component extends DCLogic {
         onAddTask:()=>this.addTask(ph,di),
         onAddDelFile:(e)=>this.addDelFile(ph,di,e),
         onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
-        onOpenMs:()=>this.openMsWS(ph,di), onExportMs:()=>this.exportMilestone(ph,di),
+        onOpenMs:()=>this.openMsWS(ph,di), onExportMs:()=>this.exportMilestone(ph,di), onMoveMs:()=>this.openMove('milestone',ph,di),
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
@@ -1949,6 +2008,7 @@ class Component extends DCLogic {
           onDelete:()=>this.delTask(ph,di,ti),
           onAddSub:()=>this.addSub(ph,di,ti),
           onAddLink:()=>{ this.addLink(ph,di,ti); this.openWS(ph,di,ti); },
+          onMove:()=>this.openMove('task',ph,di,ti),
           links:(t.links||[]).map(l=>({ label:(l.label||'Link'), href:((l.url&&l.url.trim())?l.url:'#'), onClick:((l.url&&l.url.trim())?(()=>{}):(e=>{ e.preventDefault(); this.openWS(ph,di,ti); })) })),
           onOpen:()=>this.openWS(ph,di,ti),
           onComment:()=>this.openComment({ph, msId:del.id, taskId:t.id, label:t.label}),
@@ -2164,6 +2224,12 @@ class Component extends DCLogic {
           onExport:()=>this.exportMilestone(mph,mdi), onClose:()=>this.closeMsWS() }; })(),
       msWsShow:!!(this.state.msWsOpen&&this.state.msWsPath), msWsCls:this.state.msWsOpen?'show':'', msWsBackCls:this.state.msWsOpen?'show':'',
       aiButtons, aiOn, aiOff:!aiOn, aiPanel, settings, onOpenSettings:()=>this.openSettings(),
+      move:(this.state.moveModal?(()=>{ const m=this.state.moveModal; const isTask=m.kind==='task'; const fromDel=(board[m.ph]||[])[m.di]; const itemLabel=isTask?((fromDel&&fromDel.tasks[m.ti]&&fromDel.tasks[m.ti].label)||'this task'):((fromDel&&fromDel.title)||'this milestone');
+        const phases=this.PHASES.map(p=>({ key:p.key, label:p.label, sel:p.key===m.toPh }));
+        const targetDels=(board[m.toPh]||[]).map((del,di)=>({ idx:String(di), label:'Milestone '+(di+1)+' · '+del.title, sel:String(di)===String(m.toDi) }));
+        return { open:true, isTask, isMilestone:!isTask, title:isTask?'Move task':'Move milestone', itemLabel, phases, targetDels, toPh:m.toPh, toDi:String(m.toDi), newSel:(m.toDi==='new'),
+          onPhase:e=>this.setState(s=>({moveModal:Object.assign({},s.moveModal,{toPh:e.target.value, toDi:'0'})})),
+          onDi:e=>this.setMove('toDi',e.target.value), onConfirm:()=>this.confirmMove(), onCancel:()=>this.closeMove() }; })():{ open:false }),
       showAiFab:(this.state.privateMode && !this.state.locked),
       onAiFab:()=>this.aiChatToggle(),
       aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onClose:()=>this.setState({aiChatOpen:false}), onClear:()=>this.aiChatClear() }; })(),
