@@ -441,8 +441,9 @@
     <!-- MILESTONE CARDS -->
     <div>
       <sc-for list="{{ deliverables }}" as="d" hint-placeholder-count="4">
-        <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:14px;overflow:hidden;">
-          <div style="display:flex;align-items:flex-start;gap:14px;padding:15px 16px 15px 18px;background:{{ d.tint }};">
+        <div data-ms="{{ d.msDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:14px;overflow:hidden;">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 16px 15px 16px;background:{{ d.tint }};">
+            <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span data-msgrip="1" draggable="true" title="Drag to reorder this milestone" style="cursor:grab;color:#B7C4A8;font-size:16px;line-height:1;flex:0 0 auto;margin-top:14px;user-select:none;">⠿</span></sc-if>
             <div style="width:44px;height:44px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:{{ d.iconColor }};font-size:18px;border:1px solid rgba(0,0,0,.05);margin-top:2px;">{{ d.glyph }}</div>
             <div style="min-width:0;flex:1;">
               <div style="display:flex;align-items:center;gap:7px;">
@@ -455,6 +456,10 @@
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
               <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onMoveMs }}" title="Move this milestone to another phase" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇄ Move</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
+              <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:2px;flex:0 0 auto;">
+                <button class="pbtn" onClick="{{ d.onMsUp }}" title="Move milestone up" style="width:24px;height:15px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;border-radius:5px 5px 0 0;cursor:pointer;font-size:8px;line-height:1;padding:0;font-family:inherit;">▲</button>
+                <button class="pbtn" onClick="{{ d.onMsDown }}" title="Move milestone down" style="width:24px;height:15px;border:1px solid #D7E2CE;border-top:none;background:#fff;color:#5B7A45;border-radius:0 0 5px 5px;cursor:pointer;font-size:8px;line-height:1;padding:0;font-family:inherit;">▼</button>
+              </div></sc-if>
               <button class="pbtn" onClick="{{ d.onToggleCollapse }}" title="{{ d.collapseTitle }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ d.collapseGlyph }}</button>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
@@ -1415,7 +1420,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v54 · Jul 9';
+    this.BUILD='v55 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1504,6 +1509,9 @@ class Component extends DCLogic {
   movePhaseTo(key,toIndex){ this.mut(b=>{ const a=b._phases; if(!Array.isArray(a)) return; const i=a.findIndex(p=>p.key===key); if(i<0) return; const item=a.splice(i,1)[0]; let j=Math.max(0,Math.min(a.length,toIndex)); a.splice(j,0,item); }); this.toast('Phase moved · numbers updated'); }
   // ---- Move a milestone to another phase, or a task to another milestone/phase ----
   moveMilestone(fromPh,di,toPh){ if(fromPh===toPh) { this.setState({moveModal:null}); return; } this.mut(b=>{ if(!b[fromPh]||!b[fromPh][di]||!Array.isArray(b[toPh])) return; const m=b[fromPh].splice(di,1)[0]; b[toPh].push(m); }); this.setState({moveModal:null}); this.toast('Milestone moved'); }
+  // Reorder milestones WITHIN a phase (drag handle + up/down arrows)
+  moveMsOrder(ph,di,dir){ this.mut(b=>{ const a=b[ph]; if(!Array.isArray(a)) return; const j=di+dir; if(j<0||j>=a.length) return; const t=a[di]; a[di]=a[j]; a[j]=t; }); }
+  moveMsTo(ph,fromDi,toDi){ this.mut(b=>{ const a=b[ph]; if(!Array.isArray(a)||fromDi<0||fromDi>=a.length) return; const item=a.splice(fromDi,1)[0]; const j=Math.max(0,Math.min(a.length,toDi)); a.splice(j,0,item); }); this.toast('Milestone reordered'); }
   moveTask(fromPh,fromDi,ti,toPh,toDi){ this.mut(b=>{ if(!b[fromPh]||!b[fromPh][fromDi]) return; const t=b[fromPh][fromDi].tasks[ti]; if(!t) return; let target; if(toDi==='new'){ const nm={id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[]}; if(!Array.isArray(b[toPh])) return; b[toPh].push(nm); target=nm; } else { if(!b[toPh]||!b[toPh][+toDi]) return; target=b[toPh][+toDi]; } if(!Array.isArray(target.tasks)) target.tasks=[]; b[fromPh][fromDi].tasks.splice(ti,1); target.tasks.push(t); }); this.setState({moveModal:null}); this.toast('Task moved'); }
   openMove(kind,ph,di,ti){ this.setState({moveModal:{kind, ph, di, ti, toPh:ph, toDi:(kind==='task'?String(di):'')}}); }
   setMove(field,v){ this.setState(s=>({moveModal:Object.assign({},s.moveModal,{[field]:v})})); }
@@ -1543,12 +1551,19 @@ class Component extends DCLogic {
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
   // ---- Drag-and-drop reordering for phases (desktop); up/down arrows cover mobile ----
   _dndInit(){
-    this._dragKey=null;
-    const clear=()=>{ try{ document.querySelectorAll('[data-pk]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
-    this._onDragStart=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
-    this._onDragEnd=()=>{ this._dragKey=null; clear(); };
-    this._onDragOver=(e)=>{ if(!this._dragKey) return; const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-pk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; };
-    this._onDrop=(e)=>{ const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); clear(); if(!el||!this._dragKey) return; e.preventDefault(); const targetKey=el.getAttribute('data-pk'); const dk=this._dragKey; this._dragKey=null; if(targetKey===dk) return; const list=this.PHASES; const toIndex=list.findIndex(p=>p.key===targetKey); if(toIndex<0) return; this.movePhaseTo(dk, toIndex); };
+    this._dragKey=null; this._dragMs=null;
+    const clear=()=>{ try{ document.querySelectorAll('[data-pk],[data-ms]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
+    this._onDragStart=(e)=>{
+      const grip=e.target&&e.target.closest&&e.target.closest('[data-msgrip]');
+      if(grip){ const ms=e.target.closest('[data-ms]'); if(ms){ this._dragMs=ms.getAttribute('data-ms'); this._dragKey=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragMs); }catch(_){} ms.style.opacity='0.5'; return; } }
+      const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); this._dragMs=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
+    this._onDragEnd=()=>{ this._dragKey=null; this._dragMs=null; clear(); };
+    this._onDragOver=(e)=>{
+      if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-ms]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; return; }
+      if(!this._dragKey) return; const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-pk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; };
+    this._onDrop=(e)=>{
+      if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); const dm=this._dragMs; this._dragMs=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-ms'); if(!to||to===dm) return; const fa=dm.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]) return; this.moveMsTo(fa[0], +fa[1], +ta[1]); return; }
+      const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); clear(); if(!el||!this._dragKey) return; e.preventDefault(); const targetKey=el.getAttribute('data-pk'); const dk=this._dragKey; this._dragKey=null; if(targetKey===dk) return; const list=this.PHASES; const toIndex=list.findIndex(p=>p.key===targetKey); if(toIndex<0) return; this.movePhaseTo(dk, toIndex); };
     document.addEventListener('dragstart',this._onDragStart,true);
     document.addEventListener('dragend',this._onDragEnd,true);
     document.addEventListener('dragover',this._onDragOver,true);
@@ -2236,6 +2251,7 @@ class Component extends DCLogic {
         onAddDelFile:(e)=>this.addDelFile(ph,di,e),
         onComment:()=>this.openComment({ph, msId:del.id, label:'Milestone '+(di+1)+' · '+del.title}),
         onOpenMs:()=>this.openMsWS(ph,di), onExportMs:()=>this.exportMilestone(ph,di), onMoveMs:()=>this.openMove('milestone',ph,di),
+        msDrag:(ph+'|'+di), onMsUp:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveMsOrder(ph,di,-1); }, onMsDown:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.moveMsOrder(ph,di,1); },
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
