@@ -420,7 +420,7 @@
           </div>
           <div style="padding:0 18px 4px;display:flex;flex-direction:column;gap:6px;">
             <sc-for list="{{ d.tasks }}" as="t" hint-placeholder-count="3">
-              <div class="rg" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
+              <div class="rg" style="display:grid;grid-template-columns:{{ t.rowGrid }};border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
                 <div style="padding:9px 12px;background:{{ t.bg }};">
                   <div style="display:flex;align-items:center;gap:10px;">
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
@@ -428,8 +428,10 @@
                     <sc-if value="{{ t.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 7px;flex:0 0 auto;white-space:nowrap;">{{ t.doneTag }}</span></sc-if>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
+                    <button class="pbtn" onClick="{{ t.onToggleTCol }}" title="{{ t.tcolTitle }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ t.tcolGlyph }}</button>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
                   </div>
+                  <sc-if value="{{ t.texp }}" hint-placeholder-val="{{ true }}">
                   <div style="margin-left:30px;margin-top:7px;display:flex;flex-direction:column;gap:5px;">
                     <sc-for list="{{ t.subs }}" as="s" hint-placeholder-count="0">
                       <div style="display:flex;flex-direction:column;gap:5px;">
@@ -462,7 +464,9 @@
                     </sc-for>
                     <button class="add" onClick="{{ t.onAddSub }}" style="align-self:flex-start;font-family:inherit;font-size:10.5px;font-weight:700;color:#7C8C6C;background:transparent;border:none;cursor:pointer;padding:2px 0;">+ Add subtask</button>
                   </div>
+                  </sc-if>
                 </div>
+                <sc-if value="{{ t.texp }}" hint-placeholder-val="{{ true }}">
                 <div style="padding:9px 12px;border-left:1px solid #ECF0E8;display:flex;flex-direction:column;gap:7px;justify-content:center;background:#FCFDFB;">
                   <div class="richnote" data-np="{{ t.np }}" data-ph="Add notes…"></div>
                   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
@@ -476,6 +480,7 @@
                     </sc-for>
                   </div>
                 </div>
+                </sc-if>
               </div>
             </sc-for>
             <button class="add" onClick="{{ d.onAddTask }}" style="font-family:inherit;font-size:12px;font-weight:700;color:#7C8C6C;background:#fff;border:1px dashed #D5DECB;border-radius:10px;padding:10px;cursor:pointer;">+ Add Task</button>
@@ -553,10 +558,10 @@
     <div class="rg" style="display:grid;grid-template-columns:300px repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:16px;margin-bottom:18px;">
       <div style="grid-row:1 / span 2;background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(20,30,12,.05);">
         <div style="position:relative;width:152px;height:152px;">
-          <svg width="152" height="152" viewBox="0 0 152 152"><circle cx="76" cy="76" r="64" fill="none" stroke="#EDF1E7" stroke-width="13"/><circle cx="76" cy="76" r="64" fill="none" stroke="#45852B" stroke-width="13" stroke-linecap="round" stroke-dasharray="{{ ovDash }}" transform="rotate(-90 76 76)"/></svg>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:38px;font-weight:800;color:#1E2A16;">{{ ovPctStr }}</div><div style="font-size:10px;font-weight:700;letter-spacing:.13em;color:#A6B098;margin-top:3px;">COMPLETE</div></div>
+          <svg width="152" height="152" viewBox="0 0 152 152"><circle cx="76" cy="76" r="64" fill="none" stroke="#EDF1E7" stroke-width="13"/><circle cx="76" cy="76" r="64" fill="none" stroke="{{ curPhaseColor }}" stroke-width="13" stroke-linecap="round" stroke-dasharray="{{ curPhaseDash }}" transform="rotate(-90 76 76)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:38px;font-weight:800;color:#1E2A16;">{{ curPhasePctStr }}</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.13em;color:#A6B098;margin-top:3px;">THIS PHASE</div></div>
         </div>
-        <div style="margin-top:20px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#33402A;">Overall program completion</div><div style="font-size:12px;color:#9AA68C;margin-top:4px;">{{ delTotalAll }} milestones · 5 workstreams</div></div>
+        <div style="margin-top:20px;text-align:center;"><div style="font-size:14px;font-weight:800;color:#33402A;">{{ curPhaseLabel }}</div><div style="font-size:11.5px;color:#9AA68C;margin-top:3px;">{{ curPhaseTasksStr }}</div><div style="font-size:11.5px;font-weight:700;color:#45852B;margin-top:9px;background:#EDF3E6;border:1px solid #DBE9CF;border-radius:20px;padding:4px 12px;display:inline-block;">{{ winsStr }}</div></div>
       </div>
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#A6B098;">▤</span>Milestones</div><div style="font-size:31px;font-weight:800;color:#1E2A16;">{{ delTotalAll }}</div></div>
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#45852B;">✓</span>Complete</div><div style="font-size:31px;font-weight:800;color:#45852B;">{{ delComplete }}</div></div>
@@ -1256,7 +1261,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v40 · Jul 8';
+    this.BUILD='v41 · Jul 8';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1311,7 +1316,7 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1903,6 +1908,9 @@ class Component extends DCLogic {
         tasks:del.tasks.map((t,ti)=>({
           label:t.label, done:t.done, notes:t.notes, np:ph+'|'+di+'|'+ti,
           color:t.done?'#5C6B54':'#334155', strike:'none', isDone:t.done, doneTag:t.done?'✓ Done':'',
+          tcol:!!this.state.taskCol[t.id], texp:!this.state.taskCol[t.id], tcolGlyph:this.state.taskCol[t.id]?'▸':'▾', tcolTitle:this.state.taskCol[t.id]?'Expand task':'Minimize task',
+          rowGrid:this.state.taskCol[t.id]?'1fr':'minmax(0,1fr) minmax(0,1fr)',
+          onToggleTCol:()=>this.setState(s=>({taskCol:Object.assign({},s.taskCol,{[t.id]:!s.taskCol[t.id]})})),
           cbcls:t.done?'on':'', bg:t.done?active.iconBg:'#FFFFFF', rowBorder:t.done?active.color:'#ECF0E8',
           files:(t.files||[]).map(n=>({name:n})),
           onToggle:()=>this.toggleTask(ph,di,ti),
@@ -1945,6 +1953,12 @@ class Component extends DCLogic {
     const phasePctMap={}, phaseStats={}; let aMD=0,aMT=0,dTot=0,dComp=0,dProg=0,dNot=0,evL=0;
     this.PHASES.forEach(p=>{ const a=board[p.key]||[]; let pd=0,pt=0,pdt=0,pdc=0; a.forEach(del=>{ const tt=del.tasks.length,dd=del.tasks.filter(t=>t.done).length; pd+=dd; pt+=tt; dTot++; pdt++; if(tt>0&&dd===tt){dComp++;pdc++;} else if(dd>0)dProg++; else dNot++; if(del.files&&del.files.length)evL++; }); aMD+=pd; aMT+=pt; phasePctMap[p.key]=pt?Math.round(pd/pt*100):0; phaseStats[p.key]={delTotal:pdt,delComp:pdc,microDone:pd,microTotal:pt}; });
     const ovPct=aMT?Math.round(aMD/aMT*100):0; const C2=2*Math.PI*64;
+    // Encouraging near-term metric: progress through the CURRENT phase (moves faster than the 3–4 yr total)
+    let curKey=this.PHASES[this.PHASES.length-1].key;
+    for(const p of this.PHASES){ const s=phaseStats[p.key]; if(s.microTotal===0 || s.microDone<s.microTotal){ curKey=p.key; break; } }
+    const curP=this.PHASES.find(x=>x.key===curKey); const curStats=phaseStats[curKey];
+    const curPhasePct=curStats.microTotal?Math.round(curStats.microDone/curStats.microTotal*100):0;
+    const curPhaseDash=(curPhasePct/100*C2)+' '+C2;
     const phaseColor={}; this.PHASES.forEach(p=>phaseColor[p.key]=p.color);
     const badgeBgMap={'#2E8B57':'#E5F2EB','#0E8F86':'#DDF1EF','#6F9E1E':'#EEF4DC','#357A2B':'#E5F0E0','#1FA15B':'#E1F4EA'};
     const RM=[['PHASE 1','Year 1','Build the curriculum plan & map it out','p1'],['PHASE 2','Year 1','Open hybrid virtual \u2014 enroll & begin operating','p2'],['PHASE 3','Year 1\u20132','Document & build operational history archive','p3'],['PHASE 4','Year 1\u20132','Become a Cognia member & build master binder','p45'],['PHASE 5','Year 2\u20133','Complete Cognia accreditation process','p45'],['PHASE 6','Year 3\u20134','TEFA eligibility & application (deadline Mar 2028)','p6']];
@@ -2161,6 +2175,9 @@ class Component extends DCLogic {
       deliverables:dels,
       showPhase:this.state.view==='phase', showDashboard:this.state.view==='dashboard',
       ovPctStr:ovPct+'%', ovDash:(ovPct/100*C2)+' '+C2,
+      curPhaseLabel:curP.label, curPhasePctStr:curPhasePct+'%', curPhaseDash:curPhaseDash, curPhaseColor:curP.color,
+      curPhaseTasksStr:curStats.microDone+' of '+curStats.microTotal+' tasks in this phase',
+      winsStr:'🎉 '+dComp+' milestones complete · '+aMD+' tasks done',
       delTotalAll:dTot, delComplete:dComp, delInProg:dProg, delNotStarted:dNot,
       microDoneAll:aMD, microTotalAll:aMT, evLinked:evL, roadmap, phaseSummaries,
     };
