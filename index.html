@@ -1415,7 +1415,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v52 · Jul 9';
+    this.BUILD='v53 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2112,9 +2112,10 @@ class Component extends DCLogic {
     if(this.TL.running && this.dayKey(this.TL.startMs||now)!==today){ this.tlStop(true); }
     // Passive "work day" clock — accumulates presence; bridges short gaps (tab closed/backgrounded ≤15 min) so it never restarts.
     // The Active Task timer counts as presence too (so Passive always includes Active).
+    // Counts as long as there's been activity within the last 15 min — the tab does NOT have to be front-most.
     const idleMs=now-(this._lastAct||0);
     const timerActive=this.TL.running && !this.TL.paused;
-    const present=timerActive || (((typeof document==='undefined' || document.visibilityState==='visible') && idleMs < 15*60*1000));
+    const present=timerActive || (idleMs < 15*60*1000);
     if(present){ const gap=now-(this.TL.lastActive||now); const credit=(gap>0 && gap<=15*60*1000)?gap:1000; this.TL.days[today]=(this.TL.days[today]||0)+Math.round(credit/1000); }
     this.TL.lastActive=now;
     this._tlSaveTick=(this._tlSaveTick||0)+1; if(this._tlSaveTick%15===0){ this.tlBump(); this.tlSave(); }
