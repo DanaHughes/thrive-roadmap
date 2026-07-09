@@ -291,6 +291,12 @@
         <span style="font-size:13px;">{{ p.label }}</span>
       </div>
     </sc-for>
+    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
+      <div class="nav" onClick="{{ onAddPhase }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;color:#5B7A45;font-weight:700;font-size:13px;margin-top:2px;">
+        <span style="width:26px;height:26px;border-radius:8px;background:#EDF3E6;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#45852B;font-size:15px;font-weight:800;">＋</span>
+        <span>Add phase</span>
+      </div>
+    </sc-if>
 
     <div style="font-size:10px;font-weight:700;letter-spacing:.13em;color:#A3AEC0;padding:20px 10px 9px;">RESOURCES</div>
     <sc-for list="{{ resources }}" as="r" hint-placeholder-count="4">
@@ -327,7 +333,12 @@
     <div style="display:flex;flex-direction:column;align-items:stretch;gap:14px;margin-bottom:22px;">
       <div class="phasehead" style="display:flex;align-items:center;gap:14px;min-width:0;">
         <div style="width:46px;height:46px;border-radius:13px;background:{{ phaseIconBg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:{{ phaseColor }};font-size:18px;font-weight:800;">{{ phaseGlyph }}</div>
-        <h1 style="margin:0;font-size:21px;font-weight:800;letter-spacing:.01em;color:#1E293B;text-transform:uppercase;">{{ phaseHeading }}</h1>
+        <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
+          <input class="edt" value="{{ phaseLabelEdit }}" onInput="{{ onRenamePhase }}" title="Rename this phase" style="font-size:21px;font-weight:800;letter-spacing:.01em;color:#1E293B;text-transform:uppercase;flex:1;min-width:0;">
+        </sc-if>
+        <sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}">
+          <h1 style="margin:0;font-size:21px;font-weight:800;letter-spacing:.01em;color:#1E293B;text-transform:uppercase;">{{ phaseHeading }}</h1>
+        </sc-if>
       </div>
       <div class="hdr-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <div class="hdr-search" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:9px 14px;min-width:200px;">
@@ -336,6 +347,7 @@
         </div>
         <button class="add" onClick="{{ onAddCard }}" style="display:flex;align-items:center;gap:7px;background:{{ phaseColor }};border:1px solid {{ phaseColor }};border-radius:10px;padding:9px 15px;font-family:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">+ Add Milestone</button>
         <button class="add" onClick="{{ onExportPhase }}" title="Export this whole phase to a Google Doc" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD8E8;border-radius:10px;padding:9px 14px;font-family:inherit;font-size:13px;font-weight:700;color:#3F6193;cursor:pointer;">⇪ Export phase</button>
+        <button class="pbtn" onClick="{{ onDeletePhase }}" title="Delete this phase" style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #E6D6D3;border-radius:10px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:700;color:#B4726A;cursor:pointer;">🗑 Delete phase</button>
         <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E7ECF4;border-radius:11px;padding:9px 14px;flex:0 0 auto;">
           <span style="color:#8FAE48;font-size:13px;">◷</span>
           <span style="font-size:13.5px;font-weight:700;color:#3A4632;">{{ clockDay }}, {{ clockDate }}</span>
@@ -1261,7 +1273,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v41 · Jul 8';
+    this.BUILD='v42 · Jul 8';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1269,7 +1281,7 @@ class Component extends DCLogic {
     this.DEVICE='d'+Math.random().toString(36).slice(2,9);
     this._dirty=false; this._lastSyncedJson=null;
     this.HKEY='thrive_history_v2';
-    this.PHASES=[
+    this.PHASE_SEED=[
       {key:'p1',label:'Phase 1 \u00b7 Curriculum',heading:'PHASE 1 \u00b7 CURRICULUM SELECTION & MAPPING',color:'#2E8B57',iconBg:'#E5F2EB',glyph:'\u2295',dels:[
         {t:'Founders\u2019 Criteria & Evaluation Brief',desc:'Define what Thrive needs in a curriculum.',ev:'Founders Criteria Document',m:[['Define general curriculum requirements',1],['Define Language Arts requirements',1],['Define Math requirements',1],['Define technology requirements',1],['Define family-experience requirements',1]]},
         {t:'Curriculum Research & Vendor Shortlist',desc:'Research and narrow the options.',ev:'Curriculum Comparison Sheet',m:[['Collect academic info (scope, samples, alignment)',1],['Collect technology & dashboard info',1],['Collect family workload & independence info',1],['Narrow 1,000+ to 10\u201315 vendors',0],['Build curriculum comparison dashboard',0]]},
@@ -1316,18 +1328,28 @@ class Component extends DCLogic {
         {t:'TEFA Provider Approval (Year 4)',desc:'Become a funded provider.',ev:'Approval Letter',m:[['Receive TEFA acceptance',0],['Onboard as funded provider',0]]},
       ]},
     ];
+    this._phaseYearMap={p1:['Year 1','Build the curriculum plan & map it out'],p2:['Year 1','Open hybrid virtual — enroll & begin operating'],p3:['Year 1–2','Document & build operational history archive'],p45:['Year 1–3','Cognia membership, binder & accreditation'],p6:['Year 3–4','TEFA eligibility & application (deadline Mar 2028)']};
+    this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,label:p.label,heading:p.heading,color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',p.label])[1]}));
+    this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
+    this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
     this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
+  // Phases are editable (add/delete/rename) and live in the board so they sync. Falls back to the default set.
+  get PHASES(){ const p=this.state&&this.state.board&&this.state.board._phases; return (Array.isArray(p)&&p.length)?p:this._phaseMetaDefault; }
   seedBoard(){
     const b={};
-    this.PHASES.forEach(p=>{ b[p.key]=p.dels.map(del=>({
+    this.PHASE_SEED.forEach(p=>{ b[p.key]=p.dels.map(del=>({
       id:this.uid(), title:del.t, desc:del.desc||'', files:del.ev?[del.ev]:[],
       tasks:del.m.map(mt=>({ id:this.uid(), label:mt[0], done:!!mt[1], notes:'', files:[], subs:[] }))
     })); });
+    b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x));
     return b;
   }
+  addPhase(){ const key='px'+Math.random().toString(36).slice(2,7); this.mut(b=>{ if(!Array.isArray(b._phases)) b._phases=this._phaseMetaDefault.map(x=>Object.assign({},x)); const n=b._phases.length; const c=this._phaseColors[n%this._phaseColors.length]; const tint=this._phaseTints[n%this._phaseTints.length]; b._phases.push({key, label:'Phase '+(n+1)+' · New Phase', heading:'PHASE '+(n+1)+' · NEW PHASE', color:c, iconBg:tint, glyph:'◆', year:'', rmTitle:'New phase'}); b[key]=[{id:this.uid(), title:'New milestone', desc:'', files:[], tasks:[{id:this.uid(), label:'New task', done:false, notes:'', files:[], subs:[]}]}]; }); this.setState({active:key, view:'phase'}); this.persist({active:key, view:'phase'}); this.toast('Phase added — rename it in its header'); }
+  delPhase(key){ const list=this.PHASES; if(list.length<=1){ this.toast('You need at least one phase'); return; } const idx=list.findIndex(p=>p.key===key); const nextKey=(list[idx+1]||list[idx-1]||list[0]).key; this.mut(b=>{ if(Array.isArray(b._phases)) b._phases=b._phases.filter(p=>p.key!==key); delete b[key]; }); this.setState({active:nextKey, view:'phase'}); this.persist({active:nextKey, view:'phase'}); this.toast('Phase deleted · undo from Version History if needed'); }
+  renamePhase(key,v){ this.mut(b=>{ const p=(b._phases||[]).find(x=>x.key===key); if(p){ p.label=v; p.heading=(v||'').toUpperCase(); p.rmTitle=v.replace(/^Phase\s*[\dA-Za-z\-]+\s*·\s*/,''); } }); }
   componentDidMount(){
     try{ const s=JSON.parse(localStorage.getItem(this.KEY)||'null'); if(s&&s.board){ this.setState({board:this.normalizeBoard(s.board), active:s.active||'p1'}); } }catch(e){}
     try{ const hh=JSON.parse(localStorage.getItem(this.HKEY)||'null'); if(Array.isArray(hh)){ this.setState({history:hh}); } }catch(e){}
@@ -1397,8 +1419,13 @@ class Component extends DCLogic {
   normalizeBoard(b){
     if(!b||typeof b!=='object') return b;
     const arr=v=>Array.isArray(v)?v:(v&&typeof v==='object'?Object.keys(v).sort((a,c)=>(+a)-(+c)).map(k=>v[k]):[]);
+    // phase metadata list (editable phases); restore if missing
+    b._phases=(Array.isArray(b._phases)&&b._phases.length)?b._phases:(b._phases&&typeof b._phases==='object'?arr(b._phases):this._phaseMetaDefault.map(x=>Object.assign({},x)));
+    b._phases=b._phases.filter(p=>p&&p.key);
+    // any phase in the list must have a board array; drop board arrays with no matching phase left as-is (harmless)
+    b._phases.forEach(p=>{ if(!Array.isArray(b[p.key])) b[p.key]=arr(b[p.key]); });
     Object.keys(b).forEach(k=>{
-      if(k==='meta') return;
+      if(k==='meta'||k==='_phases') return;
       const phase=arr(b[k]); b[k]=phase;
       phase.forEach(del=>{ if(!del||typeof del!=='object') return;
         del.files=arr(del.files); del.tasks=arr(del.tasks);
@@ -1961,8 +1988,7 @@ class Component extends DCLogic {
     const curPhaseDash=(curPhasePct/100*C2)+' '+C2;
     const phaseColor={}; this.PHASES.forEach(p=>phaseColor[p.key]=p.color);
     const badgeBgMap={'#2E8B57':'#E5F2EB','#0E8F86':'#DDF1EF','#6F9E1E':'#EEF4DC','#357A2B':'#E5F0E0','#1FA15B':'#E1F4EA'};
-    const RM=[['PHASE 1','Year 1','Build the curriculum plan & map it out','p1'],['PHASE 2','Year 1','Open hybrid virtual \u2014 enroll & begin operating','p2'],['PHASE 3','Year 1\u20132','Document & build operational history archive','p3'],['PHASE 4','Year 1\u20132','Become a Cognia member & build master binder','p45'],['PHASE 5','Year 2\u20133','Complete Cognia accreditation process','p45'],['PHASE 6','Year 3\u20134','TEFA eligibility & application (deadline Mar 2028)','p6']];
-    const roadmap=RM.map(r=>({ph:r[0],year:r[1],title:r[2],color:phaseColor[r[3]],badgeBg:badgeBgMap[phaseColor[r[3]]]||'#EDF3E6',pctW:(phasePctMap[r[3]]||0)+'%',onClick:()=>this.setActive(r[3])}));
+    const roadmap=this.PHASES.map((p,i)=>({ph:'PHASE '+(i+1), year:p.year||'', title:p.rmTitle||p.label, color:p.color, badgeBg:badgeBgMap[p.color]||'#EDF3E6', pctW:(phasePctMap[p.key]||0)+'%', onClick:()=>this.setActive(p.key)}));
     const C3=2*Math.PI*30;
     const phaseSummaries=this.PHASES.map(p=>{ const s=phaseStats[p.key]||{delTotal:0,delComp:0,microDone:0,microTotal:0}; const pct=s.microTotal?Math.round(s.microDone/s.microTotal*100):0; return {label:p.label, color:p.color, iconBg:p.iconBg, glyph:p.glyph, pctStr:pct+'%', ringDash:(pct/100*C3)+' '+C3, delComp:s.delComp, delRemain:s.delTotal-s.delComp, delTotal:s.delTotal, microDone:s.microDone, microTotal:s.microTotal, barW:pct+'%', onClick:()=>this.setActive(p.key)}; });
 
@@ -2166,7 +2192,8 @@ class Component extends DCLogic {
       brainDumpItems:((meta.brainDump)||[]).map((e,i)=>({ text:e.text, stamp:new Date(e.ts).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}), onInput:(ev)=>this.setBrainDump(i,ev.target.value), onDelete:()=>this.delBrainDump(i) })),
       brainDumpCount:((meta.brainDump)||[]).length,
       bdEmpty:((meta.brainDump)||[]).length===0, bdHasEntries:((meta.brainDump)||[]).length>0,
-      phaseHeading:active.heading, phaseColor:active.color, phaseIconBg:active.iconBg, phaseGlyph:active.glyph,
+      phaseHeading:active.heading||active.label, phaseColor:active.color, phaseIconBg:active.iconBg, phaseGlyph:active.glyph,
+      phaseLabelEdit:active.label, onRenamePhase:(e)=>this.renamePhase(active.key, e.target.value), onDeletePhase:()=>this.delPhase(active.key), onAddPhase:()=>this.addPhase(),
       search:this.state.search, onSearch:(e)=>this.onSearch(e), onAddCard:()=>this.addCard(ph),
       phasePctStr:phasePct+'%', ringDash:(phasePct/100*C)+' '+C,
       microDone, microTotal, microRemain:microTotal-microDone,
