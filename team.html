@@ -1319,6 +1319,9 @@
           <button class="pbtn" onClick="{{ aiChat.onMem }}" title="What I remember about you" style="width:26px;height:26px;border-radius:7px;border:1px solid #3C4F30;background:transparent;color:#C7DCB8;cursor:pointer;font-size:13px;">🧠</button>
           <button class="pbtn" onClick="{{ aiChat.onMin }}" title="Minimize (keeps your chat)" style="width:26px;height:26px;border-radius:7px;border:none;background:#3C4F30;color:#EAF2E1;cursor:pointer;font-size:16px;font-weight:800;line-height:1;">–</button>
         </div>
+        <sc-if value="{{ aiChat.showNotice }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:0 0 auto;font-size:10px;line-height:1.4;color:#7C8C6C;background:#F4F1E8;border-bottom:1px solid #ECE6D6;padding:6px 14px;text-align:center;">ⓘ This tool is in beta — AI chat history may be reviewed to improve support.</div>
+        </sc-if>
         <sc-if value="{{ aiChat.chatView }}" hint-placeholder-val="{{ true }}">
         <div id="aichat-scroll" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#FBFCFA;">
           <sc-if value="{{ aiChat.empty }}" hint-placeholder-val="{{ true }}">
@@ -1391,7 +1394,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v49 · Jul 9';
+    this.BUILD='v50 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2440,7 +2443,7 @@ class Component extends DCLogic {
           onDi:e=>this.setMove('toDi',e.target.value), onConfirm:()=>this.confirmMove(), onCancel:()=>this.closeMove() }; })():{ open:false }),
       showAiFab:(this.aiReady() && ((this.state.privateMode && !this.state.locked) || this.state.teamMode)),
       onAiFab:()=>this.aiChatToggle(),
-      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), greeting:(this.state.teamMode?'Hi 👋 I\'m the Thrive Assistant. Ask me anything about the roadmap — summarize a phase, explain a milestone, or help draft an update. I can see the current progress.':'Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.'), msgs:ms.map(m=>{ let text=''; let atts=(m._atts||[]).slice();
+      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), showNotice:!!this.state.teamMode, greeting:(this.state.teamMode?'Hi 👋 I\'m the Thrive Assistant. Ask me anything about the roadmap — summarize a phase, explain a milestone, or help draft an update. I can see the current progress.':'Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.'), msgs:ms.map(m=>{ let text=''; let atts=(m._atts||[]).slice();
         if(typeof m.content==='string'){ text=m.content; }
         else if(Array.isArray(m.content)){ const tb=m.content.find(b=>b&&b.type==='text'); text=tb?tb.text:''; if(!atts.length) atts=m.content.filter(b=>b&&(b.type==='image'||b.type==='document')).map(b=>({name:(b.type==='image'?'Image':'PDF'), kind:b.type, preview:''})); }
         return { me:m.role==='user', text:text, hasText:!!(text&&text.trim()), hasAtts:atts.length>0, attRowJustify:(m.role==='user'?'flex-end':'flex-start'), atts:atts.map(a=>{ const hasPrev=!!a.preview; return { name:a.name, hasPreview:hasPrev, noPreview:!hasPrev, icon:(a.kind==='image'?'🖼':'📄'), thumbStyle:(hasPrev?('background-image:url('+a.preview+');background-size:cover;background-position:center;'):'') }; }), rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') };
