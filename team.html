@@ -1281,7 +1281,7 @@
         <sc-if value="{{ aiChat.chatView }}" hint-placeholder-val="{{ true }}">
         <div id="aichat-scroll" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#FBFCFA;">
           <sc-if value="{{ aiChat.empty }}" hint-placeholder-val="{{ true }}">
-            <div style="text-align:center;color:#9AA68C;font-size:12px;line-height:1.6;padding:22px 10px;">Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.</div>
+            <div style="text-align:center;color:#9AA68C;font-size:12px;line-height:1.6;padding:22px 10px;">{{ aiChat.greeting }}</div>
           </sc-if>
           <sc-for list="{{ aiChat.msgs }}" as="m" hint-placeholder-count="0">
             <div style="{{ m.rowStyle }}"><div style="max-width:82%;font-size:12.5px;line-height:1.55;padding:9px 12px;white-space:pre-wrap;word-break:break-word;{{ m.bubbleStyle }}">{{ m.text }}</div></div>
@@ -1324,7 +1324,13 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v45 · Jul 9';
+    this.BUILD='v46 · Jul 9';
+    // ---- Shared AI server (Cloudflare Worker middleman) ----
+    // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
+    // this server — the real API key lives ONLY on the server, never shared.
+    // Leave blank until the Worker is deployed; then paste its URL here.
+    this.AI_WORKER='';
+    this.AI_APP_TOKEN='thrive-os-6q2v9';
     // ---- Cloud sync (Firebase Realtime DB) ----
     this.SYNC_URL='https://thrive-roadmap-web-app-default-rtdb.firebaseio.com';
     this.SYNC_PATH='thrive/so59usipj33li5w5urnt';
@@ -1767,6 +1773,12 @@ class Component extends DCLogic {
   saveSettings(){ const m=this.state.settingsModal; if(!m) return; this.aiSaveKey(m.key); try{ localStorage.setItem('thrive_ai_model', m.model||'claude-haiku-4-5'); }catch(e){} this.setState({settingsModal:null}); this.toast(this.AIKEY?'AI turned on ✓':'AI key removed'); }
   closeSettings(){ this.setState({settingsModal:null}); }
   aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-haiku-4-5'; }catch(e){ return 'claude-haiku-4-5'; } }
+  aiWorkerUrl(){ if(this.AI_WORKER) return this.AI_WORKER; try{ return localStorage.getItem('thrive_ai_worker')||''; }catch(e){ return ''; } }
+  aiReady(){ return !!this.aiWorkerUrl() || !!this.AIKEY; }
+  aiRequest(body){ const wurl=this.aiWorkerUrl();
+    if(wurl){ return fetch(wurl,{ method:'POST', headers:{'content-type':'application/json','x-thrive-app':this.AI_APP_TOKEN||''}, body:JSON.stringify(body) }); }
+    const key=this.AIKEY; if(!key) return Promise.reject(new Error('no-key'));
+    return fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify(body) }); }
   aiFundingMsg(){ return "Our Chat Option isn't available right now. Please contact dana2andrea@gmail.com for questions."; }
   aiIsBillingError(status,msg){ const m=String(msg||'').toLowerCase(); if(status===402) return true; return /credit|billing|balance is too low|too low|spend limit|usage limit|monthly limit|quota|insufficient|payment required|out of funds|budget/.test(m); }
   _stripHtml(h){ return String(h==null?'':h).replace(/<\/(p|div|h[1-6]|li|tr)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<td[^>]*>/gi,'\t').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim(); }
@@ -1796,11 +1808,11 @@ class Component extends DCLogic {
     missing:{title:'Missing Steps', ins:'Act as an experienced operations advisor. Identify gaps, missing steps, risks, and anything Dana may have overlooked for this task. Give a prioritized checklist.'}
   }; return M[kind]||M.summarize; }
   aiTitle(kind){ return this.aiSpec(kind).title; }
-  async aiCall(prompt){ const key=this.AIKEY; if(!key) throw new Error('no-key');
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1600, messages:[{role:'user', content:prompt}] }) });
+  async aiCall(prompt){ if(!this.aiReady()) throw new Error('no-key');
+    const res=await this.aiRequest({ model:this.aiModel(), max_tokens:1600, messages:[{role:'user', content:prompt}] });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||JSON.stringify(j).slice(0,200); }catch(e){ msg=await res.text(); } if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+': '+String(msg).slice(0,200)); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
-  async aiRun(kind,ph,di,ti){ if(!this.AIKEY){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
+  async aiRun(kind,ph,di,ti){ if(!this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
     const spec=this.aiSpec(kind); const ctx=this.aiContext(ph,di,ti);
     const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble.';
     this.setState({aiPanel:{loading:true, title:spec.title, text:'', error:'', ph,di,ti}});
@@ -1815,7 +1827,7 @@ class Component extends DCLogic {
 
   // ---- Floating AI assistant (any page) ----
   aiProjectSnapshot(){ const parts=[]; this.PHASES.forEach(p=>{ const a=this.state.board[p.key]||[]; let d=0,t=0; a.forEach(del=>{ t+=(del.tasks||[]).length; d+=(del.tasks||[]).filter(x=>x.done).length; }); const pct=t?Math.round(d/t*100):0; parts.push(p.label+': '+pct+'% ('+d+'/'+t+' tasks done)'); }); const focus=this.tlCurrentFocus(); return 'ThriveOS roadmap status:\n'+parts.join('\n')+(focus?('\nDana is currently working on: '+focus):''); }
-  aiChatToggle(){ if(!this.state.aiChatOpen && !this.AIKEY){ this.openSettings(); this.toast('Add your AI key in Settings first'); return; } this.setState({aiChatOpen:!this.state.aiChatOpen}); }
+  aiChatToggle(){ if(!this.state.aiChatOpen && !this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings first'); return; } this.setState({aiChatOpen:!this.state.aiChatOpen}); }
   aiChatMin(){ this.setState({aiChatOpen:false, aiChatMemView:false}); }
   setAiChatInput(v){ this.setState({aiChatInput:v}); }
   // ---- Chat history + memory persistence (Dana's device only; never synced, never in team view) ----
@@ -1844,16 +1856,22 @@ class Component extends DCLogic {
     const clean=reply.replace(re,'').replace(/\n{3,}/g,'\n\n').trim();
     return { text:clean, mem };
   }
-  async aiChatCall(msgs){ const key=this.AIKEY; if(!key) throw new Error('no-key');
+  async aiChatCall(msgs){ if(!this.aiReady()) throw new Error('no-key');
+    const team=!!this.state.teamMode;
     const mem=(this.state.aiChatMem||'').trim();
-    let sys='You are Dana\'s friendly, sharp assistant built into ThriveOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
-    if(mem) sys+='\n\nWhat you remember about Dana and Thrive from past conversations (use it naturally to be more helpful — do not recite it back verbatim):\n'+mem;
-    sys+='\n\nMEMORY: When you learn a durable fact, preference, or decision about Dana or Thrive that would help you assist her better in future chats, append it at the very end of your reply on its own line in EXACTLY this format: [[REMEMBER: the concise fact]]. You may add more than one. These lines are removed before Dana sees the reply, so never reference them in the visible text. Only record things worth remembering long-term — skip trivial or one-off details.';
+    let sys;
+    if(team){
+      sys='You are the Thrive Assistant, a friendly, sharp helper built into ThriveOS — the operations command center for Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). You are helping a member of Thrive\'s team. Help them understand the roadmap, summarize phases and milestones, and draft updates. Be concise and practical. Here is the live progress for context:\n\n'+this.aiProjectSnapshot();
+    } else {
+      sys='You are Dana\'s friendly, sharp assistant built into ThriveOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
+    }
+    if(mem) sys+='\n\nWhat you remember from past conversations (use it naturally to be more helpful — do not recite it back verbatim):\n'+mem;
+    sys+='\n\nMEMORY: When you learn a durable fact, preference, or decision that would help you assist better in future chats, append it at the very end of your reply on its own line in EXACTLY this format: [[REMEMBER: the concise fact]]. You may add more than one. These lines are removed before the user sees the reply, so never reference them in the visible text. Only record things worth remembering long-term — skip trivial or one-off details.';
     const sent=(msgs||[]).slice(-24); // cap history sent to control cost
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) }) });
+    const res=await this.aiRequest({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
-  async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); if(!q||this.state.aiChatLoading) return; if(!this.AIKEY){ this.openSettings(); return; }
+  async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); if(!q||this.state.aiChatLoading) return; if(!this.aiReady()){ this.openSettings(); return; }
     const msgs=(this.state.aiChatMsgs||[]).concat([{role:'user',content:q}]);
     this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatLoading:true, aiChatMemView:false});
     this.aiChatPersist(msgs);
@@ -2288,9 +2306,9 @@ class Component extends DCLogic {
         return { open:true, isTask, isMilestone:!isTask, title:isTask?'Move task':'Move milestone', itemLabel, phases, targetDels, toPh:m.toPh, toDi:String(m.toDi), newSel:(m.toDi==='new'),
           onPhase:e=>this.setState(s=>({moveModal:Object.assign({},s.moveModal,{toPh:e.target.value, toDi:'0'})})),
           onDi:e=>this.setMove('toDi',e.target.value), onConfirm:()=>this.confirmMove(), onCancel:()=>this.closeMove() }; })():{ open:false }),
-      showAiFab:(this.state.privateMode && !this.state.locked),
+      showAiFab:(this.aiReady() && ((this.state.privateMode && !this.state.locked) || this.state.teamMode)),
       onAiFab:()=>this.aiChatToggle(),
-      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onMin:()=>this.aiChatMin(), onClose:()=>this.aiChatMin(), onClear:()=>this.aiChatClear(), onMem:()=>this.aiChatToggleMem(), onMemInput:e=>this.setAiChatMem(e.target.value), onMemSave:()=>this.aiChatSaveMem(), onMemClear:()=>this.aiChatClearMem() }; })(),
+      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), greeting:(this.state.teamMode?'Hi 👋 I\'m the Thrive Assistant. Ask me anything about the roadmap — summarize a phase, explain a milestone, or help draft an update. I can see the current progress.':'Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.'), msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onMin:()=>this.aiChatMin(), onClose:()=>this.aiChatMin(), onClear:()=>this.aiChatClear(), onMem:()=>this.aiChatToggleMem(), onMemInput:e=>this.setAiChatMem(e.target.value), onMemSave:()=>this.aiChatSaveMem(), onMemClear:()=>this.aiChatClearMem() }; })(),
       onScheduleFollow:()=>this.toast('Schedule Follow-Up \u00b7 Google Calendar coming soon'),
       onAddReminder:()=>this.toast('Reminder \u00b7 coming soon'),
       toast:this.state.toast, hasToast:!!this.state.toast,
