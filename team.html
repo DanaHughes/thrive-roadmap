@@ -1272,15 +1272,16 @@
     <button class="aifab" onClick="{{ onAiFab }}" title="Ask your AI assistant" aria-label="AI assistant">✦</button>
     <sc-if value="{{ aiChat.open }}" hint-placeholder-val="{{ false }}">
       <div class="aichat">
-        <div style="flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:13px 15px;background:#23311C;color:#EAF2E1;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:13px 15px;background:#23311C;color:#EAF2E1;">
           <span style="font-size:16px;">✦</span>
-          <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;">Thrive Assistant</div><div style="font-size:10px;color:#9DB98A;">Knows your roadmap · here to help</div></div>
-          <button class="pbtn" onClick="{{ aiChat.onClear }}" title="Clear chat" style="font-size:10px;font-weight:700;color:#C7DCB8;background:transparent;border:1px solid #3C4F30;border-radius:7px;padding:4px 8px;cursor:pointer;">Clear</button>
-          <button class="pbtn" onClick="{{ aiChat.onClose }}" title="Close" style="width:26px;height:26px;border-radius:7px;border:none;background:#3C4F30;color:#EAF2E1;cursor:pointer;font-size:13px;">✕</button>
+          <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;">Thrive Assistant</div><div style="font-size:10px;color:#9DB98A;">Knows your roadmap · remembers what matters</div></div>
+          <button class="pbtn" onClick="{{ aiChat.onMem }}" title="What I remember about you" style="width:26px;height:26px;border-radius:7px;border:1px solid #3C4F30;background:transparent;color:#C7DCB8;cursor:pointer;font-size:13px;">🧠</button>
+          <button class="pbtn" onClick="{{ aiChat.onMin }}" title="Minimize (keeps your chat)" style="width:26px;height:26px;border-radius:7px;border:none;background:#3C4F30;color:#EAF2E1;cursor:pointer;font-size:16px;font-weight:800;line-height:1;">–</button>
         </div>
+        <sc-if value="{{ aiChat.chatView }}" hint-placeholder-val="{{ true }}">
         <div id="aichat-scroll" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#FBFCFA;">
           <sc-if value="{{ aiChat.empty }}" hint-placeholder-val="{{ true }}">
-            <div style="text-align:center;color:#9AA68C;font-size:12px;line-height:1.6;padding:22px 10px;">Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress.</div>
+            <div style="text-align:center;color:#9AA68C;font-size:12px;line-height:1.6;padding:22px 10px;">Hi Dana 👋 Ask me anything — draft an email, summarize a phase, plan your week, compare vendors, or think through a decision. I can see your roadmap progress, and I remember what we talk about across sessions.</div>
           </sc-if>
           <sc-for list="{{ aiChat.msgs }}" as="m" hint-placeholder-count="0">
             <div style="{{ m.rowStyle }}"><div style="max-width:82%;font-size:12.5px;line-height:1.55;padding:9px 12px;white-space:pre-wrap;word-break:break-word;{{ m.bubbleStyle }}">{{ m.text }}</div></div>
@@ -1293,6 +1294,24 @@
           <textarea rows="1" class="gtext" value="{{ aiChat.input }}" onInput="{{ aiChat.onInput }}" onKeyDown="{{ aiChat.onKey }}" placeholder="Ask anything…" style="flex:1;border:1px solid #D7E2CE;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:12.5px;color:#23311C;outline:none;background:#FBFCFA;max-height:120px;"></textarea>
           <button class="pbtn" onClick="{{ aiChat.onSend }}" style="flex:0 0 auto;background:#45852B;color:#fff;border:none;border-radius:10px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;">Send</button>
         </div>
+        </sc-if>
+        <sc-if value="{{ aiChat.memView }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:11px;background:#FBFCFA;">
+          <div style="font-size:13px;font-weight:800;color:#2A3623;">🧠 What the assistant remembers</div>
+          <div style="font-size:11.5px;line-height:1.55;color:#7C8C6C;">These are the durable facts and preferences it has picked up about you and Thrive. They guide every answer. Edit or clear anything — it's saved on this device only and never shared with your team.</div>
+          <sc-if value="{{ aiChat.memEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12px;color:#9AA68C;background:#F1F4ED;border-radius:10px;padding:14px;line-height:1.6;">Nothing remembered yet. As you chat, I'll quietly note things worth keeping — like your vendors, your priorities, how you like emails drafted — and they'll show up here.</div>
+          </sc-if>
+          <sc-if value="{{ aiChat.memHas }}" hint-placeholder-val="{{ false }}">
+            <textarea class="gtext" value="{{ aiChat.mem }}" onInput="{{ aiChat.onMemInput }}" placeholder="Facts the assistant remembers…" style="width:100%;min-height:150px;border:1px solid #D7E2CE;border-radius:10px;padding:11px;font-family:inherit;font-size:12px;line-height:1.6;color:#23311C;outline:none;background:#fff;"></textarea>
+          </sc-if>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="pbtn" onClick="{{ aiChat.onMemSave }}" style="background:#45852B;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;">Save memory</button>
+            <button class="pbtn" onClick="{{ aiChat.onMemClear }}" style="background:transparent;color:#B4462F;border:1px solid #E3C7BF;border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">Erase memory</button>
+            <button class="pbtn" onClick="{{ aiChat.onClear }}" style="background:transparent;color:#7C8C6C;border:1px solid #D7E2CE;border-radius:9px;padding:8px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">Clear chat history</button>
+          </div>
+        </div>
+        </sc-if>
       </div>
     </sc-if>
   </sc-if>
@@ -1365,7 +1384,7 @@ class Component extends DCLogic {
     this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, msWsOpen:false, msWsPath:null, moveModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1419,6 +1438,7 @@ class Component extends DCLogic {
     this._rnInit();
     this._dndInit();
     this.aiLoadKey();
+    this.aiChatLoad();
     this._growAll(); setTimeout(()=>{ this._growAll(); this._rnRender(); },120);
   }
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
@@ -1794,21 +1814,57 @@ class Component extends DCLogic {
   // ---- Floating AI assistant (any page) ----
   aiProjectSnapshot(){ const parts=[]; this.PHASES.forEach(p=>{ const a=this.state.board[p.key]||[]; let d=0,t=0; a.forEach(del=>{ t+=(del.tasks||[]).length; d+=(del.tasks||[]).filter(x=>x.done).length; }); const pct=t?Math.round(d/t*100):0; parts.push(p.label+': '+pct+'% ('+d+'/'+t+' tasks done)'); }); const focus=this.tlCurrentFocus(); return 'ThriveOS roadmap status:\n'+parts.join('\n')+(focus?('\nDana is currently working on: '+focus):''); }
   aiChatToggle(){ if(!this.state.aiChatOpen && !this.AIKEY){ this.openSettings(); this.toast('Add your AI key in Settings first'); return; } this.setState({aiChatOpen:!this.state.aiChatOpen}); }
+  aiChatMin(){ this.setState({aiChatOpen:false, aiChatMemView:false}); }
   setAiChatInput(v){ this.setState({aiChatInput:v}); }
+  // ---- Chat history + memory persistence (Dana's device only; never synced, never in team view) ----
+  aiChatLoad(){
+    let msgs=null, mem='';
+    try{ const raw=localStorage.getItem('thrive_ai_chat'); const a=raw?JSON.parse(raw):null; if(Array.isArray(a)) msgs=a; }catch(e){}
+    try{ mem=localStorage.getItem('thrive_ai_memory')||''; }catch(e){}
+    const patch={aiChatMem:mem}; if(msgs) patch.aiChatMsgs=msgs;
+    this.setState(patch);
+  }
+  aiChatPersist(msgs, mem){
+    const m=(msgs!==undefined)?msgs:(this.state.aiChatMsgs||[]);
+    const mm=(mem!==undefined)?mem:(this.state.aiChatMem||'');
+    try{ localStorage.setItem('thrive_ai_chat', JSON.stringify(m.slice(-200))); }catch(e){}
+    try{ localStorage.setItem('thrive_ai_memory', mm||''); }catch(e){}
+  }
+  aiChatExtractMemory(reply, curMem){
+    const re=/\[\[\s*REMEMBER:\s*([^\]]+?)\s*\]\]/gi; const facts=[]; let m;
+    while((m=re.exec(reply))){ const f=(m[1]||'').trim(); if(f) facts.push(f); }
+    let mem=curMem||'';
+    if(facts.length){
+      const list=mem.split('\n').map(s=>s.replace(/^[-•]\s*/,'').trim()).filter(Boolean);
+      facts.forEach(f=>{ if(!list.some(e=>e.toLowerCase()===f.toLowerCase())) list.push(f); });
+      mem=list.slice(-60).map(s=>'- '+s).join('\n');
+    }
+    const clean=reply.replace(re,'').replace(/\n{3,}/g,'\n\n').trim();
+    return { text:clean, mem };
+  }
   async aiChatCall(msgs){ const key=this.AIKEY; if(!key) throw new Error('no-key');
-    const sys='You are Dana\'s friendly, sharp assistant built into ThriveOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
-    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1400, system:sys, messages:msgs.map(m=>({role:m.role, content:m.content})) }) });
+    const mem=(this.state.aiChatMem||'').trim();
+    let sys='You are Dana\'s friendly, sharp assistant built into ThriveOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
+    if(mem) sys+='\n\nWhat you remember about Dana and Thrive from past conversations (use it naturally to be more helpful — do not recite it back verbatim):\n'+mem;
+    sys+='\n\nMEMORY: When you learn a durable fact, preference, or decision about Dana or Thrive that would help you assist her better in future chats, append it at the very end of your reply on its own line in EXACTLY this format: [[REMEMBER: the concise fact]]. You may add more than one. These lines are removed before Dana sees the reply, so never reference them in the visible text. Only record things worth remembering long-term — skip trivial or one-off details.';
+    const sent=(msgs||[]).slice(-24); // cap history sent to control cost
+    const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) }) });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
   async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); if(!q||this.state.aiChatLoading) return; if(!this.AIKEY){ this.openSettings(); return; }
     const msgs=(this.state.aiChatMsgs||[]).concat([{role:'user',content:q}]);
-    this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatLoading:true});
+    this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatLoading:true, aiChatMemView:false});
+    this.aiChatPersist(msgs);
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },30);
-    try{ const reply=await this.aiChatCall(msgs); this.setState({aiChatMsgs:msgs.concat([{role:'assistant',content:reply}]), aiChatLoading:false}); }
-    catch(e){ const m=String(e&&e.message||e); this.setState({aiChatMsgs:msgs.concat([{role:'assistant',content:'⚠️ '+(m==='no-key'?'Add your AI key in Settings first.':m)}]), aiChatLoading:false}); }
+    try{ const raw=await this.aiChatCall(msgs); const ext=this.aiChatExtractMemory(raw, this.state.aiChatMem||''); const next=msgs.concat([{role:'assistant',content:ext.text}]); this.setState({aiChatMsgs:next, aiChatMem:ext.mem, aiChatLoading:false}); this.aiChatPersist(next, ext.mem); }
+    catch(e){ const m=String(e&&e.message||e); const next=msgs.concat([{role:'assistant',content:'⚠️ '+(m==='no-key'?'Add your AI key in Settings first.':m)}]); this.setState({aiChatMsgs:next, aiChatLoading:false}); this.aiChatPersist(next); }
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },40);
   }
-  aiChatClear(){ this.setState({aiChatMsgs:[]}); }
+  aiChatClear(){ if(typeof window!=='undefined' && window.confirm && !window.confirm('Clear this chat history? Your saved memory will be kept.')) return; this.setState({aiChatMsgs:[]}); this.aiChatPersist([]); this.toast('Chat history cleared'); }
+  aiChatToggleMem(){ this.setState({aiChatMemView:!this.state.aiChatMemView}); }
+  setAiChatMem(v){ this.setState({aiChatMem:v}); }
+  aiChatSaveMem(){ this.aiChatPersist(undefined, this.state.aiChatMem||''); this.setState({aiChatMemView:false}); this.toast('Memory saved ✓'); }
+  aiChatClearMem(){ if(typeof window!=='undefined' && window.confirm && !window.confirm('Erase everything the assistant remembers about you and Thrive?')) return; this.setState({aiChatMem:''}); this.aiChatPersist(undefined, ''); this.toast('Memory erased'); }
   setExec(i,v){ this.mut(b=>{ this.ensureMeta(b).exec[i]=v; }); }
   addExec(){ this.mut(b=>{ this.ensureMeta(b).exec.push('New update'); }); }
   delExec(i){ this.mut(b=>{ this.ensureMeta(b).exec.splice(i,1); }); }
@@ -2232,7 +2288,7 @@ class Component extends DCLogic {
           onDi:e=>this.setMove('toDi',e.target.value), onConfirm:()=>this.confirmMove(), onCancel:()=>this.closeMove() }; })():{ open:false }),
       showAiFab:(this.state.privateMode && !this.state.locked),
       onAiFab:()=>this.aiChatToggle(),
-      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onClose:()=>this.setState({aiChatOpen:false}), onClear:()=>this.aiChatClear() }; })(),
+      aiChat:(()=>{ const ms=this.state.aiChatMsgs||[]; const memView=!!this.state.aiChatMemView; const mem=this.state.aiChatMem||''; return { open:!!this.state.aiChatOpen, loading:!!this.state.aiChatLoading, input:this.state.aiChatInput||'', hasMsgs:ms.length>0, empty:ms.length===0, memView:memView, chatView:!memView, mem:mem, memEmpty:!mem.trim(), memHas:!!mem.trim(), msgs:ms.map(m=>({ me:m.role==='user', text:m.content, rowStyle:(m.role==='user'?'display:flex;justify-content:flex-end;':'display:flex;justify-content:flex-start;'), bubbleStyle:(m.role==='user'?'background:#34512C;color:#EAF2E1;border-radius:13px 13px 3px 13px;':'background:#F1F4ED;color:#2A3623;border-radius:13px 13px 13px 3px;') })), onInput:e=>this.setAiChatInput(e.target.value), onSend:()=>this.aiChatSend(), onKey:e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); this.aiChatSend(); } }, onMin:()=>this.aiChatMin(), onClose:()=>this.aiChatMin(), onClear:()=>this.aiChatClear(), onMem:()=>this.aiChatToggleMem(), onMemInput:e=>this.setAiChatMem(e.target.value), onMemSave:()=>this.aiChatSaveMem(), onMemClear:()=>this.aiChatClearMem() }; })(),
       onScheduleFollow:()=>this.toast('Schedule Follow-Up \u00b7 Google Calendar coming soon'),
       onAddReminder:()=>this.toast('Reminder \u00b7 coming soon'),
       toast:this.state.toast, hasToast:!!this.state.toast,
