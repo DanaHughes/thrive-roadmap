@@ -1431,7 +1431,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v58 · Jul 9';
+    this.BUILD='v59 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1900,6 +1900,47 @@ class Component extends DCLogic {
   addBrainDump(){ const txt=(this.state.bdDraft||'').trim(); if(!txt)return; this.mut(b=>{ this.ensureMeta(b).brainDump.unshift({text:txt, ts:Date.now()}); }); this.setState({bdDraft:''}); }
   delBrainDump(i){ this.mut(b=>{ this.ensureMeta(b).brainDump.splice(i,1); }); }
   setBrainDump(i,v){ this.mut(b=>{ this.ensureMeta(b).brainDump[i].text=v; }); }
+  // Markdown → clean plain text (for display/copy: no #, **, backticks; links become "text: url")
+  _mdToPlain(md){ if(!md) return ''; let s=String(md).replace(/\r/g,'');
+    s=s.replace(/```[\s\S]*?```/g, m=>m.replace(/```[a-z]*\n?/gi,'').replace(/```/g,''));
+    s=s.replace(/`([^`]+)`/g,'$1');
+    s=s.replace(/^\s{0,3}#{1,6}\s*/gm,'');
+    s=s.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/__([^_]+)__/g,'$1');
+    s=s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1$2');
+    s=s.replace(/^\s*[-*+]\s+/gm,'- ');
+    s=s.replace(/^\s*>\s?/gm,'');
+    s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'$1: $2');
+    s=s.replace(/\n{3,}/g,'\n\n');
+    return s.trim();
+  }
+  // Markdown → HTML (for inserting into notes: real bold, bullets, clickable links)
+  _mdToHtml(md){ if(!md) return ''; const esc=(x)=>this._rnEsc(x); const inUlRef={v:false}; let html='';
+    const closeUl=()=>{ if(inUlRef.v){ html+='</ul>'; inUlRef.v=false; } };
+    const inline=(txt)=>{ let s=esc(txt);
+      s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/__([^_]+)__/g,'<b>$1</b>');
+      s=s.replace(/`([^`]+)`/g,'$1');
+      s=s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,t,u)=>'<a href="'+u+'" target="_blank" rel="noopener">'+t+'</a>');
+      s=s.replace(/(^|[\s(>])((?:https?:\/\/|www\.)[^\s<)]+)/g,(m,pre,url)=>pre+'<a href="'+(/^www\./i.test(url)?'https://'+url:url)+'" target="_blank" rel="noopener">'+url+'</a>');
+      return s; };
+    String(md).replace(/\r/g,'').split('\n').forEach(raw=>{ const line=raw.replace(/\s+$/,''); let m;
+      if(!line.trim()){ closeUl(); return; }
+      if(m=line.match(/^\s{0,3}#{1,6}\s*(.+)$/)){ closeUl(); html+='<div><b>'+inline(m[1])+'</b></div>'; return; }
+      if(m=line.match(/^\s*[-*+]\s+(.+)$/)){ if(!inUlRef.v){ html+='<ul>'; inUlRef.v=true; } html+='<li>'+inline(m[1])+'</li>'; return; }
+      closeUl(); html+='<div>'+inline(line)+'</div>';
+    });
+    closeUl(); return html;
+  }
+  _htmlToPlain(html){ if(!html) return ''; let s=String(html);
+    s=s.replace(/<img[^>]*>/gi,'[image]');
+    s=s.replace(/<br\s*\/?>/gi,'\n');
+    s=s.replace(/<\/(p|div|li|tr|h[1-6])>/gi,'\n');
+    s=s.replace(/<li[^>]*>/gi,'• ');
+    s=s.replace(/<\/(td|th)>/gi,'  ');
+    s=s.replace(/<[^>]+>/g,'');
+    s=s.replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&quot;/gi,'"').replace(/&#0?39;|&#x27;/gi,"'");
+    s=s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n');
+    return s.trim();
+  }
   genCompletionEmail(ph,di,ti){
     const P=this.PHASES.find(x=>x.key===ph); const del=this.state.board[ph][di]; const t=del.tasks[ti];
     const subs=(t.subs||[]); const links=(t.links||[]); const tFiles=(t.files||[]); const dFiles=(del.files||[]);
@@ -1915,7 +1956,7 @@ class Component extends DCLogic {
     L.push('Task: '+t.label+(t.done?'  (\u2713 complete)':''));
     L.push('');
     L.push('SUMMARY');
-    L.push((t.notes&&t.notes.trim())?t.notes.trim():(t.dod&&t.dod.trim()?t.dod.trim():'This task has been completed as scoped.'));
+    L.push((t.notes&&t.notes.trim())?this._htmlToPlain(t.notes):(t.dod&&t.dod.trim()?this._htmlToPlain(t.dod):'This task has been completed as scoped.'));
     if(subs.length){ L.push(''); L.push('CHECKLIST'); subs.forEach(s=>L.push('  '+(s.done?'[x]':'[ ]')+' '+s.label)); }
     const allLinks=[];
     dFiles.forEach(f=>allLinks.push('Deliverable file: '+f));
@@ -1972,7 +2013,8 @@ class Component extends DCLogic {
     sop:{title:'SOP', ins:'Write a clear step-by-step Standard Operating Procedure (SOP) for accomplishing this task, numbered, that someone else on the team could follow.'},
     rewrite:{title:'Rewritten', ins:'Rewrite the notes for this task in polished, professional language, keeping all the facts and figures exact. Preserve any numbers/prices precisely.'},
     compare:{title:'Vendor Comparison', ins:'Using the vendors and details in the notes, build a clear comparison. If there is pricing, present it as a simple table (Vendor | Pricing | Notes) plus a short recommendation. Keep all numbers exact.'},
-    missing:{title:'Missing Steps', ins:'Act as an experienced operations advisor. Identify gaps, missing steps, risks, and anything Dana may have overlooked for this task. Give a prioritized checklist.'}
+    missing:{title:'Missing Steps', ins:'Act as an experienced operations advisor. Identify gaps, missing steps, risks, and anything Dana may have overlooked for this task. Give a prioritized checklist.'},
+    timelog:{title:'Time Log Description', ins:'Write a brief, professional time-log entry describing the work done on this task — 2 to 4 sentences, past tense, first person ("I ..."), suitable for a billing/time record. Be specific about what was accomplished using the notes; keep any figures exact. Output only the description, no preamble, no heading.'}
   }; return M[kind]||M.summarize; }
   aiTitle(kind){ return this.aiSpec(kind).title; }
   async aiCall(prompt){ if(!this.aiReady()) throw new Error('no-key');
@@ -1981,14 +2023,14 @@ class Component extends DCLogic {
     const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
   async aiRun(kind,ph,di,ti){ if(!this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
     const spec=this.aiSpec(kind); const ctx=this.aiContext(ph,di,ti);
-    const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble.';
-    this.setState({aiPanel:{loading:true, title:spec.title, text:'', error:'', ph,di,ti}});
-    try{ const text=await this.aiCall(prompt); this.setState({aiPanel:{loading:false, title:spec.title, text:text, error:'', ph,di,ti}}); }
-    catch(e){ const msg=String(e&&e.message||e); this.setState({aiPanel:{loading:false, title:spec.title, text:'', error:(msg==='__FUNDING__'?this.aiFundingMsg():(msg==='no-key'?'Add your AI key in Settings first.':msg)), ph,di,ti}}); }
+    const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble. Write in plain text only: do NOT use Markdown symbols (no #, *, **, backticks, or tables). Use short UPPERCASE section labels and simple "- " bullets. Write any links as the full URL (https://…).';
+    this.setState({aiPanel:{loading:true, title:spec.title, text:'', md:'', error:'', ph,di,ti}});
+    try{ const raw=await this.aiCall(prompt); this.setState({aiPanel:{loading:false, title:spec.title, text:this._mdToPlain(raw), md:raw, error:'', ph,di,ti}}); }
+    catch(e){ const msg=String(e&&e.message||e); this.setState({aiPanel:{loading:false, title:spec.title, text:'', md:'', error:(msg==='__FUNDING__'?this.aiFundingMsg():(msg==='no-key'?'Add your AI key in Settings first.':msg)), ph,di,ti}}); }
   }
   aiClose(){ this.setState({aiPanel:null}); }
   aiCopy(){ const a=this.state.aiPanel; if(!a||!a.text) return; try{ navigator.clipboard.writeText(a.text); }catch(e){} this.toast('Copied to clipboard'); }
-  aiInsert(){ const a=this.state.aiPanel; if(!a||!a.text) return; const {ph,di,ti}=a; const block='<div style="border-left:3px solid #CBDDBC;padding-left:8px;margin:4px 0;"><div style="font-size:9px;font-weight:800;color:#8FAE48;letter-spacing:.05em;">AI · '+this._rnEsc(a.title).toUpperCase()+'</div>'+this._rnEsc(a.text).replace(/\n/g,'<br>')+'</div>';
+  aiInsert(){ const a=this.state.aiPanel; if(!a||!a.text) return; const {ph,di,ti}=a; const body=this._mdToHtml(a.md||a.text); const block='<div style="border-left:3px solid #CBDDBC;padding-left:8px;margin:4px 0;"><div style="font-size:9px;font-weight:800;color:#8FAE48;letter-spacing:.05em;">AI · '+this._rnEsc(a.title).toUpperCase()+'</div>'+body+'</div>';
     this.mut(b=>{ const del=b[ph]&&b[ph][di]; if(!del) return; const t=(ti==='m')?del:del.tasks[ti]; if(!t) return; const cur=t.notes&&String(t.notes).trim()?String(t.notes):''; const isHtml=/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th)\b/i.test(cur); t.notes=isHtml?(cur+block):((cur?this._rnEsc(cur).replace(/\n/g,'<br>'):'')+block); });
     this.toast('Inserted into notes ✓'); }
 
@@ -2467,7 +2509,7 @@ class Component extends DCLogic {
       }
     }
     const _wp=this.state.wsPath||{};
-    const aiButtons=[['Summarize Notes','summarize'],['Draft Email','email'],['Generate Vendor Questions','vendor'],['Create Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite Professionally','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], _wp.ph, _wp.di, _wp.ti)}));
+    const aiButtons=[['Summarize Notes','summarize'],['Draft Email','email'],['Time Log Description','timelog'],['Generate Vendor Questions','vendor'],['Create Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite Professionally','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], _wp.ph, _wp.di, _wp.ti)}));
     const aiOn=!!this.AIKEY;
     const aiPanel=(this.state.aiPanel?{ open:true, loading:!!this.state.aiPanel.loading, title:this.state.aiPanel.title||'AI', text:this.state.aiPanel.text||'', hasText:!!(this.state.aiPanel.text&&this.state.aiPanel.text.trim()), error:this.state.aiPanel.error||'', hasError:!!this.state.aiPanel.error, onCopy:()=>this.aiCopy(), onInsert:()=>this.aiInsert(), onClose:()=>this.aiClose() }:{ open:false });
     const settings=(this.state.settingsModal?{ open:true, key:this.state.settingsModal.key||'', model:this.state.settingsModal.model||'claude-haiku-4-5', onKey:e=>this.setSettings('key',e.target.value), onModel:e=>this.setSettings('model',e.target.value), onSave:()=>this.saveSettings(), onClose:()=>this.closeSettings() }:{ open:false });
@@ -2541,7 +2583,7 @@ class Component extends DCLogic {
           onAddLink:()=>this.addDelLink(mph,mdi),
           files:(del.files||[]).map((n,fi)=>({ name:n, onDelete:()=>this.delDelFile(mph,mdi,fi) })),
           onAddFile:e=>this.addDelFile(mph,mdi,e),
-          aiButtons:[['Summarize','summarize'],['Draft Email','email'],['Vendor Questions','vendor'],['Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], mph, mdi, 'm')})),
+          aiButtons:[['Summarize','summarize'],['Draft Email','email'],['Time Log Description','timelog'],['Vendor Questions','vendor'],['Meeting Agenda','agenda'],['Create SOP','sop'],['Rewrite','rewrite'],['Compare Vendors','compare'],['Find Missing Steps','missing']].map(x=>({label:x[0], onClick:()=>this.aiRun(x[1], mph, mdi, 'm')})),
           onExport:()=>this.exportMilestone(mph,mdi), onClose:()=>this.closeMsWS() }; })(),
       msWsShow:!!(this.state.msWsOpen&&this.state.msWsPath), msWsCls:this.state.msWsOpen?'show':'', msWsBackCls:this.state.msWsOpen?'show':'',
       aiButtons, aiOn, aiOff:!aiOn, aiPanel, settings, onOpenSettings:()=>this.openSettings(),
