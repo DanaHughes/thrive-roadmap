@@ -948,7 +948,20 @@
                 <input value="{{ r.billable }}" onInput="{{ r.onBill }}" type="number" step="0.25" min="0" style="width:52px;border:1px solid #CBDDBC;border-radius:6px;padding:4px 5px;font-family:inherit;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;outline:none;text-align:right;">
                 <span style="font-size:10px;font-weight:700;color:#79866C;">h</span>
               </div>
-              <div style="padding:6px 6px;"><textarea rows="1" class="edt gtext" value="{{ r.note }}" onInput="{{ r.onNote }}" placeholder="Note…" style="font-size:10.5px;color:#3A4633;border:1px solid #ECF0E8;background:#fff;width:100%;"></textarea></div>
+              <div style="padding:6px 6px;">
+                <sc-if value="{{ r.noteOpen }}" hint-placeholder-val="{{ false }}">
+                  <textarea rows="1" class="edt gtext" value="{{ r.note }}" onInput="{{ r.onNote }}" placeholder="Note…" style="font-size:10.5px;color:#3A4633;border:1px solid #ECF0E8;background:#fff;width:100%;"></textarea>
+                  <button class="pbtn" onClick="{{ r.onToggleNote }}" style="margin-top:3px;font-size:9.5px;font-weight:800;color:#8FAE48;background:transparent;border:none;cursor:pointer;padding:0;">▲ Collapse note</button>
+                </sc-if>
+                <sc-if value="{{ r.noteClosed }}" hint-placeholder-val="{{ true }}">
+                  <sc-if value="{{ r.hasNote }}" hint-placeholder-val="{{ false }}">
+                    <button class="pbtn" onClick="{{ r.onToggleNote }}" title="Expand & edit note" style="display:flex;align-items:center;gap:5px;width:100%;text-align:left;font-family:inherit;font-size:10.5px;color:#4A5A3D;background:#F7FAF3;border:1px solid #ECF0E8;border-radius:6px;padding:5px 8px;cursor:pointer;">📝 <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.notePreview }}</span><span style="flex:0 0 auto;color:#8FAE48;font-weight:800;">▾</span></button>
+                  </sc-if>
+                  <sc-if value="{{ r.noNote }}" hint-placeholder-val="{{ true }}">
+                    <button class="pbtn" onClick="{{ r.onToggleNote }}" style="width:100%;text-align:left;font-family:inherit;font-size:10.5px;color:#AEB8A6;background:#fff;border:1px solid #ECF0E8;border-radius:6px;padding:5px 8px;cursor:pointer;">Note…</button>
+                  </sc-if>
+                </sc-if>
+              </div>
               <button class="del" onClick="{{ r.onClear }}" title="Clear this day" style="width:22px;height:22px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
             </div>
           </sc-for>
@@ -1456,7 +1469,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v60 · Jul 9';
+    this.BUILD='v61 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1522,7 +1535,7 @@ class Component extends DCLogic {
     this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, tlNoteOpen:{}, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -2625,8 +2638,12 @@ class Component extends DCLogic {
         let _runToday=0; if(TL.running && this.dayKey(TL.startMs||Date.now())===_tkey) _runToday=this.tlElapsed();
         const allDates=Array.from(new Set(Object.keys(days).concat(Object.keys(active)).concat(Object.keys(log)))).sort().reverse().slice(0,60);
         const dailyRows=allDates.map(d=>{ const act=(active[d]||0)+(d===_tkey?_runToday:0); const pas=Math.max(days[d]||0, act); const L=log[d]||null;
+          const noteVal=(L&&!L.auto?L.desc:'')||''; const noteTrim=String(noteVal).trim(); const nOpen=!!this.state.tlNoteOpen[d];
+          const prev=noteTrim.replace(/\s+/g,' '); const preview=prev.slice(0,58)+(prev.length>58?'…':'');
           return { date:d, isToday:d===_tkey, todayTag:(d===_tkey?'Today':''), active:this.fmtHM(act), passive:this.fmtHM(pas),
-            billable:(L?Number(L.billable||0):0).toFixed(2), note:(L&&!L.auto?L.desc:'')||'', finalized:!!L, statusTag:(L?(L.auto?'auto':'✓'):''),
+            billable:(L?Number(L.billable||0):0).toFixed(2), note:noteVal, finalized:!!L, statusTag:(L?(L.auto?'auto':'✓'):''),
+            noteOpen:nOpen, noteClosed:!nOpen, hasNote:!!noteTrim, noNote:!noteTrim, notePreview:preview,
+            onToggleNote:()=>this.setState(s=>({tlNoteOpen:Object.assign({},s.tlNoteOpen,{[d]:!s.tlNoteOpen[d]})})),
             rowBg:(d===_tkey?'#F3F8EE':'#fff'),
             onBill:e=>this.setDayBill(d,e.target.value), onNote:e=>this.setDayNote(d,e.target.value), onClear:()=>this.clearDay(d) }; });
         const billTotal=Object.keys(log).reduce((a,k)=>a+Number(log[k].billable||0),0).toFixed(2);
