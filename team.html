@@ -1062,12 +1062,12 @@
       <div>
         <div style="font-size:11px;font-weight:800;letter-spacing:.13em;color:#45852B;">VERSION HISTORY</div>
         <h1 style="margin:9px 0 6px;font-size:25px;font-weight:800;color:#1E2A16;letter-spacing:-.01em;">Restore an earlier version</h1>
-        <div style="font-size:13px;color:#79866C;max-width:600px;line-height:1.55;">Every change is auto-saved as a restore point. If something gets rewritten by accident, roll back to any moment below — your current version is saved first, so a restore is never destructive.</div>
+        <div style="font-size:13px;color:#79866C;max-width:620px;line-height:1.55;">Each day rolls up what you actually worked on — completed tasks, notes you updated, items added — so you can quickly write your time-log descriptions. Expand a day for the individual restore points; your current version is always saved first, so restoring is never destructive.</div>
       </div>
       <button class="add" onClick="{{ onCheckpoint }}" style="display:inline-flex;align-items:center;gap:7px;background:#45852B;border:1px solid #45852B;border-radius:11px;padding:10px 18px;font-family:inherit;font-size:13px;font-weight:800;color:#fff;cursor:pointer;flex:0 0 auto;">＋ Save checkpoint now</button>
     </div>
 
-    <div style="max-width:760px;">
+    <div style="max-width:820px;">
       <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ true }}">
         <div style="border:1.5px dashed #D5DECB;border-radius:16px;padding:44px 20px;text-align:center;background:#FBFCFA;">
           <div style="font-size:30px;margin-bottom:10px;">🕘</div>
@@ -1076,15 +1076,41 @@
         </div>
       </sc-if>
       <sc-if value="{{ hasHistory }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <sc-for list="{{ historyItems }}" as="h" hint-placeholder-count="0">
-            <div style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #E8EDE4;border-left:4px solid #8FAE48;border-radius:13px;padding:13px 16px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
-              <div style="width:36px;height:36px;border-radius:10px;background:#EDF3E6;color:#45852B;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;">🕘</div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13.5px;font-weight:700;color:#23311C;">{{ h.when }}</div>
-                <div style="font-size:11px;color:#9AA68C;font-weight:600;margin-top:1px;">{{ h.kindLabel }} · {{ h.rel }}</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <sc-for list="{{ historyDays }}" as="day" hint-placeholder-count="0">
+            <div style="background:#fff;border:1px solid #E8EDE4;border-left:4px solid #45852B;border-radius:14px;padding:15px 18px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:10px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:#EDF3E6;color:#45852B;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto;">📅</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:15px;font-weight:800;color:#1E2A16;">{{ day.dateLabel }}</div>
+                  <div style="font-size:11px;color:#9AA68C;font-weight:600;margin-top:1px;">{{ day.count }} saves · {{ day.timeRange }}</div>
+                </div>
               </div>
-              <button class="pbtn" onClick="{{ h.onRestore }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:9px;padding:8px 15px;cursor:pointer;flex:0 0 auto;">↺ Restore</button>
+              <sc-if value="{{ day.hasSummary }}" hint-placeholder-val="{{ true }}">
+                <div style="background:#FBFDF9;border:1px solid #EAF0E2;border-radius:11px;padding:11px 13px;">
+                  <div style="font-size:10px;font-weight:800;letter-spacing:.08em;color:#8FAE48;margin-bottom:7px;">WHAT YOU WORKED ON</div>
+                  <sc-for list="{{ day.summaryLines }}" as="s" hint-placeholder-count="0">
+                    <div style="display:flex;gap:8px;font-size:12.5px;color:#33402A;line-height:1.5;margin-bottom:4px;"><span style="flex:0 0 auto;color:#45852B;font-weight:800;">{{ s.icon }}</span><span style="min-width:0;">{{ s.text }}</span></div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ day.summaryEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12px;color:#9AA68C;padding:2px 2px 4px;">No tracked content changes this day (layout or minor edits only).</div>
+              </sc-if>
+              <button class="pbtn" onClick="{{ day.onToggle }}" style="margin-top:10px;font-size:11.5px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #E2E8DE;border-radius:8px;padding:7px 12px;cursor:pointer;">{{ day.toggleLabel }}</button>
+              <sc-if value="{{ day.open }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:11px;display:flex;flex-direction:column;gap:8px;border-top:1px solid #EEF2EA;padding-top:11px;">
+                  <sc-for list="{{ day.items }}" as="h" hint-placeholder-count="0">
+                    <div style="display:flex;align-items:flex-start;gap:11px;background:#FBFCFA;border:1px solid #EEF2EA;border-radius:10px;padding:9px 12px;">
+                      <div style="font-size:12px;font-weight:800;color:#45852B;flex:0 0 auto;width:64px;">{{ h.when }}</div>
+                      <div style="flex:1;min-width:0;">
+                        <sc-for list="{{ h.changeLines }}" as="c" hint-placeholder-count="0"><div style="font-size:11.5px;color:#4A5A3D;line-height:1.5;">{{ c }}</div></sc-for>
+                      </div>
+                      <button class="pbtn" onClick="{{ h.onRestore }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:6px 11px;cursor:pointer;flex:0 0 auto;">↺ Restore</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
           </sc-for>
         </div>
@@ -1431,7 +1457,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v59 · Jul 9';
+    this.BUILD='v60 · Jul 9';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1497,7 +1523,7 @@ class Component extends DCLogic {
     this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1860,6 +1886,51 @@ class Component extends DCLogic {
   }
   manualCheckpoint(){ const history=[{ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board)), manual:true}].concat(this.state.history||[]).slice(0,40); this._lastSnap=Date.now(); this.saveHistory(history); this.toast('Checkpoint saved'); }
   restoreVersion(i){ const h=this.state.history||[]; if(!h[i]) return; const cur={ts:Date.now(), board:JSON.parse(JSON.stringify(this.state.board))}; const history=[cur].concat(h).slice(0,40); const board=JSON.parse(JSON.stringify(h[i].board)); this._lastSnap=Date.now(); this.setState({board}); this.persist({board}); this.saveHistory(history); this.scheduleCloudPush(); this.toast('Restored — your current version was saved first'); }
+  toggleHistDay(key){ this.setState(s=>({histOpenDays:Object.assign({},s.histOpenDays,{[key]:!s.histOpenDays[key]})})); }
+  // Diff two board snapshots → human-readable list of what changed (for the activity log / time-log help)
+  _boardDiff(before, after){ const out=[]; if(!before||!after) return out;
+    const bp=(before._phases||[]), ap=(after._phases||[]); const bpById={}, apById={}; bp.forEach(p=>{bpById[p.key]=p;}); ap.forEach(p=>{apById[p.key]=p;});
+    ap.forEach(p=>{ if(!bpById[p.key]) out.push({type:'addPhase', label:p.name||'phase'}); else if((bpById[p.key].name||'')!==(p.name||'')) out.push({type:'renamePhase', label:p.name||''}); });
+    bp.forEach(p=>{ if(!apById[p.key]) out.push({type:'delPhase', label:p.name||'phase'}); });
+    const keys=Object.keys(after).filter(k=>k!=='_phases' && Array.isArray(after[k]));
+    keys.forEach(k=>{ const bm=Array.isArray(before[k])?before[k]:[]; const am=after[k]; const bmById={}, amById={}; bm.forEach(m=>{bmById[m.id]=m;}); am.forEach(m=>{amById[m.id]=m;});
+      const phaseName=(apById[k]&&apById[k].name)||'';
+      am.forEach(m=>{ const b0=bmById[m.id];
+        if(!b0){ out.push({type:'addMs', label:m.title||'(untitled milestone)', phase:phaseName}); return; }
+        if((b0.title||'')!==(m.title||'')) out.push({type:'renameMs', label:m.title||'(untitled)', phase:phaseName});
+        if((b0.notes||'')!==(m.notes||'')) out.push({type:'noteMs', label:m.title||'(untitled milestone)', phase:phaseName});
+        const bt={}, at={}; (b0.tasks||[]).forEach(t=>{bt[t.id]=t;}); (m.tasks||[]).forEach(t=>{at[t.id]=t;});
+        (m.tasks||[]).forEach(t=>{ const t0=bt[t.id];
+          if(!t0){ out.push({type:'addTask', label:t.label||'(untitled task)', ms:m.title, phase:phaseName}); return; }
+          if(!!t0.done!==!!t.done) out.push({type:t.done?'done':'reopen', label:t.label||'(untitled task)', ms:m.title, phase:phaseName});
+          if((t0.label||'')!==(t.label||'')) out.push({type:'renameTask', label:t.label||'(untitled)', ms:m.title, phase:phaseName});
+          if((t0.notes||'')!==(t.notes||'')) out.push({type:'noteTask', label:t.label||'(untitled task)', ms:m.title, phase:phaseName});
+        });
+        (b0.tasks||[]).forEach(t=>{ if(!at[t.id]) out.push({type:'delTask', label:t.label||'(untitled)', ms:m.title, phase:phaseName}); });
+      });
+      bm.forEach(m=>{ if(!amById[m.id]) out.push({type:'delMs', label:m.title||'(untitled)', phase:phaseName}); });
+    });
+    return out;
+  }
+  _diffLabel(t){ return (t&&t.label&&t.label.trim())?t.label.trim():'(untitled)'; }
+  _diffLine(c){ const L=this._diffLabel(c); const ph=c.phase?(' · '+c.phase):'';
+    switch(c.type){
+      case 'done': return '✓ Completed: '+L;
+      case 'reopen': return '↺ Reopened: '+L;
+      case 'addTask': return '＋ Added task: '+L;
+      case 'delTask': return '✕ Deleted task: '+L;
+      case 'renameTask': return '✎ Renamed a task to "'+L+'"';
+      case 'noteTask': return '✎ Updated notes on: '+L;
+      case 'addMs': return '＋ Added milestone: '+L+ph;
+      case 'delMs': return '✕ Deleted milestone: '+L+ph;
+      case 'renameMs': return '✎ Renamed milestone to "'+L+'"';
+      case 'noteMs': return '✎ Updated milestone notes: '+L+ph;
+      case 'addPhase': return '＋ Added phase: '+L;
+      case 'delPhase': return '✕ Deleted phase: '+L;
+      case 'renamePhase': return '✎ Renamed phase to "'+L+'"';
+      default: return '· Edited';
+    }
+  }
 
   setActive(k){ this.setState({active:k,view:'phase',navOpen:false}); this.persist({active:k,view:'phase'}); }
   setView(v){ this.setState({view:v,navOpen:false}); this.persist({view:v}); try{ if(history&&history.replaceState) history.replaceState(null,'','#'+v); }catch(e){} }
@@ -2641,6 +2712,42 @@ class Component extends DCLogic {
         manual:!!h.manual, kindLabel:h.manual?'Checkpoint':'Auto-saved',
         onRestore:()=>this.restoreVersion(i),
       })),
+      historyDays:(()=>{ const H=this.state.history||[]; if(!H.length) return [];
+        const timeFmt=(ts)=>new Date(ts).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+        const dayFmt=(ts)=>new Date(ts).toLocaleDateString([], {weekday:'long',month:'long',day:'numeric'});
+        // compute per-entry diff (before=this snapshot, after=newer snapshot or current board)
+        const entries=H.map((h,i)=>{ const after=(i===0?this.state.board:H[i-1].board); const changes=this._boardDiff(h.board, after); return { i, ts:h.ts, manual:!!h.manual, changes }; });
+        // group by day (newest first)
+        const order=[]; const byDay={};
+        entries.forEach(e=>{ const key=this.dayKey(e.ts); if(!byDay[key]){ byDay[key]=[]; order.push(key); } byDay[key].push(e); });
+        return order.map(key=>{ const list=byDay[key]; const open=!!this.state.histOpenDays[key];
+          const tsList=list.map(e=>e.ts); const tMax=Math.max.apply(null,tsList), tMin=Math.min.apply(null,tsList);
+          // aggregate the day's activity into a de-duplicated summary
+          const done={}, notes={}, added=[], removed=[], renamed=[], other={};
+          list.forEach(e=>e.changes.forEach(c=>{ const L=this._diffLabel(c);
+            if(c.type==='done') done[L]=1;
+            else if(c.type==='noteTask'||c.type==='noteMs') notes[L]=1;
+            else if(c.type==='addTask'||c.type==='addMs'||c.type==='addPhase') added.push(L);
+            else if(c.type==='delTask'||c.type==='delMs'||c.type==='delPhase') removed.push(L);
+            else if(c.type==='renameTask'||c.type==='renameMs'||c.type==='renamePhase') renamed.push(L);
+            else other[c.type]=1;
+          }));
+          const summaryLines=[]; const dk=Object.keys(done), nk=Object.keys(notes);
+          if(dk.length) summaryLines.push({icon:'✓', text:'Completed '+dk.length+' task'+(dk.length>1?'s':'')+': '+dk.join(', ')});
+          if(nk.length) summaryLines.push({icon:'✎', text:'Updated notes on: '+nk.join(', ')});
+          if(added.length) summaryLines.push({icon:'＋', text:'Added '+added.length+' item'+(added.length>1?'s':'')+': '+added.slice(0,8).join(', ')});
+          if(removed.length) summaryLines.push({icon:'✕', text:'Removed '+removed.length+' item'+(removed.length>1?'s':'')});
+          if(renamed.length) summaryLines.push({icon:'✎', text:'Renamed '+renamed.length+' item'+(renamed.length>1?'s':'')});
+          return { key, dateLabel:dayFmt(tMax), count:list.length,
+            timeRange:(timeFmt(tMin)===timeFmt(tMax))?timeFmt(tMax):(timeFmt(tMin)+' – '+timeFmt(tMax)),
+            summaryLines, hasSummary:summaryLines.length>0, summaryEmpty:summaryLines.length===0,
+            open, onToggle:()=>this.toggleHistDay(key), toggleLabel:open?'Hide restore points':('Show '+list.length+' restore point'+(list.length>1?'s':'')),
+            items:list.map(e=>({ when:timeFmt(e.ts), manual:e.manual, kindLabel:e.manual?'Checkpoint':'Auto-saved',
+              hasChanges:e.changes.length>0, changeLines:(e.changes.length?e.changes.slice(0,10).map(c=>this._diffLine(c)):['· Minor edit']),
+              onRestore:()=>this.restoreVersion(e.i) })),
+          };
+        });
+      })(),
       bdDraft:this.state.bdDraft||'', onBdInput:(e)=>this.setState({bdDraft:e.target.value}), onBdSave:()=>this.addBrainDump(),
       brainDumpItems:((meta.brainDump)||[]).map((e,i)=>({ text:e.text, stamp:new Date(e.ts).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}), onInput:(ev)=>this.setBrainDump(i,ev.target.value), onDelete:()=>this.delBrainDump(i) })),
       brainDumpCount:((meta.brainDump)||[]).length,
