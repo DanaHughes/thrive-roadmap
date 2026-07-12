@@ -1529,7 +1529,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v66 · Jul 12';
+    this.BUILD='v67 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1908,13 +1908,27 @@ class Component extends DCLogic {
       +'.pp{background:#45852B;color:#fff;}.cc{background:#3C4F30;color:#EAF2E1;}.gg{background:#EAF2E1;color:#23311C;}</style></head><body>'
       +'<div class="bar"><b>✓ Your report is ready — images included</b>'
       +'<button class="pp" onclick="window.print()">🖨 Save as PDF</button>'
+      +'<button class="pp" onclick="__thvPng(this)">🖼 Save as PNG</button>'
       +'<button class="cc" onclick="var el=document.getElementById(\'c\');var r=document.createRange();r.selectNode(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand(\'copy\');this.textContent=\'✓ Copied — paste into your doc\';}catch(e){}s.removeAllRanges();">📋 Copy all</button>'
       +'<a class="gg" href="https://docs.google.com/document/create" target="_blank" rel="noopener">Open Google Docs ↗</a>'
       +'</div><div id="c"><h1 style="font-size:18pt;">'+safeTitle+'</h1>'+(bodyHtml||'')+'</div></body></html>';
+    const pngName=(title||'thrive-report').replace(/[^\w \-]+/g,'').slice(0,60).trim()||'thrive-report';
     let opened=false;
-    try{ const win=window.open('','_blank'); if(win&&win.document){ win.document.open(); win.document.write(page); win.document.close(); opened=true; } }catch(e){}
+    try{ const win=window.open('','_blank'); if(win&&win.document){ win.document.open(); win.document.write(page); win.document.close();
+      // Render the report to a PNG in the new tab (self-contained SVG→canvas; data-URI images included)
+      win.__thvPng=(function(w){ return function(btn){ try{ const doc=w.document; const node=doc.getElementById('c'); if(!node) return; const W=node.offsetWidth||820, H=node.offsetHeight||600; if(btn) btn.textContent='Rendering…';
+        const xml=new w.XMLSerializer().serializeToString(node);
+        const wrap='<div xmlns="http://www.w3.org/1999/xhtml" style="background:#fff;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;width:'+W+'px;">'+xml+'</div>';
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject width="100%" height="100%">'+wrap+'</foreignObject></svg>';
+        const img=new w.Image();
+        img.onload=function(){ try{ const sc=2; const c=doc.createElement('canvas'); c.width=W*sc; c.height=H*sc; const x=c.getContext('2d'); x.scale(sc,sc); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(img,0,0); const png=c.toDataURL('image/png'); const a=doc.createElement('a'); a.href=png; a.download=((w.__thvPngName||'thrive-report'))+'.png'; a.click(); if(btn) btn.textContent='🖼 Save as PNG'; }catch(e){ w.alert('PNG export is not supported in this browser — please use Save as PDF instead.'); if(btn) btn.textContent='🖼 Save as PNG'; } };
+        img.onerror=function(){ w.alert('Could not render the PNG — please use Save as PDF instead.'); if(btn) btn.textContent='🖼 Save as PNG'; };
+        img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      }catch(e){ w.alert('Could not render the PNG — please use Save as PDF instead.'); } }; })(win);
+      try{ win.__thvPngName=pngName; }catch(_){}
+      opened=true; } }catch(e){}
     if(!opened){ try{ const blob=new Blob([page],{type:'text/html'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=(title||'thrive-report').replace(/[^\w \-]+/g,'').slice(0,60).trim()+'.html'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); }catch(e){} }
-    this.toast(opened ? 'Report opened in a new tab — Save as PDF (keeps images) or Copy all → paste into Google Docs' : 'Report downloaded — open it to print or copy');
+    this.toast(opened ? 'Report opened in a new tab — Save as PDF, Save as PNG (for email), or Copy all → Google Docs' : 'Report downloaded — open it to print or copy');
   }
 
   // ---- Export: aesthetically formatted Phase / Milestone reports → Google Docs (email/text to your boss) ----
