@@ -325,12 +325,7 @@
       <div class="nav" draggable="true" data-pk="{{ p.key }}" onClick="{{ p.onClick }}" style="{{ p.style }}">
         <span style="width:26px;height:26px;border-radius:8px;background:{{ p.iconBg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:{{ p.iconColor }};font-size:12px;font-weight:800;">{{ p.glyph }}</span>
         <span style="font-size:13px;flex:1;min-width:0;">{{ p.label }}</span>
-        <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
-          <span style="display:flex;flex-direction:column;gap:1px;flex:0 0 auto;" title="Drag to reorder, or use arrows">
-            <button class="pbtn" onClick="{{ p.onUp }}" title="Move phase up" style="width:20px;height:14px;border:1px solid #E2E8DE;background:#fff;border-radius:5px 5px 0 0;color:#8A957C;cursor:pointer;font-size:8px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▲</button>
-            <button class="pbtn" onClick="{{ p.onDown }}" title="Move phase down" style="width:20px;height:14px;border:1px solid #E2E8DE;border-top:none;background:#fff;border-radius:0 0 5px 5px;color:#8A957C;cursor:pointer;font-size:8px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▼</button>
-          </span>
-        </sc-if>
+        <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span title="Drag to reorder" style="flex:0 0 auto;color:#C4CFB6;font-size:13px;cursor:grab;user-select:none;">⠿</span></sc-if>
       </div>
     </sc-for>
     <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
@@ -446,6 +441,7 @@
     <!-- MILESTONE CARDS -->
     <div>
       <sc-for list="{{ deliverables }}" as="d" hint-placeholder-count="4">
+        <sc-if value="{{ d._vis }}" hint-placeholder-val="{{ true }}">
         <div data-ms="{{ d.msDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:14px;overflow:hidden;">
           <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 16px 15px 16px;background:{{ d.tint }};">
             <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span data-msgrip="1" draggable="true" title="Drag to reorder this milestone" style="cursor:grab;color:#B7C4A8;font-size:16px;line-height:1;flex:0 0 auto;margin-top:14px;user-select:none;">⠿</span></sc-if>
@@ -461,10 +457,6 @@
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
               <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onDupMs }}" title="Duplicate this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⧉ Duplicate</button><button class="pbtn" onClick="{{ d.onMoveMs }}" title="Move this milestone to another phase" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇄ Move</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
-              <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:2px;flex:0 0 auto;">
-                <button class="pbtn" onClick="{{ d.onMsUp }}" title="Move milestone up" style="width:24px;height:15px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;border-radius:5px 5px 0 0;cursor:pointer;font-size:8px;line-height:1;padding:0;font-family:inherit;">▲</button>
-                <button class="pbtn" onClick="{{ d.onMsDown }}" title="Move milestone down" style="width:24px;height:15px;border:1px solid #D7E2CE;border-top:none;background:#fff;color:#5B7A45;border-radius:0 0 5px 5px;cursor:pointer;font-size:8px;line-height:1;padding:0;font-family:inherit;">▼</button>
-              </div></sc-if>
               <button class="pbtn" onClick="{{ d.onToggleCollapse }}" title="{{ d.collapseTitle }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B7A45;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ d.collapseGlyph }}</button>
               <button class="del" onClick="{{ d.onDelete }}" title="Delete milestone" style="width:30px;height:30px;border-radius:8px;border:1px solid #E6D6D3;background:#fff;color:#B98A82;cursor:pointer;font-size:14px;font-family:inherit;flex:0 0 auto;">✕</button>
             </div>
@@ -491,10 +483,6 @@
                     <button class="pbtn" onClick="{{ t.onDup }}" title="Duplicate this task" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">⧉</button>
                     <button class="pbtn" onClick="{{ t.onMove }}" title="Move this task to another milestone or phase" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">⇄</button>
                     <button class="pbtn" onClick="{{ t.onToggleTCol }}" title="{{ t.tcolTitle }}" style="width:24px;height:24px;border-radius:6px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;display:flex;align-items:center;justify-content:center;">{{ t.tcolGlyph }}</button>
-                    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:1px;flex:0 0 auto;">
-                      <button class="pbtn" onClick="{{ t.onTkUp }}" title="Move task up" style="width:22px;height:12px;border:1px solid #E2E8DE;background:#fff;color:#7C8C6C;border-radius:5px 5px 0 0;cursor:pointer;font-size:7px;line-height:1;padding:0;font-family:inherit;">▲</button>
-                      <button class="pbtn" onClick="{{ t.onTkDown }}" title="Move task down" style="width:22px;height:12px;border:1px solid #E2E8DE;border-top:none;background:#fff;color:#7C8C6C;border-radius:0 0 5px 5px;cursor:pointer;font-size:7px;line-height:1;padding:0;font-family:inherit;">▼</button>
-                    </div></sc-if>
                     <button class="del" onClick="{{ t.onDelete }}" title="Delete task" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;font-family:inherit;flex:0 0 auto;">✕</button>
                   </div>
                   <sc-if value="{{ t.texp }}" hint-placeholder-val="{{ true }}">
@@ -581,6 +569,7 @@
           </div>
           </sc-if>
         </div>
+        </sc-if>
       </sc-for>
       <button class="add" onClick="{{ onAddCard }}" style="width:100%;font-family:inherit;font-size:13px;font-weight:700;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:14px;padding:15px;cursor:pointer;margin-top:2px;">+ Add Milestone</button>
       <div style="font-size:12.5px;color:#9AA68C;padding:12px 4px 0;">{{ microTotal }} tasks across {{ delTotal }} milestones in this phase.</div>
@@ -925,7 +914,8 @@
         <span style="font-size:14px;font-weight:800;color:#33402A;">Time Log</span>
         <span style="font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#A88416;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:20px;padding:2px 8px;">PRIVATE</span>
         <span style="font-size:11px;color:#79866C;margin-left:4px;">Billable total <b style="color:#34672A;">{{ timeLog.billTotal }}h</b></span>
-        <button class="pbtn" onClick="{{ timeLog.onExport }}" style="margin-left:auto;font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
+        <a href="https://register.learnatthrive.com/admin/profile?tab=timesheets&academic-year=2026-2027" target="_blank" rel="noopener" style="margin-left:auto;font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:8px;padding:7px 13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">↗ Open my Thrive Timesheet</a>
+        <button class="pbtn" onClick="{{ timeLog.onExport }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
       </div>
       <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = your total time in ThriveOS — dashboard open &amp; in use (counts even while you work in other tabs), <i>plus</i> any Active Task time (pauses after 30 min with no activity). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages (a subset of Passive). <b style="color:#357A2B;">Billable</b> = what you reconcile when you finalize the day (editable anytime).</div>
 
@@ -1470,7 +1460,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v63 · Jul 9';
+    this.BUILD='v64 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
