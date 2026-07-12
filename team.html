@@ -1529,7 +1529,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v68 · Jul 12';
+    this.BUILD='v69 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1717,9 +1717,21 @@ class Component extends DCLogic {
     // Drop / paste an image directly onto a custom card → adds an inline image block
     this._cardImgAdd=async (scope,id,f)=>{ if(f.size>5*1024*1024){ this.toast((f.name||'Image')+' is too big (5MB max)'); return; } try{ const base=await this._aiReadFile(f); const url='data:'+(f.type||'image/png')+';base64,'+base; this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(c) c.blocks.push({id:this.uid(),type:'file',name:f.name||'image',data:url,kind:'image'}); }); this.toast('Image added ✓'); }catch(e){ this.toast('Could not read that image'); } };
     this._cardScope=(el)=>{ const uc=el.getAttribute('data-uc')||''; const i=uc.indexOf('|'); return i<0?null:{scope:uc.slice(0,i), id:uc.slice(i+1)}; };
-    this._cardDragOver=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!card||this._dragUc) return; const dt=e.dataTransfer; if(dt&&dt.types&&Array.prototype.indexOf.call(dt.types,'Files')>=0){ e.preventDefault(); try{ card.style.outline='2px dashed #45852B'; card.style.outlineOffset='-2px'; }catch(_){} } };
+    this._cardDragOver=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!card||this._dragUc) return; const dt=e.dataTransfer; if(!dt||!dt.types) return; const t=dt.types; const has=(x)=>Array.prototype.indexOf.call(t,x)>=0; if(has('Files')||has('text/uri-list')||has('text/html')){ e.preventDefault(); try{ card.style.outline='2px dashed #45852B'; card.style.outlineOffset='-2px'; }catch(_){} } };
     this._cardDragLeave=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(card){ try{ card.style.outline=''; }catch(_){} } };
-    this._cardDrop=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!card) return; const dt=e.dataTransfer; if(!dt) return; const files=dt.files?Array.prototype.slice.call(dt.files):[]; const imgs=files.filter(f=>/^image\//.test(f.type)); try{ card.style.outline=''; }catch(_){} if(!imgs.length) return; e.preventDefault(); e.stopPropagation(); const sc=this._cardScope(card); if(!sc) return; imgs.forEach(f=>this._cardImgAdd(sc.scope, sc.id, f)); };
+    this._cardAddImgUrl=(scope,id,url)=>{ if(!url) return; this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(c) c.blocks.push({id:this.uid(),type:'file',name:'image',data:url,kind:'image'}); }); this.toast('Image added ✓'); };
+    this._cardDrop=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!card) return; const dt=e.dataTransfer; if(!dt) return; try{ card.style.outline=''; }catch(_){} const sc=this._cardScope(card); if(!sc) return;
+      const files=dt.files?Array.prototype.slice.call(dt.files):[]; let imgs=files.filter(f=>/^image\//.test(f.type||'')||/\.(png|jpe?g|gif|webp|bmp|heic|tiff?|svg)$/i.test(f.name||''));
+      if(!imgs.length && files.length===1) imgs=files; // e.g. a Mac screenshot with no reported type
+      if(imgs.length){ e.preventDefault(); e.stopPropagation(); imgs.forEach(f=>this._cardImgAdd(sc.scope, sc.id, f)); return; }
+      // No real file (image dragged from a web page / another tab): pull the image URL out of the drop
+      let url='';
+      try{ const html=dt.getData('text/html')||''; const m=html.match(/<img[^>]+src=["']([^"']+)["']/i); if(m) url=m[1]; }catch(_){}
+      if(!url){ try{ const uri=(dt.getData('text/uri-list')||dt.getData('text/plain')||'').trim(); if(/^(data:image\/|https?:\/\/)/i.test(uri)) url=uri; }catch(_){} }
+      if(url){ e.preventDefault(); e.stopPropagation(); this._cardAddImgUrl(sc.scope, sc.id, url); return; }
+      // Something was dropped but we couldn't get an image — guide the user
+      if(files.length || (dt.types&&Array.prototype.indexOf.call(dt.types,'Files')>=0)){ e.preventDefault(); this.toast('Couldn\'t read that — try saving the image first, then drag the file, or use 📎 File'); }
+    };
     this._cardPaste=(e)=>{ const card=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!card) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; const sc=this._cardScope(card); if(!sc) return; let handled=false; for(let i=0;i<items.length;i++){ const it=items[i]; if(it.kind==='file'){ const f=it.getAsFile(); if(f&&/^image\//.test(f.type)){ this._cardImgAdd(sc.scope, sc.id, f); handled=true; } } } if(handled) e.preventDefault(); };
     document.addEventListener('input', this._rnInput, true);
     document.addEventListener('focusin', this._rnFocusIn, true);
@@ -2276,7 +2288,11 @@ class Component extends DCLogic {
     this.setState({aiConsentDone:true}); }
   setAiChatInput(v){ this.setState({aiChatInput:v}); }
   // ---- Attachments (images, screenshots, PDFs) ----
-  _aiReadFile(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>{ const s=String(r.result||''); const c=s.indexOf(','); resolve(c>=0?s.slice(c+1):s); }; r.onerror=reject; r.readAsDataURL(file); }); }
+  _aiReadFile(file){ return new Promise((resolve,reject)=>{ let done=false;
+    const viaBuffer=()=>{ if(done) return; if(file&&file.arrayBuffer){ file.arrayBuffer().then(buf=>{ if(done) return; done=true; try{ const by=new Uint8Array(buf); let bin=''; const CH=0x8000; for(let i=0;i<by.length;i+=CH){ bin+=String.fromCharCode.apply(null, by.subarray(i,i+CH)); } resolve(btoa(bin)); }catch(e){ reject(e); } }).catch(reject); } else { reject(new Error('read-failed')); } };
+    try{ const r=new FileReader(); r.onload=()=>{ if(done) return; done=true; const s=String(r.result||''); const c=s.indexOf(','); resolve(c>=0?s.slice(c+1):s); }; r.onerror=()=>viaBuffer(); r.onabort=()=>viaBuffer(); r.readAsDataURL(file); }
+    catch(e){ viaBuffer(); }
+  }); }
   async aiChatAddFiles(fileList){
     const files=Array.prototype.slice.call(fileList||[]); if(!files.length) return;
     const cur=(this.state.aiChatFiles||[]).slice();
