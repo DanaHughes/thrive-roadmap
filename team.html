@@ -439,6 +439,41 @@
       </div>
     </div>
 
+    <!-- CUSTOM PHASE CARDS (top of phase) -->
+    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-bottom:16px;">
+      <sc-for list="{{ phaseCards }}" as="cd" hint-placeholder-count="0">
+        <div data-uc="{{ cd.ucDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:12px;">
+          <div style="height:5px;{{ cd.barStyle }}"></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
+            <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
+            <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
+            <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
+            <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
+          </div>
+          <sc-if value="{{ cd.colorOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;"><sc-for list="{{ cd.swatches }}" as="sw" hint-placeholder-count="0"><button class="pbtn" onClick="{{ sw.onPick }}" style="width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);{{ sw.style }}"></button></sc-for></div></sc-if>
+          <sc-if value="{{ cd.addOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;flex-wrap:wrap;"><button class="pbtn" onClick="{{ cd.onAddLink }}" style="font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:7px;padding:5px 10px;cursor:pointer;">🔗 Link</button><button class="pbtn" onClick="{{ cd.onAddFile }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">📎 File</button><button class="pbtn" onClick="{{ cd.onAddNote }}" style="font-size:11px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #D7E2CE;border-radius:7px;padding:5px 10px;cursor:pointer;">📝 Note</button></div></sc-if>
+          <div style="padding:11px 12px;display:flex;flex-direction:column;gap:9px;">
+            <sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#AEB8A6;text-align:center;padding:6px;">Empty card — tap <b>+</b> to add a link, file, or note.</div></sc-if>
+            <sc-for list="{{ cd.blocks }}" as="bl" hint-placeholder-count="0">
+              <div style="display:flex;align-items:flex-start;gap:7px;">
+                <div style="flex:1;min-width:0;">
+                  <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><img src="{{ bl.src }}" style="max-width:100%;border-radius:8px;border:1px solid #E8EDE4;display:block;"></sc-if>
+                  <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
+                </div>
+                <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <button class="pbtn" onClick="{{ onAddPhaseCard }}" style="font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+    </div>
+    </sc-if>
+
     <!-- MILESTONE CARDS -->
     <div>
       <sc-for list="{{ deliverables }}" as="d" hint-placeholder-count="4">
@@ -727,6 +762,39 @@
         <span style="width:1px;height:13px;background:#E2E8DE;"></span>
         <span style="font-size:21px;font-weight:800;color:#45852B;letter-spacing:.01em;">{{ clockTime }}</span>
       </div>
+    </div>
+
+    <!-- CUSTOM LAUNCHPAD CARDS -->
+    <div style="margin-bottom:18px;">
+      <sc-for list="{{ launchCards }}" as="cd" hint-placeholder-count="0">
+        <div data-uc="{{ cd.ucDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:12px;">
+          <div style="height:5px;{{ cd.barStyle }}"></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
+            <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
+            <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
+            <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
+            <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
+          </div>
+          <sc-if value="{{ cd.colorOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;"><sc-for list="{{ cd.swatches }}" as="sw" hint-placeholder-count="0"><button class="pbtn" onClick="{{ sw.onPick }}" style="width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);{{ sw.style }}"></button></sc-for></div></sc-if>
+          <sc-if value="{{ cd.addOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;flex-wrap:wrap;"><button class="pbtn" onClick="{{ cd.onAddLink }}" style="font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:7px;padding:5px 10px;cursor:pointer;">🔗 Link</button><button class="pbtn" onClick="{{ cd.onAddFile }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">📎 File</button><button class="pbtn" onClick="{{ cd.onAddNote }}" style="font-size:11px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #D7E2CE;border-radius:7px;padding:5px 10px;cursor:pointer;">📝 Note</button></div></sc-if>
+          <div style="padding:11px 12px;display:flex;flex-direction:column;gap:9px;">
+            <sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#AEB8A6;text-align:center;padding:6px;">Empty card — tap <b>+</b> to add a link, file, or note.</div></sc-if>
+            <sc-for list="{{ cd.blocks }}" as="bl" hint-placeholder-count="0">
+              <div style="display:flex;align-items:flex-start;gap:7px;">
+                <div style="flex:1;min-width:0;">
+                  <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><img src="{{ bl.src }}" style="max-width:100%;border-radius:8px;border:1px solid #E8EDE4;display:block;"></sc-if>
+                  <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
+                </div>
+                <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <button class="pbtn" onClick="{{ onAddLaunchCard }}" style="font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
     </div>
 
     <div class="rg" style="background:linear-gradient(135deg,#34512C 0%,#2E8B57 100%);border-radius:22px;padding:26px 28px;color:#EAF2E1;box-shadow:0 10px 30px rgba(46,87,55,.22);margin-bottom:18px;display:grid;grid-template-columns:1fr 300px;gap:26px;">
@@ -1461,7 +1529,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v64 · Jul 12';
+    this.BUILD='v65 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1527,7 +1595,9 @@ class Component extends DCLogic {
     this._phaseMetaDefault=this.PHASE_SEED.map(p=>({key:p.key,name:this._phaseName(p.label),color:p.color,iconBg:p.iconBg,glyph:p.glyph,year:(this._phaseYearMap[p.key]||['',''])[0],rmTitle:(this._phaseYearMap[p.key]||['',this._phaseName(p.label)])[1]}));
     this._phaseColors=['#2E8B57','#0E8F86','#6F9E1E','#357A2B','#1FA15B','#3F6193','#8A5CC0','#C0692E','#2E8B57','#0E8F86'];
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, tlNoteOpen:{}, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
+    // Themed color swatches (accent + matching tint) for custom cards, phases & milestones
+    this.CARD_SWATCHES=[{c:'#2E8B57',t:'#E5F2EB'},{c:'#0E8F86',t:'#DDF1EF'},{c:'#6F9E1E',t:'#EEF4DC'},{c:'#1FA15B',t:'#E1F4EA'},{c:'#3F6193',t:'#E7EDF6'},{c:'#8A5CC0',t:'#EFE7F7'},{c:'#C0692E',t:'#F6EBE1'},{c:'#C0392E',t:'#F7E7E5'},{c:'#B08900',t:'#F7F1DC'},{c:'#5B6B4E',t:'#EEF1EA'}];
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, tlNoteOpen:{}, cardColorPick:null, cardAddMenu:null, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -1595,20 +1665,24 @@ class Component extends DCLogic {
   componentDidUpdate(){ this._growAll(); this._rnRender(); }
   // ---- Drag-and-drop reordering for phases (desktop); up/down arrows cover mobile ----
   _dndInit(){
-    this._dragKey=null; this._dragMs=null; this._dragTk=null;
-    const clear=()=>{ try{ document.querySelectorAll('[data-pk],[data-ms],[data-tk]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; }); }catch(e){} };
+    this._dragKey=null; this._dragMs=null; this._dragTk=null; this._dragUc=null;
+    const clear=()=>{ try{ document.querySelectorAll('[data-pk],[data-ms],[data-tk],[data-uc]').forEach(x=>{ x.style.borderTop=''; x.style.opacity=''; x.style.outline=''; }); }catch(e){} };
     this._onDragStart=(e)=>{
+      const ugrip=e.target&&e.target.closest&&e.target.closest('[data-ucgrip]');
+      if(ugrip){ const uc=e.target.closest('[data-uc]'); if(uc){ this._dragUc=uc.getAttribute('data-uc'); this._dragTk=null; this._dragMs=null; this._dragKey=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragUc); }catch(_){} uc.style.opacity='0.5'; return; } }
       const tgrip=e.target&&e.target.closest&&e.target.closest('[data-tkgrip]');
       if(tgrip){ const tk=e.target.closest('[data-tk]'); if(tk){ this._dragTk=tk.getAttribute('data-tk'); this._dragMs=null; this._dragKey=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragTk); }catch(_){} tk.style.opacity='0.5'; return; } }
       const grip=e.target&&e.target.closest&&e.target.closest('[data-msgrip]');
       if(grip){ const ms=e.target.closest('[data-ms]'); if(ms){ this._dragMs=ms.getAttribute('data-ms'); this._dragKey=null; this._dragTk=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragMs); }catch(_){} ms.style.opacity='0.5'; return; } }
       const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; this._dragKey=el.getAttribute('data-pk'); this._dragMs=null; this._dragTk=null; try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',this._dragKey); }catch(_){} el.style.opacity='0.45'; };
-    this._onDragEnd=()=>{ this._dragKey=null; this._dragMs=null; this._dragTk=null; clear(); };
+    this._onDragEnd=()=>{ this._dragKey=null; this._dragMs=null; this._dragTk=null; this._dragUc=null; clear(); };
     this._onDragOver=(e)=>{
+      if(this._dragUc){ const el=e.target&&e.target.closest&&e.target.closest('[data-uc]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-uc]').forEach(x=>x.style.outline=''); }catch(_){} el.style.outline='2px solid #45852B'; return; }
       if(this._dragTk){ const el=e.target&&e.target.closest&&e.target.closest('[data-tk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-tk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; return; }
       if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-ms]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; return; }
       if(!this._dragKey) return; const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); if(!el) return; e.preventDefault(); try{ document.querySelectorAll('[data-pk]').forEach(x=>x.style.borderTop=''); }catch(_){} el.style.borderTop='2px solid #45852B'; };
     this._onDrop=(e)=>{
+      if(this._dragUc){ const el=e.target&&e.target.closest&&e.target.closest('[data-uc]'); const du=this._dragUc; this._dragUc=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-uc'); if(!to||to===du) return; const fa=du.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]) return; this.moveUserCard(fa[0], fa[1], ta[1]); return; }
       if(this._dragTk){ const el=e.target&&e.target.closest&&e.target.closest('[data-tk]'); const dt=this._dragTk; this._dragTk=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-tk'); if(!to||to===dt) return; const fa=dt.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]||fa[1]!==ta[1]) return; this.moveTaskTo(fa[0], +fa[1], +fa[2], +ta[2]); return; }
       if(this._dragMs){ const el=e.target&&e.target.closest&&e.target.closest('[data-ms]'); const dm=this._dragMs; this._dragMs=null; clear(); if(!el) return; e.preventDefault(); const to=el.getAttribute('data-ms'); if(!to||to===dm) return; const fa=dm.split('|'), ta=to.split('|'); if(fa[0]!==ta[0]) return; this.moveMsTo(fa[0], +fa[1], +ta[1]); return; }
       const el=e.target&&e.target.closest&&e.target.closest('[data-pk]'); clear(); if(!el||!this._dragKey) return; e.preventDefault(); const targetKey=el.getAttribute('data-pk'); const dk=this._dragKey; this._dragKey=null; if(targetKey===dk) return; const list=this.PHASES; const toIndex=list.findIndex(p=>p.key===targetKey); if(toIndex<0) return; this.movePhaseTo(dk, toIndex); };
@@ -1975,7 +2049,44 @@ class Component extends DCLogic {
     waitingOn:[{what:'Pricing & license options','who':'DreamBox, IXL, Edmentum'},{what:'Curriculum direction approval','who':'Terry & Kim'}],
     parkingLot:['Future high-school dual-enrollment track','Parent-mentor onboarding program'],
     commitments:[{title:'Kids Pickup',time:'2:45 PM'},{title:'Vendor demo \u00b7 DreamBox',time:'4:30 PM'}]}; }
-  ensureMeta(b){ if(!b.meta) b.meta=this.defMeta(); const d=this.defMeta(); ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ if(!b.meta[k]) b.meta[k]=d[k]||[]; }); return b.meta; }
+  ensureMeta(b){ if(!b.meta) b.meta=this.defMeta(); const d=this.defMeta(); ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ if(!b.meta[k]) b.meta[k]=d[k]||[]; }); if(!Array.isArray(b.meta.launchCards)) b.meta.launchCards=[]; if(!b.meta.phaseCards||typeof b.meta.phaseCards!=='object'||Array.isArray(b.meta.phaseCards)) b.meta.phaseCards={}; return b.meta; }
+  // ---- Custom cards (widgets) — Launchpad + top of each phase. scope = 'launch' or a phase key ----
+  _cards(b, scope){ const m=this.ensureMeta(b); if(scope==='launch') return m.launchCards; if(!Array.isArray(m.phaseCards[scope])) m.phaseCards[scope]=[]; return m.phaseCards[scope]; }
+  cardsFor(scope){ const m=(this.state.board&&this.state.board.meta)||null; if(!m) return []; if(scope==='launch') return Array.isArray(m.launchCards)?m.launchCards:[]; return (m.phaseCards&&Array.isArray(m.phaseCards[scope]))?m.phaseCards[scope]:[]; }
+  addUserCard(scope){ this.mut(b=>{ const arr=this._cards(b,scope); const sw=this.CARD_SWATCHES[arr.length%this.CARD_SWATCHES.length]; arr.push({id:this.uid(), title:'', c:sw.c, t:sw.t, blocks:[]}); }); this.toast('Card added'); }
+  delUserCard(scope,id){ if(typeof window!=='undefined'&&window.confirm&&!window.confirm('Delete this card and its contents?')) return; this.mut(b=>{ const arr=this._cards(b,scope); const i=arr.findIndex(x=>x.id===id); if(i>=0) arr.splice(i,1); }); this.setState({cardColorPick:null, cardAddMenu:null}); }
+  setUserCardTitle(scope,id,v){ this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(c) c.title=v; }); }
+  setUserCardColor(scope,id,c,t){ this.mut(b=>{ const cd=this._cards(b,scope).find(x=>x.id===id); if(cd){ cd.c=c; cd.t=t; } }); this.setState({cardColorPick:null}); }
+  toggleCardColor(scope,id){ const cur=this.state.cardColorPick; this.setState({cardColorPick:(cur&&cur.scope===scope&&cur.id===id)?null:{scope,id}, cardAddMenu:null}); }
+  toggleCardAdd(scope,id){ const cur=this.state.cardAddMenu; this.setState({cardAddMenu:(cur&&cur.scope===scope&&cur.id===id)?null:{scope,id}, cardColorPick:null}); }
+  addCardBlock(scope,id,type){ if(type==='file'){ this.setState({cardAddMenu:null}); return this.pickCardFile(scope,id); } this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(!c) return; if(type==='link') c.blocks.push({id:this.uid(),type:'link',label:'',url:''}); else if(type==='note') c.blocks.push({id:this.uid(),type:'note',text:''}); }); this.setState({cardAddMenu:null}); }
+  delCardBlock(scope,id,bid){ this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(!c) return; const i=c.blocks.findIndex(x=>x.id===bid); if(i>=0) c.blocks.splice(i,1); }); }
+  setCardBlock(scope,id,bid,field,v){ this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(!c) return; const bl=(c.blocks||[]).find(x=>x.id===bid); if(bl) bl[field]=v; }); }
+  pickCardFile(scope,id){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,application/pdf'; inp.multiple=true; inp.style.display='none'; document.body.appendChild(inp);
+    inp.addEventListener('change', async ()=>{ const files=inp.files?Array.prototype.slice.call(inp.files):[]; for(let i=0;i<files.length;i++){ const f=files[i]; if(f.size>5*1024*1024){ this.toast((f.name||'File')+' is too big (5MB max)'); continue; } try{ const base=await this._aiReadFile(f); const kind=/^image\//.test(f.type||'')?'image':'file'; const url='data:'+(f.type||'application/octet-stream')+';base64,'+base; this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(c) c.blocks.push({id:this.uid(),type:'file',name:f.name||'file',data:url,kind:kind}); }); }catch(e){ this.toast('Could not read '+(f.name||'file')); } } setTimeout(()=>{ try{ inp.remove(); }catch(_){} },600); });
+    inp.click(); }
+  moveUserCard(scope,fromId,toId){ this.mut(b=>{ const arr=this._cards(b,scope); const fi=arr.findIndex(x=>x.id===fromId), ti=arr.findIndex(x=>x.id===toId); if(fi<0||ti<0||fi===ti) return; const item=arr.splice(fi,1)[0]; arr.splice(ti,0,item); }); }
+  _cardViews(scope){ const cards=this.cardsFor(scope); const pick=this.state.cardColorPick, addm=this.state.cardAddMenu;
+    return cards.map(cd=>{ const colorOpen=!!(pick&&pick.scope===scope&&pick.id===cd.id); const addOpen=!!(addm&&addm.scope===scope&&addm.id===cd.id);
+      return { id:cd.id, title:cd.title||'', ucDrag:(scope+'|'+cd.id),
+        headStyle:('background:'+(cd.t||'#EEF1EA')+';'), barStyle:('background:'+(cd.c||'#5B6B4E')+';'),
+        onTitle:(e)=>this.setUserCardTitle(scope,cd.id,e.target.value),
+        colorOpen, onToggleColor:()=>this.toggleCardColor(scope,cd.id),
+        swatches:this.CARD_SWATCHES.map(sw=>({ style:('background:'+sw.c+';'), onPick:()=>this.setUserCardColor(scope,cd.id,sw.c,sw.t) })),
+        addOpen, onToggleAdd:()=>this.toggleCardAdd(scope,cd.id),
+        onAddLink:()=>this.addCardBlock(scope,cd.id,'link'), onAddNote:()=>this.addCardBlock(scope,cd.id,'note'), onAddFile:()=>this.addCardBlock(scope,cd.id,'file'),
+        onDelete:()=>this.delUserCard(scope,cd.id),
+        empty:(cd.blocks||[]).length===0, hasBlocks:(cd.blocks||[]).length>0,
+        blocks:(cd.blocks||[]).map(bl=>{ const isFile=bl.type==='file', isImage=isFile&&bl.kind==='image';
+          return { id:bl.id, isLink:bl.type==='link', isFile, isImage, isDoc:(isFile&&!isImage), isNote:bl.type==='note',
+            label:bl.label||'', url:bl.url||'', hasUrl:!!(bl.url&&bl.url.trim()), name:bl.name||'', src:bl.data||'', text:bl.text||'',
+            onLabel:(e)=>this.setCardBlock(scope,cd.id,bl.id,'label',e.target.value),
+            onUrl:(e)=>this.setCardBlock(scope,cd.id,bl.id,'url',e.target.value),
+            onText:(e)=>this.setCardBlock(scope,cd.id,bl.id,'text',e.target.value),
+            onDelete:()=>this.delCardBlock(scope,cd.id,bl.id) };
+        }) };
+    });
+  }
   addBrainDump(){ const txt=(this.state.bdDraft||'').trim(); if(!txt)return; this.mut(b=>{ this.ensureMeta(b).brainDump.unshift({text:txt, ts:Date.now()}); }); this.setState({bdDraft:''}); }
   delBrainDump(i){ this.mut(b=>{ this.ensureMeta(b).brainDump.splice(i,1); }); }
   setBrainDump(i,v){ this.mut(b=>{ this.ensureMeta(b).brainDump[i].text=v; }); }
@@ -2767,6 +2878,8 @@ class Component extends DCLogic {
       phaseHeading:active.heading||active.label, phaseColor:active.color, phaseIconBg:active.iconBg, phaseGlyph:active.glyph,
       phaseLabelEdit:active.label, onRenamePhase:(e)=>this.renamePhase(active.key, e.target.value), onDeletePhase:()=>this.delPhase(active.key), onAddPhase:()=>this.addPhase(),
       search:this.state.search, onSearch:(e)=>this.onSearch(e), onAddCard:()=>this.addCard(ph),
+      phaseCards:this._cardViews(ph), hasPhaseCards:this.cardsFor(ph).length>0, onAddPhaseCard:()=>this.addUserCard(ph),
+      launchCards:this._cardViews('launch'), hasLaunchCards:this.cardsFor('launch').length>0, onAddLaunchCard:()=>this.addUserCard('launch'),
       phasePctStr:phasePct+'%', ringDash:(phasePct/100*C)+' '+C,
       microDone, microTotal, microRemain:microTotal-microDone,
       delTotal:arr.length, delInProgress:delInProg, delNotStarted,
