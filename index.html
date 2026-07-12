@@ -459,7 +459,7 @@
               <div style="display:flex;align-items:flex-start;gap:7px;">
                 <div style="flex:1;min-width:0;">
                   <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
-                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><img src="{{ bl.src }}" style="max-width:100%;border-radius:8px;border:1px solid #E8EDE4;display:block;"></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
                   <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
                   <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
                 </div>
@@ -783,7 +783,7 @@
               <div style="display:flex;align-items:flex-start;gap:7px;">
                 <div style="flex:1;min-width:0;">
                   <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
-                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><img src="{{ bl.src }}" style="max-width:100%;border-radius:8px;border:1px solid #E8EDE4;display:block;"></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
                   <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
                   <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
                 </div>
@@ -1528,7 +1528,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v70 · Jul 12';
+    this.BUILD='v72 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1810,7 +1810,12 @@ class Component extends DCLogic {
         });
       });
     });
-    if(b.meta && typeof b.meta==='object'){ ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ b.meta[k]=arr(b.meta[k]); }); }
+    if(b.meta && typeof b.meta==='object'){ ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ b.meta[k]=arr(b.meta[k]); });
+      // custom cards: restore arrays Firebase drops when empty (cards list + each card's blocks)
+      b.meta.launchCards=arr(b.meta.launchCards); b.meta.launchCards.forEach(c=>{ if(c&&typeof c==='object') c.blocks=arr(c.blocks); });
+      if(!b.meta.phaseCards||typeof b.meta.phaseCards!=='object'||Array.isArray(b.meta.phaseCards)) b.meta.phaseCards={};
+      Object.keys(b.meta.phaseCards).forEach(k=>{ b.meta.phaseCards[k]=arr(b.meta.phaseCards[k]); b.meta.phaseCards[k].forEach(c=>{ if(c&&typeof c==='object') c.blocks=arr(c.blocks); }); });
+    }
     return b;
   }
   async cloudInit(){
@@ -2098,7 +2103,7 @@ class Component extends DCLogic {
     commitments:[{title:'Kids Pickup',time:'2:45 PM'},{title:'Vendor demo \u00b7 DreamBox',time:'4:30 PM'}]}; }
   ensureMeta(b){ if(!b.meta) b.meta=this.defMeta(); const d=this.defMeta(); ['exec','decisions','needsAttention','waitingOn','parkingLot','commitments','brainDump'].forEach(k=>{ if(!b.meta[k]) b.meta[k]=d[k]||[]; }); if(!Array.isArray(b.meta.launchCards)) b.meta.launchCards=[]; if(!b.meta.phaseCards||typeof b.meta.phaseCards!=='object'||Array.isArray(b.meta.phaseCards)) b.meta.phaseCards={}; return b.meta; }
   // ---- Custom cards (widgets) — Launchpad + top of each phase. scope = 'launch' or a phase key ----
-  _cards(b, scope){ const m=this.ensureMeta(b); if(scope==='launch') return m.launchCards; if(!Array.isArray(m.phaseCards[scope])) m.phaseCards[scope]=[]; return m.phaseCards[scope]; }
+  _cards(b, scope){ const m=this.ensureMeta(b); let arr; if(scope==='launch') arr=m.launchCards; else { if(!Array.isArray(m.phaseCards[scope])) m.phaseCards[scope]=[]; arr=m.phaseCards[scope]; } if(Array.isArray(arr)) arr.forEach(c=>{ if(c&&typeof c==='object'&&!Array.isArray(c.blocks)) c.blocks=[]; }); return arr; }
   cardsFor(scope){ const m=(this.state.board&&this.state.board.meta)||null; if(!m) return []; if(scope==='launch') return Array.isArray(m.launchCards)?m.launchCards:[]; return (m.phaseCards&&Array.isArray(m.phaseCards[scope]))?m.phaseCards[scope]:[]; }
   addUserCard(scope){ this.mut(b=>{ const arr=this._cards(b,scope); const sw=this.CARD_SWATCHES[arr.length%this.CARD_SWATCHES.length]; arr.push({id:this.uid(), title:'', c:sw.c, t:sw.t, blocks:[]}); }); this.toast('Card added'); }
   delUserCard(scope,id){ if(typeof window!=='undefined'&&window.confirm&&!window.confirm('Delete this card and its contents?')) return; this.mut(b=>{ const arr=this._cards(b,scope); const i=arr.findIndex(x=>x.id===id); if(i>=0) arr.splice(i,1); }); this.setState({cardColorPick:null, cardAddMenu:null}); }
@@ -2124,9 +2129,11 @@ class Component extends DCLogic {
         onAddLink:()=>this.addCardBlock(scope,cd.id,'link'), onAddNote:()=>this.addCardBlock(scope,cd.id,'note'), onAddFile:()=>this.addCardBlock(scope,cd.id,'file'),
         onDelete:()=>this.delUserCard(scope,cd.id),
         empty:(cd.blocks||[]).length===0, hasBlocks:(cd.blocks||[]).length>0,
-        blocks:(cd.blocks||[]).map(bl=>{ const isFile=bl.type==='file', isImage=isFile&&bl.kind==='image';
+        blocks:(cd.blocks||[]).map(bl=>{ const isFile=bl.type==='file', isImage=isFile&&bl.kind==='image'; const w=(typeof bl.w==='number'&&bl.w>0)?bl.w:100;
           return { id:bl.id, isLink:bl.type==='link', isFile, isImage, isDoc:(isFile&&!isImage), isNote:bl.type==='note',
             label:bl.label||'', url:bl.url||'', hasUrl:!!(bl.url&&bl.url.trim()), name:bl.name||'', src:bl.data||'', text:bl.text||'',
+            w:w, wpct:(w+'%'), imgStyle:('width:'+w+'%;max-width:100%;height:auto;'),
+            onWidth:(e)=>this.setCardBlock(scope,cd.id,bl.id,'w',(parseInt(e.target.value,10)||100)),
             onLabel:(e)=>this.setCardBlock(scope,cd.id,bl.id,'label',e.target.value),
             onUrl:(e)=>this.setCardBlock(scope,cd.id,bl.id,'url',e.target.value),
             onText:(e)=>this.setCardBlock(scope,cd.id,bl.id,'text',e.target.value),
