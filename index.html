@@ -393,7 +393,7 @@
         </div>
         <button class="add" onClick="{{ onAddCard }}" style="display:flex;align-items:center;gap:7px;background:{{ phaseColor }};border:1px solid {{ phaseColor }};border-radius:10px;padding:9px 15px;font-family:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;">+ Add Milestone</button>
         <button class="add" onClick="{{ onExportPhase }}" title="Export this whole phase to a Google Doc" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #CBD8E8;border-radius:10px;padding:9px 14px;font-family:inherit;font-size:13px;font-weight:700;color:#3F6193;cursor:pointer;">⇪ Export phase</button>
-        <button class="pbtn" onClick="{{ onDeletePhase }}" title="Delete this phase" style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #E6D6D3;border-radius:10px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:700;color:#B4726A;cursor:pointer;">🗑 Delete phase</button>
+        <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ onDeletePhase }}" title="Delete this phase" style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #E6D6D3;border-radius:10px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:700;color:#B4726A;cursor:pointer;">🗑 Delete phase</button></sc-if>
         <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E7ECF4;border-radius:11px;padding:9px 14px;flex:0 0 auto;">
           <span style="color:#8FAE48;font-size:13px;">◷</span>
           <span style="font-size:13.5px;font-weight:700;color:#3A4632;">{{ clockDay }}, {{ clockDate }}</span>
@@ -448,7 +448,7 @@
     </div>
 
     <!-- CUSTOM PHASE CARDS (top of phase) -->
-    <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ showPhaseCards }}" hint-placeholder-val="{{ true }}">
     <div style="margin-bottom:16px;">
       <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
       <sc-for list="{{ phaseCards }}" as="cd" hint-placeholder-count="0">
@@ -472,7 +472,7 @@
                   <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
                   <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
                   <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
-                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><div class="richnote" data-np="{{ bl.np }}" data-ph="Write a note… (select text for formatting)" style="width:100%;font-size:11.5px;"></div></sc-if>
                 </div>
                 <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
               </div>
@@ -644,6 +644,44 @@
       </div>
     </div>
 
+    <!-- CUSTOM DASHBOARD CARDS -->
+    <sc-if value="{{ showPhaseCards }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-bottom:18px;">
+      <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
+      <sc-for list="{{ dashCards }}" as="cd" hint-placeholder-count="0">
+        <div data-uc="{{ cd.ucDrag }}" style="{{ cd.widthStyle }}background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);">
+          <div style="height:5px;{{ cd.barStyle }}"></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
+            <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
+            <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
+            <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
+            <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
+          </div>
+          <sc-if value="{{ cd.colorOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;"><sc-for list="{{ cd.swatches }}" as="sw" hint-placeholder-count="0"><button class="pbtn" onClick="{{ sw.onPick }}" style="width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);{{ sw.style }}"></button></sc-for></div></sc-if>
+          <sc-if value="{{ cd.addOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;flex-wrap:wrap;"><button class="pbtn" onClick="{{ cd.onAddLink }}" style="font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:7px;padding:5px 10px;cursor:pointer;">🔗 Link</button><button class="pbtn" onClick="{{ cd.onAddFile }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">📎 File</button><button class="pbtn" onClick="{{ cd.onAddNote }}" style="font-size:11px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #D7E2CE;border-radius:7px;padding:5px 10px;cursor:pointer;">📝 Note</button></div></sc-if>
+          <div style="padding:11px 12px;display:flex;flex-direction:column;gap:9px;">
+            <sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#AEB8A6;text-align:center;padding:6px;">Empty card — tap <b>+</b> to add a link, file, or note · or drag/paste an image here.</div></sc-if>
+            <sc-for list="{{ cd.blocks }}" as="bl" hint-placeholder-count="0">
+              <div style="display:flex;align-items:flex-start;gap:7px;">
+                <div style="flex:1;min-width:0;">
+                  <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
+                  <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><div class="richnote" data-np="{{ bl.np }}" data-ph="Write a note… (select text for formatting)" style="width:100%;font-size:11.5px;"></div></sc-if>
+                </div>
+                <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      </div>
+      <button class="pbtn" onClick="{{ onAddDashCard }}" style="margin-top:12px;font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+    </div>
+    </sc-if>
+
     <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:18px;">
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><span style="color:#9AA68C;">⚑</span><span style="font-size:14px;font-weight:800;color:#33402A;">Six-phase roadmap · 3–4 year horizon</span></div>
       <div style="display:flex;gap:13px;overflow-x:auto;padding-bottom:6px;">
@@ -763,7 +801,7 @@
                   <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
                   <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
                   <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
-                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><textarea rows="1" class="gtext" value="{{ bl.text }}" onInput="{{ bl.onText }}" placeholder="Write a note…" style="width:100%;border:1px solid #E8EDE4;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:11.5px;color:#3A4633;outline:none;background:#fff;line-height:1.5;"></textarea></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><div class="richnote" data-np="{{ bl.np }}" data-ph="Write a note… (select text for formatting)" style="width:100%;font-size:11.5px;"></div></sc-if>
                 </div>
                 <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
               </div>
@@ -1055,6 +1093,44 @@
       </div>
     </div>
 
+    <!-- CUSTOM OVERVIEW CARDS -->
+    <sc-if value="{{ showPhaseCards }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-bottom:18px;">
+      <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
+      <sc-for list="{{ ovCards }}" as="cd" hint-placeholder-count="0">
+        <div data-uc="{{ cd.ucDrag }}" style="{{ cd.widthStyle }}background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);">
+          <div style="height:5px;{{ cd.barStyle }}"></div>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
+            <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
+            <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
+            <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
+            <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
+          </div>
+          <sc-if value="{{ cd.colorOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;"><sc-for list="{{ cd.swatches }}" as="sw" hint-placeholder-count="0"><button class="pbtn" onClick="{{ sw.onPick }}" style="width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);{{ sw.style }}"></button></sc-for></div></sc-if>
+          <sc-if value="{{ cd.addOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;flex-wrap:wrap;"><button class="pbtn" onClick="{{ cd.onAddLink }}" style="font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:7px;padding:5px 10px;cursor:pointer;">🔗 Link</button><button class="pbtn" onClick="{{ cd.onAddFile }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">📎 File</button><button class="pbtn" onClick="{{ cd.onAddNote }}" style="font-size:11px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #D7E2CE;border-radius:7px;padding:5px 10px;cursor:pointer;">📝 Note</button></div></sc-if>
+          <div style="padding:11px 12px;display:flex;flex-direction:column;gap:9px;">
+            <sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#AEB8A6;text-align:center;padding:6px;">Empty card — tap <b>+</b> to add a link, file, or note · or drag/paste an image here.</div></sc-if>
+            <sc-for list="{{ cd.blocks }}" as="bl" hint-placeholder-count="0">
+              <div style="display:flex;align-items:flex-start;gap:7px;">
+                <div style="flex:1;min-width:0;">
+                  <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
+                  <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
+                  <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
+                  <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><div class="richnote" data-np="{{ bl.np }}" data-ph="Write a note… (select text for formatting)" style="width:100%;font-size:11.5px;"></div></sc-if>
+                </div>
+                <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      </div>
+      <button class="pbtn" onClick="{{ onAddOvCard }}" style="margin-top:12px;font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+    </div>
+    </sc-if>
+
     <div class="rg" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:16px;align-items:start;">
       <sc-for list="{{ overviewPhases }}" as="p" hint-placeholder-count="6">
         <div style="background:#fff;border:1px solid #E8EDE4;border-top:4px solid {{ p.color }};border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.05);">
@@ -1101,6 +1177,42 @@
     </div>
 
     <div style="max-width:760px;">
+      <!-- CUSTOM BRAIN DUMP CARDS -->
+      <div style="margin-bottom:18px;">
+        <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
+        <sc-for list="{{ brainCards }}" as="cd" hint-placeholder-count="0">
+          <div data-uc="{{ cd.ucDrag }}" style="{{ cd.widthStyle }}background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);">
+            <div style="height:5px;{{ cd.barStyle }}"></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
+              <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
+              <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+              <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+              <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
+              <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
+              <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
+            </div>
+            <sc-if value="{{ cd.colorOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;"><sc-for list="{{ cd.swatches }}" as="sw" hint-placeholder-count="0"><button class="pbtn" onClick="{{ sw.onPick }}" style="width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);{{ sw.style }}"></button></sc-for></div></sc-if>
+            <sc-if value="{{ cd.addOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:7px;padding:9px 12px;background:#FBFCFA;border-bottom:1px solid #EEF2EA;flex-wrap:wrap;"><button class="pbtn" onClick="{{ cd.onAddLink }}" style="font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:7px;padding:5px 10px;cursor:pointer;">🔗 Link</button><button class="pbtn" onClick="{{ cd.onAddFile }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:5px 10px;cursor:pointer;">📎 File</button><button class="pbtn" onClick="{{ cd.onAddNote }}" style="font-size:11px;font-weight:800;color:#5B6B4E;background:#fff;border:1px solid #D7E2CE;border-radius:7px;padding:5px 10px;cursor:pointer;">📝 Note</button></div></sc-if>
+            <div style="padding:11px 12px;display:flex;flex-direction:column;gap:9px;">
+              <sc-if value="{{ cd.empty }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#AEB8A6;text-align:center;padding:6px;">Empty card — tap <b>+</b> to add a link, file, or note · or drag/paste an image here.</div></sc-if>
+              <sc-for list="{{ cd.blocks }}" as="bl" hint-placeholder-count="0">
+                <div style="display:flex;align-items:flex-start;gap:7px;">
+                  <div style="flex:1;min-width:0;">
+                    <sc-if value="{{ bl.isLink }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;align-items:center;"><input value="{{ bl.label }}" onInput="{{ bl.onLabel }}" placeholder="Label" style="flex:0 0 38%;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#23311C;outline:none;"><input value="{{ bl.url }}" onInput="{{ bl.onUrl }}" placeholder="https://…" style="flex:1;min-width:0;border:1px solid #E2E8DE;border-radius:6px;padding:5px 7px;font-family:inherit;font-size:11px;color:#3F6193;outline:none;"><sc-if value="{{ bl.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.url }}" target="_blank" rel="noopener" title="Open link" style="flex:0 0 auto;color:#3F6193;text-decoration:none;font-size:14px;">↗</a></sc-if></div></sc-if>
+                    <sc-if value="{{ bl.isImage }}" hint-placeholder-val="{{ false }}"><div><img src="{{ bl.src }}" style="{{ bl.imgStyle }}border-radius:8px;border:1px solid #E8EDE4;display:block;"><div style="display:flex;align-items:center;gap:7px;margin-top:5px;"><span style="font-size:9px;font-weight:700;color:#9AA68C;flex:0 0 auto;">SIZE</span><input type="range" min="15" max="100" value="{{ bl.w }}" onInput="{{ bl.onWidth }}" style="flex:1;max-width:200px;height:4px;accent-color:#45852B;cursor:pointer;"><span style="font-size:9px;font-weight:700;color:#9AA68C;width:32px;flex:0 0 auto;">{{ bl.wpct }}</span></div></div></sc-if>
+                    <sc-if value="{{ bl.isDoc }}" hint-placeholder-val="{{ false }}"><a href="{{ bl.src }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:6px 10px;text-decoration:none;">📄 {{ bl.name }}</a></sc-if>
+                    <sc-if value="{{ bl.isNote }}" hint-placeholder-val="{{ false }}"><div class="richnote" data-np="{{ bl.np }}" data-ph="Write a note… (select text for formatting)" style="width:100%;font-size:11.5px;"></div></sc-if>
+                  </div>
+                  <button class="del" onClick="{{ bl.onDelete }}" title="Remove" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;">✕</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        </div>
+        <button class="pbtn" onClick="{{ onAddBrainCard }}" style="margin-top:12px;font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+      </div>
+
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:16px 18px;box-shadow:0 1px 2px rgba(20,30,12,.04);margin-bottom:20px;">
         <textarea class="wsfld" rows="4" value="{{ bdDraft }}" onInput="{{ onBdInput }}" placeholder="What's on your mind right now?" style="font-size:14px;border-color:#E6EDDF;"></textarea>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;">
@@ -1536,7 +1648,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v75 · Jul 13';
+    this.BUILD='v76 · Jul 13';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1702,7 +1814,9 @@ class Component extends DCLogic {
   // ---- Rich-text inline notes (bold, highlight, lists, tables) — managed outside React's vdom so re-renders never wipe them ----
   _rnEsc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
   _rnToHtml(v){ if(!v) return ''; if(/<(b|i|u|strong|em|mark|div|p|br|ul|ol|li|span|table|tr|td|th|img|a)\b/i.test(v)) return v; return this._rnEsc(v).replace(/\n/g,'<br>'); }
-  _rnGet(np){ if(!np) return ''; const a=np.split('|'); const ph=a[0], di=+a[1]; const del=(this.state.board[ph]||[])[di]; if(!del) return ''; if(a[2]==='m') return del.notes||''; const t=del.tasks&&del.tasks[+a[2]]; return t?(t.notes||''):''; }
+  _rnGet(np){ if(!np) return ''; const a=np.split('|');
+    if(a[0]==='card'){ const c=this.cardsFor(a[1]).find(x=>x.id===a[2]); if(!c) return ''; const bl=(c.blocks||[]).find(x=>x.id===a[3]); return bl?(bl.text||''):''; }
+    const ph=a[0], di=+a[1]; const del=(this.state.board[ph]||[])[di]; if(!del) return ''; if(a[2]==='m') return del.notes||''; const t=del.tasks&&del.tasks[+a[2]]; return t?(t.notes||''):''; }
   _rnEditable(){ return this.state.privateMode && !this.state.locked; }
   _rnRender(){ try{ const editable=this._rnEditable(); const ns=document.querySelectorAll('.richnote'); for(let i=0;i<ns.length;i++){ const el=ns[i]; el.contentEditable=editable?'true':'false'; if(el===document.activeElement) continue; const html=this._rnToHtml(this._rnGet(el.getAttribute('data-np'))); if(el.getAttribute('data-h')!==html){ el.innerHTML=html; el.setAttribute('data-h', html); } } }catch(e){} }
   _rnInit(){
@@ -1776,7 +1890,9 @@ class Component extends DCLogic {
     inp.addEventListener('change',()=>{ const files=inp.files?Array.prototype.slice.call(inp.files):[]; files.forEach(f=>{ if(/^image\//.test(f.type)) this._rnInsertImageFile(f, el); }); setTimeout(()=>{ try{ inp.remove(); }catch(_){} },600); });
     inp.click();
   }
-  _rnSave(){ if(!this._rnPend) return; const {np,html}=this._rnPend; this._rnPend=null; const a=np.split('|'); const ph=a[0], di=+a[1], ti=a[2]; const clean=(html==='<br>'||html==='<div><br></div>')?'':html; this.mut(b=>{ if(!(b[ph]&&b[ph][di])) return; if(ti==='m') b[ph][di].notes=clean; else if(b[ph][di].tasks[+ti]) b[ph][di].tasks[+ti].notes=clean; }); const el=document.querySelector('.richnote[data-np="'+np+'"]'); if(el) el.setAttribute('data-h', el.innerHTML); }
+  _rnSave(){ if(!this._rnPend) return; const {np,html}=this._rnPend; this._rnPend=null; const a=np.split('|'); const clean=(html==='<br>'||html==='<div><br></div>')?'':html;
+    if(a[0]==='card'){ this.mut(b=>{ const c=this._cards(b,a[1]).find(x=>x.id===a[2]); if(!c) return; const bl=(c.blocks||[]).find(x=>x.id===a[3]); if(bl) bl.text=clean; }); const el0=document.querySelector('.richnote[data-np="'+np+'"]'); if(el0) el0.setAttribute('data-h', el0.innerHTML); return; }
+    const ph=a[0], di=+a[1], ti=a[2]; this.mut(b=>{ if(!(b[ph]&&b[ph][di])) return; if(ti==='m') b[ph][di].notes=clean; else if(b[ph][di].tasks[+ti]) b[ph][di].tasks[+ti].notes=clean; }); const el=document.querySelector('.richnote[data-np="'+np+'"]'); if(el) el.setAttribute('data-h', el.innerHTML); }
   _rnBar(){ if(this._rnBarEl) return this._rnBarEl; const bar=document.createElement('div'); bar.className='rntoolbar'; bar.style.display='none';
     const btns=[['bold','','B'],['hilite','','🖍'],['ul','','• List'],['ol','','1.'],['table','','▦ Table'],['img','','🖼 Img'],['clear','','Clear']];
     bar.innerHTML=btns.map(x=>'<button data-c="'+x[0]+'">'+x[2]+'</button>').join('');
@@ -2143,6 +2259,7 @@ class Component extends DCLogic {
         empty:(cd.blocks||[]).length===0, hasBlocks:(cd.blocks||[]).length>0,
         blocks:(cd.blocks||[]).map(bl=>{ const isFile=bl.type==='file', isImage=isFile&&bl.kind==='image'; const w=(typeof bl.w==='number'&&bl.w>0)?bl.w:100;
           return { id:bl.id, isLink:bl.type==='link', isFile, isImage, isDoc:(isFile&&!isImage), isNote:bl.type==='note',
+            np:('card|'+scope+'|'+cd.id+'|'+bl.id),
             label:bl.label||'', url:bl.url||'', hasUrl:!!(bl.url&&bl.url.trim()), name:bl.name||'', src:bl.data||'', text:bl.text||'',
             w:w, wpct:(w+'%'), imgStyle:('width:'+w+'%;max-width:100%;height:auto;'),
             onWidth:(e)=>this.setCardBlock(scope,cd.id,bl.id,'w',(parseInt(e.target.value,10)||100)),
@@ -2239,10 +2356,17 @@ class Component extends DCLogic {
   aiModel(){ try{ return localStorage.getItem('thrive_ai_model')||'claude-haiku-4-5'; }catch(e){ return 'claude-haiku-4-5'; } }
   aiWorkerUrl(){ if(this.AI_WORKER) return this.AI_WORKER; try{ return localStorage.getItem('thrive_ai_worker')||''; }catch(e){ return ''; } }
   aiReady(){ return !!this.aiWorkerUrl() || !!this.AIKEY; }
+  _aiFetch(url, opts){ // fetch with a hard timeout so "Thinking…" can never hang forever
+    let ctrl, timer; try{ ctrl=new AbortController(); opts=Object.assign({}, opts, {signal:ctrl.signal}); }catch(e){}
+    const p=fetch(url, opts);
+    if(ctrl){ timer=setTimeout(()=>{ try{ ctrl.abort(); }catch(e){} }, 60000); p.then(()=>clearTimeout(timer), ()=>clearTimeout(timer)); }
+    return p.catch(e=>{ if(e && (e.name==='AbortError' || /abort/i.test(String(e.message||e)))) throw new Error('The assistant took too long to respond. Please check your connection and try again.'); throw new Error('Could not reach the assistant. Please check your internet connection and try again.'); }); }
   aiRequest(body){ const wurl=this.aiWorkerUrl();
-    if(wurl){ return fetch(wurl,{ method:'POST', headers:{'content-type':'application/json','x-thrive-app':this.AI_APP_TOKEN||''}, body:JSON.stringify(body) }); }
+    if(wurl){ return this._aiFetch(wurl,{ method:'POST', headers:{'content-type':'application/json','x-thrive-app':this.AI_APP_TOKEN||''}, body:JSON.stringify(body) }); }
     const key=this.AIKEY; if(!key) return Promise.reject(new Error('no-key'));
-    return fetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify(body) }); }
+    return this._aiFetch('https://api.anthropic.com/v1/messages',{ method:'POST', headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify(body) }); }
+  _aiText(data){ // join all text blocks (robust to thinking/tool blocks and empty content)
+    try{ if(data && Array.isArray(data.content)){ return data.content.filter(b=>b&&b.type==='text'&&typeof b.text==='string').map(b=>b.text).join('\n').trim(); } }catch(e){} return ''; }
   aiFundingMsg(){ return "Our Chat Option isn't available right now. Please contact dana2andrea@gmail.com for questions."; }
   aiIsBillingError(status,msg){ const m=String(msg||'').toLowerCase(); if(status===402) return true; return /credit|billing|balance is too low|too low|spend limit|usage limit|monthly limit|quota|insufficient|payment required|out of funds|budget/.test(m); }
   _stripHtml(h){ return String(h==null?'':h).replace(/<\/(p|div|h[1-6]|li|tr)>/gi,'\n').replace(/<br\s*\/?>/gi,'\n').replace(/<td[^>]*>/gi,'\t').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\n{3,}/g,'\n\n').trim(); }
@@ -2276,7 +2400,7 @@ class Component extends DCLogic {
   async aiCall(prompt){ if(!this.aiReady()) throw new Error('no-key');
     const res=await this.aiRequest({ model:this.aiModel(), max_tokens:1600, messages:[{role:'user', content:prompt}] });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||JSON.stringify(j).slice(0,200); }catch(e){ msg=await res.text(); } if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+': '+String(msg).slice(0,200)); }
-    const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
+    const data=await res.json(); return this._aiText(data); }
   async aiRun(kind,ph,di,ti){ if(!this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings to turn this on'); return; }
     const spec=this.aiSpec(kind); const ctx=this.aiContext(ph,di,ti);
     const prompt=spec.ins+'\n\nHere is the task context:\n\n'+ctx+'\n\nRespond with just the result — no preamble. Write in plain text only: do NOT use Markdown symbols (no #, *, **, backticks, or tables). Use short UPPERCASE section labels and simple "- " bullets. Write any links as the full URL (https://…).';
@@ -2415,7 +2539,7 @@ class Component extends DCLogic {
     const sent=(msgs||[]).slice(-24); // cap history sent to control cost
     const res=await this.aiRequest({ model:this.aiModel(), max_tokens:1400, system:sys, messages:sent.map(m=>({role:m.role, content:m.content})) });
     if(!res.ok){ let msg=''; try{ const j=await res.json(); msg=(j.error&&j.error.message)||''; }catch(e){} if(this.aiIsBillingError(res.status,msg)) throw new Error('__FUNDING__'); if(res.status===401) throw new Error('Your API key was rejected (401). Check it in Settings.'); throw new Error('AI error '+res.status+(msg?': '+msg.slice(0,160):'')); }
-    const data=await res.json(); return (data.content&&data.content[0]&&data.content[0].text)||''; }
+    const data=await res.json(); return this._aiText(data); }
   async aiChatSend(){ const q=(this.state.aiChatInput||'').trim(); const files=(this.state.aiChatFiles||[]); if((!q && !files.length)||this.state.aiChatLoading) return; if(!this.aiReady()){ this.openSettings(); return; }
     let content, atts=[];
     if(files.length){
@@ -2430,7 +2554,7 @@ class Component extends DCLogic {
     this.setState({aiChatMsgs:msgs, aiChatInput:'', aiChatFiles:[], aiChatLoading:true, aiChatMemView:false});
     this.aiChatPersist(msgs);
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },30);
-    try{ const raw=await this.aiChatCall(msgs); const ext=this.aiChatExtractMemory(raw, this.state.aiChatMem||''); const next=msgs.concat([{role:'assistant',content:ext.text}]); this.setState({aiChatMsgs:next, aiChatMem:ext.mem, aiChatLoading:false}); this.aiChatPersist(next, ext.mem); this.aiLogExchange(q, ext.text, files.length>0, {owner:!this.state.teamMode}); }
+    try{ const raw=await this.aiChatCall(msgs); const ext=this.aiChatExtractMemory(raw, this.state.aiChatMem||''); const shown=ext.text||"I'm here, but I didn't quite catch a response that time. Could you try asking again?"; const next=msgs.concat([{role:'assistant',content:shown}]); this.setState({aiChatMsgs:next, aiChatMem:ext.mem, aiChatLoading:false}); this.aiChatPersist(next, ext.mem); this.aiLogExchange(q, shown, files.length>0, {owner:!this.state.teamMode}); }
     catch(e){ const m=String(e&&e.message||e); const disp=(m==='__FUNDING__')?this.aiFundingMsg():('⚠️ '+(m==='no-key'?'Add your AI key in Settings first.':m)); const next=msgs.concat([{role:'assistant',content:disp}]); this.setState({aiChatMsgs:next, aiChatLoading:false}); this.aiChatPersist(next); }
     setTimeout(()=>{ try{ const el=document.getElementById('aichat-scroll'); if(el) el.scrollTop=el.scrollHeight; }catch(e){} },40);
   }
@@ -2850,6 +2974,7 @@ class Component extends DCLogic {
         return { show:this.state.privateMode, dailyRows, billTotal, hasDaily:dailyRows.length>0, onExport:()=>this.tlExportCSV() }; })(),
       canUndo:(this.state.privateMode && (this.state.history||[]).length>0), onUndo:()=>this.undoLast(),
       locked:this.state.locked, notLocked:!this.state.locked,
+      showPhaseCards:(!this.state.locked || this.state.teamMode),
       modeBadge:this.state.locked?'SHARED VIEW':(this.state.privateMode?'WORK':'PRESENTING'),
       modeBadgeStyle:this.state.privateMode?'color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;':'color:#B07D17;background:#FBF1DC;border:1px solid #F0E2C4;',
       modeHint:this.state.locked?'Shared present view':(this.state.privateMode?'Work Mode · full workspace':'Present Mode'),
@@ -2973,6 +3098,9 @@ class Component extends DCLogic {
       search:this.state.search, onSearch:(e)=>this.onSearch(e), onAddCard:()=>this.addCard(ph),
       phaseCards:this._cardViews(ph), hasPhaseCards:this.cardsFor(ph).length>0, onAddPhaseCard:()=>this.addUserCard(ph),
       launchCards:this._cardViews('launch'), hasLaunchCards:this.cardsFor('launch').length>0, onAddLaunchCard:()=>this.addUserCard('launch'),
+      dashCards:this._cardViews('dash'), onAddDashCard:()=>this.addUserCard('dash'),
+      ovCards:this._cardViews('overview'), onAddOvCard:()=>this.addUserCard('overview'),
+      brainCards:this._cardViews('brain'), onAddBrainCard:()=>this.addUserCard('brain'),
       phasePctStr:phasePct+'%', ringDash:(phasePct/100*C)+' '+C,
       microDone, microTotal, microRemain:microTotal-microDone,
       delTotal:arr.length, delInProgress:delInProg, delNotStarted,
