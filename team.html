@@ -108,6 +108,7 @@
     .msact{flex:0 0 100% !important;width:100% !important;justify-content:flex-start !important;flex-wrap:wrap !important;margin-top:9px !important;gap:8px !important;text-align:left !important;}
     .tkline{flex-wrap:wrap !important;}
     .tktitle{flex:1 1 100% !important;min-width:0 !important;}
+    .cardwrap > [data-uc]{flex:1 1 100% !important;max-width:100% !important;min-width:0 !important;}
     /* stop the whole page scrolling sideways; wide tables scroll inside their own box instead */
     html,body{overflow-x:hidden;}
     .app{max-width:100vw;overflow-x:hidden;}
@@ -450,12 +451,14 @@
     <!-- CUSTOM PHASE CARDS (top of phase) -->
     <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
     <div style="margin-bottom:16px;">
+      <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
       <sc-for list="{{ phaseCards }}" as="cd" hint-placeholder-count="0">
-        <div data-uc="{{ cd.ucDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:12px;">
+        <div data-uc="{{ cd.ucDrag }}" style="{{ cd.widthStyle }}background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);">
           <div style="height:5px;{{ cd.barStyle }}"></div>
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
@@ -478,7 +481,8 @@
           </div>
         </div>
       </sc-for>
-      <button class="pbtn" onClick="{{ onAddPhaseCard }}" style="font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+      </div>
+      <button class="pbtn" onClick="{{ onAddPhaseCard }}" style="margin-top:12px;font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
     </div>
     </sc-if>
 
@@ -670,7 +674,7 @@
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,30,12,.04);"><div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#79866C;margin-bottom:13px;"><span style="color:#A6B098;">↗</span>Evidence files</div><div style="font-size:31px;font-weight:800;color:#1E2A16;">{{ evLinked }}</div></div>
     </div>
 
-    <div class="rg" style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-bottom:18px;">
+    <div class="rg" style="display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:18px;">
       <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
           <div style="display:flex;align-items:center;gap:9px;"><span style="color:#45852B;">▰</span><span style="font-size:14px;font-weight:800;color:#33402A;">Executive Summary</span></div>
@@ -687,42 +691,6 @@
         </div>
       </div>
 
-      <div style="background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);display:flex;flex-direction:column;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
-          <div style="display:flex;align-items:center;gap:9px;"><span style="color:#C98A1A;">◆</span><span style="font-size:14px;font-weight:800;color:#33402A;">Founder Decisions Needed</span></div>
-          <button class="pbtn" onClick="{{ onAddDec }}" style="font-size:11px;font-weight:700;color:#9A6B12;background:#FBF1DC;border:1px solid #F0E2C4;border-radius:8px;padding:5px 10px;cursor:pointer;">+ Add</button>
-        </div>
-        <sc-if value="{{ decEmpty }}" hint-placeholder-val="{{ false }}">
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px 0;">
-            <div style="width:40px;height:40px;border-radius:12px;background:#EDF3E6;color:#45852B;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:11px;">✓</div>
-            <div style="font-size:13.5px;font-weight:800;color:#33402A;">No decisions needed</div>
-            <div style="font-size:11.5px;color:#9AA68C;margin-top:4px;max-width:200px;line-height:1.45;">You're all caught up — nothing is waiting on the founders.</div>
-          </div>
-        </sc-if>
-        <sc-if value="{{ hasDec }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <sc-for list="{{ decItems }}" as="d" hint-placeholder-count="1">
-              <div style="background:{{ d.cardBg }};border:1px solid {{ d.cardBorder }};border-left:4px solid {{ d.leftBar }};border-radius:12px;padding:13px 14px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;">
-                  <span style="font-size:9.5px;font-weight:800;letter-spacing:.07em;color:{{ d.statusColor }};text-transform:uppercase;">{{ d.statusLabel }}</span>
-                  <button class="del" onClick="{{ d.onDelete }}" title="Remove decision" style="width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#D2B884;cursor:pointer;flex:0 0 auto;font-size:11px;">✕</button>
-                </div>
-                <div style="display:flex;align-items:flex-start;gap:9px;">
-                  <div class="cbx {{ d.cbcls }}" onClick="{{ d.onToggleDone }}" title="Mark this decision done" style="margin-top:3px;flex:0 0 auto;"><sc-if value="{{ d.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                  <div style="flex:1;min-width:0;">
-                    <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onTitle }}" style="font-size:15px;font-weight:800;color:{{ d.titleColor }};text-decoration:{{ d.titleStrike }};"></textarea>
-                    <div style="display:flex;align-items:center;gap:7px;margin-top:7px;">
-                      <span style="font-size:11px;color:#9A8748;font-weight:600;">Expected</span>
-                      <textarea rows="1" class="edt gtext" value="{{ d.expected }}" onInput="{{ d.onExpected }}" style="font-size:11.5px;font-weight:800;color:#7A5E12;max-width:130px;"></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </sc-for>
-            <button class="pbtn" onClick="{{ onToggleNoDec }}" style="font-size:11px;font-weight:600;color:#9AA68C;background:transparent;border:none;cursor:pointer;text-align:left;padding:3px 1px;">✓ Mark all clear — no decisions needed</button>
-          </div>
-        </sc-if>
-      </div>
     </div>
 
     <div style="margin-top:18px;background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,30,12,.04);">
@@ -774,12 +742,14 @@
 
     <!-- CUSTOM LAUNCHPAD CARDS -->
     <div style="margin-bottom:18px;">
+      <div class="cardwrap" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
       <sc-for list="{{ launchCards }}" as="cd" hint-placeholder-count="0">
-        <div data-uc="{{ cd.ucDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:12px;">
+        <div data-uc="{{ cd.ucDrag }}" style="{{ cd.widthStyle }}background:#fff;border:1px solid #E8EDE4;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,12,.05);">
           <div style="height:5px;{{ cd.barStyle }}"></div>
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
+            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button>
@@ -802,7 +772,8 @@
           </div>
         </div>
       </sc-for>
-      <button class="pbtn" onClick="{{ onAddLaunchCard }}" style="font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
+      </div>
+      <button class="pbtn" onClick="{{ onAddLaunchCard }}" style="margin-top:12px;font-size:12px;font-weight:800;color:#5B7A45;background:#fff;border:1px dashed #CBD8BC;border-radius:11px;padding:9px 15px;cursor:pointer;">＋ Add a card</button>
     </div>
 
     <div class="rg" style="background:linear-gradient(135deg,#34512C 0%,#2E8B57 100%);border-radius:22px;padding:26px 28px;color:#EAF2E1;box-shadow:0 10px 30px rgba(46,87,55,.22);margin-bottom:18px;display:grid;grid-template-columns:1fr 300px;gap:26px;">
@@ -930,6 +901,9 @@
         </div>
         <div style="font-size:11px;color:#9AA68C;margin-bottom:13px;">From your team's shared view. Only you see this.</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
+          <sc-if value="{{ inbox.empty }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11.5px;color:#9AA68C;text-align:center;padding:12px;background:#FBFCFA;border:1px dashed #E3E9DD;border-radius:11px;">All caught up — no active comments. 🎉</div>
+          </sc-if>
           <sc-for list="{{ inbox.items }}" as="c" hint-placeholder-count="3">
             <div style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid #ECF0E8;border-radius:12px;background:#FCFDFB;">
               <span style="width:8px;height:8px;border-radius:50%;background:{{ c.unreadDot }};flex:0 0 auto;margin-top:6px;"></span>
@@ -945,11 +919,37 @@
                   <button class="pbtn" onClick="{{ c.onReply }}" style="font-size:11px;font-weight:800;color:#fff;background:#45852B;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;">Reply</button>
                   <button class="pbtn" onClick="{{ c.onJump }}" style="font-size:11px;font-weight:700;color:#3F6193;background:#EEF3FA;border:1px solid #DCE6F2;border-radius:7px;padding:5px 11px;cursor:pointer;">Jump to →</button>
                   <button class="pbtn" onClick="{{ c.onRead }}" style="font-size:11px;font-weight:700;color:#9AA68C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:5px 11px;cursor:pointer;">Mark read</button>
+                  <button class="pbtn" onClick="{{ c.onArchive }}" title="Archive this comment (kept in Archived)" style="font-size:11px;font-weight:700;color:#8A6D1F;background:#FBF3DD;border:1px solid #EFE2BE;border-radius:7px;padding:5px 11px;cursor:pointer;">Archive</button>
                 </div>
               </div>
             </div>
           </sc-for>
         </div>
+        <sc-if value="{{ inbox.hasArchived }}" hint-placeholder-val="{{ false }}">
+          <button class="pbtn" onClick="{{ inbox.onToggleArchived }}" style="margin-top:12px;font-size:11px;font-weight:800;color:#7C8C6C;background:#FBFCFA;border:1px solid #E7ECE1;border-radius:8px;padding:7px 12px;cursor:pointer;">{{ inbox.archiveToggleLabel }}</button>
+          <sc-if value="{{ inbox.showArchived }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;border-top:1px dashed #E3E9DD;padding-top:11px;">
+              <div style="font-size:10px;font-weight:800;letter-spacing:.07em;color:#B0A06A;">ARCHIVED · {{ inbox.archivedCount }}</div>
+              <sc-for list="{{ inbox.archivedItems }}" as="c" hint-placeholder-count="0">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:10px 13px;border:1px solid #EEEBDF;border-radius:12px;background:#FCFBF6;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                      <span style="font-size:12px;font-weight:800;color:#5B6B4E;">{{ c.author }}</span>
+                      <span style="font-size:10.5px;color:#AEB8A6;">{{ c.when }}</span>
+                      <span style="font-size:10px;font-weight:700;color:#8A9276;background:#F1F2EA;border:1px solid #E4E7DA;border-radius:20px;padding:1px 8px;">{{ c.item }}</span>
+                    </div>
+                    <div style="font-size:12px;color:#6E7A62;line-height:1.5;">{{ c.body }}</div>
+                    <sc-if value="{{ c.hasReply }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#7C9068;margin-top:4px;font-style:italic;">↳ You replied: {{ c.reply }}</div></sc-if>
+                    <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap;">
+                      <button class="pbtn" onClick="{{ c.onJump }}" style="font-size:11px;font-weight:700;color:#7C8C6C;background:#fff;border:1px solid #E2E8DE;border-radius:7px;padding:4px 10px;cursor:pointer;">Jump to →</button>
+                      <button class="pbtn" onClick="{{ c.onUnarchive }}" title="Restore to active comments" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:7px;padding:4px 10px;cursor:pointer;">↺ Restore</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -1537,7 +1537,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v74 · Jul 12';
+    this.BUILD='v75 · Jul 13';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -1605,7 +1605,7 @@ class Component extends DCLogic {
     this._phaseTints=['#E5F2EB','#DDF1EF','#EEF4DC','#E5F0E0','#E1F4EA','#E7EDF6','#EFE7F7','#F6EBE1','#E5F2EB','#DDF1EF'];
     // Themed color swatches (accent + matching tint) for custom cards, phases & milestones
     this.CARD_SWATCHES=[{c:'#2E8B57',t:'#E5F2EB'},{c:'#0E8F86',t:'#DDF1EF'},{c:'#6F9E1E',t:'#EEF4DC'},{c:'#1FA15B',t:'#E1F4EA'},{c:'#3F6193',t:'#E7EDF6'},{c:'#8A5CC0',t:'#EFE7F7'},{c:'#C0692E',t:'#F6EBE1'},{c:'#C0392E',t:'#F7E7E5'},{c:'#B08900',t:'#F7F1DC'},{c:'#5B6B4E',t:'#EEF1EA'}];
-    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, tlNoteOpen:{}, cardColorPick:null, cardAddMenu:null, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
+    this.state={ view:'dashboard', active:'p1', search:'', board:this.seedBoard(), now:new Date(), wsOpen:false, wsPath:null, toast:'', privateMode:false, history:[], navOpen:false, noteBig:false, noteExp:{}, subExp:{}, msCol:{}, taskCol:{}, tlTick:0, billModal:null, teamMode:false, comments:[], cmModal:null, replyModal:null, settingsModal:null, aiPanel:null, aiChatOpen:false, aiChatMsgs:[], aiChatInput:'', aiChatLoading:false, aiChatMem:'', aiChatMemView:false, aiChatFiles:[], teamChats:[], tcFilter:'all', histOpenDays:{}, tlNoteOpen:{}, cardColorPick:null, cardAddMenu:null, cmShowArchived:false, aiConsentDone:false, aiAgree:false, aiHideConsent:false, aiConsentName:'', msWsOpen:false, msWsPath:null, moveModal:null };
   }
 
   uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
@@ -2118,6 +2118,7 @@ class Component extends DCLogic {
   delUserCard(scope,id){ if(typeof window!=='undefined'&&window.confirm&&!window.confirm('Delete this card and its contents?')) return; this.mut(b=>{ const arr=this._cards(b,scope); const i=arr.findIndex(x=>x.id===id); if(i>=0) arr.splice(i,1); }); this.setState({cardColorPick:null, cardAddMenu:null}); }
   setUserCardTitle(scope,id,v){ this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(c) c.title=v; }); }
   setUserCardColor(scope,id,c,t){ this.mut(b=>{ const cd=this._cards(b,scope).find(x=>x.id===id); if(cd){ cd.c=c; cd.t=t; } }); this.setState({cardColorPick:null}); }
+  cycleCardWidth(scope,id){ this.mut(b=>{ const cd=this._cards(b,scope).find(x=>x.id===id); if(cd){ const cur=cd.cw||1; cd.cw=(cur>=3?1:cur+1); } }); }
   toggleCardColor(scope,id){ const cur=this.state.cardColorPick; this.setState({cardColorPick:(cur&&cur.scope===scope&&cur.id===id)?null:{scope,id}, cardAddMenu:null}); }
   toggleCardAdd(scope,id){ const cur=this.state.cardAddMenu; this.setState({cardAddMenu:(cur&&cur.scope===scope&&cur.id===id)?null:{scope,id}, cardColorPick:null}); }
   addCardBlock(scope,id,type){ if(type==='file'){ this.setState({cardAddMenu:null}); return this.pickCardFile(scope,id); } this.mut(b=>{ const c=this._cards(b,scope).find(x=>x.id===id); if(!c) return; if(type==='link') c.blocks.push({id:this.uid(),type:'link',label:'',url:''}); else if(type==='note') c.blocks.push({id:this.uid(),type:'note',text:''}); }); this.setState({cardAddMenu:null}); }
@@ -2129,8 +2130,11 @@ class Component extends DCLogic {
   moveUserCard(scope,fromId,toId){ this.mut(b=>{ const arr=this._cards(b,scope); const fi=arr.findIndex(x=>x.id===fromId), ti=arr.findIndex(x=>x.id===toId); if(fi<0||ti<0||fi===ti) return; const item=arr.splice(fi,1)[0]; arr.splice(ti,0,item); }); }
   _cardViews(scope){ const cards=this.cardsFor(scope); const pick=this.state.cardColorPick, addm=this.state.cardAddMenu;
     return cards.map(cd=>{ const colorOpen=!!(pick&&pick.scope===scope&&pick.id===cd.id); const addOpen=!!(addm&&addm.scope===scope&&addm.id===cd.id);
+      const cw=(cd.cw===2||cd.cw===3)?cd.cw:1;
       return { id:cd.id, title:cd.title||'', ucDrag:(scope+'|'+cd.id),
         headStyle:('background:'+(cd.t||'#EEF1EA')+';'), barStyle:('background:'+(cd.c||'#5B6B4E')+';'),
+        widthStyle:(cw===1?'flex:1 1 100%;max-width:100%;':(cw===2?'flex:1 1 calc(50% - 6px);max-width:calc(50% - 6px);min-width:250px;':'flex:1 1 calc(33.333% - 8px);max-width:calc(33.333% - 8px);min-width:230px;')),
+        cwLabel:(cw===1?'▭ Full':(cw===2?'◧ ½':'❘❘❘ ⅓')), onCycleWidth:()=>this.cycleCardWidth(scope,cd.id),
         onTitle:(e)=>this.setUserCardTitle(scope,cd.id,e.target.value),
         colorOpen, onToggleColor:()=>this.toggleCardColor(scope,cd.id),
         swatches:this.CARD_SWATCHES.map(sw=>({ style:('background:'+sw.c+';'), onPick:()=>this.setUserCardColor(scope,cd.id,sw.c,sw.t) })),
@@ -2566,6 +2570,9 @@ class Component extends DCLogic {
     this.setState({replyModal:null}); this.toast(placed?'Reply posted to the item’s notes ✓':'Reply saved'); this.loadComments();
   }
   async markCommentRead(c){ const upd=Object.assign({}, c, {read:true}); try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){} this.loadComments(); }
+  async archiveComment(c){ const upd=Object.assign({}, c, {archived:true, read:true}); try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){} this.loadComments(); this.toast('Comment archived'); }
+  async unarchiveComment(c){ const upd=Object.assign({}, c, {archived:false}); try{ await fetch(this.commentUrl(c.id),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(upd)}); }catch(e){} this.loadComments(); this.toast('Comment restored'); }
+  toggleArchivedView(){ this.setState({cmShowArchived:!this.state.cmShowArchived}); }
 
   renderVals(){
     const board=this.state.board;
@@ -2806,7 +2813,16 @@ class Component extends DCLogic {
       profileAvatarBg:this.state.locked?'#3F6193':'#45852B',
       cm:(this.state.cmModal?{ open:true, label:this.state.cmModal.anchor.label, name:this.state.cmModal.name, body:this.state.cmModal.body, onName:e=>this.setCm('name',e.target.value), onBody:e=>this.setCm('body',e.target.value), onSend:()=>this.sendComment(), onCancel:()=>this.cancelComment() }:{ open:false }),
       reply:(this.state.replyModal?{ open:true, author:this.state.replyModal.c.author, quote:this.state.replyModal.c.body, itemLabel:this.state.replyModal.c.label||'', text:this.state.replyModal.body, onText:e=>this.setReply(e.target.value), onSend:()=>this.sendReply(), onCancel:()=>this.cancelReply() }:{ open:false }),
-      inbox:(()=>{ const cs=this.state.comments||[]; const items=cs.slice(0,60).map(c=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c) })); const unread=cs.filter(c=>!c.read).length; return { show:(this.state.privateMode && this.state.view==='launchpad' && cs.length>0), items, count:cs.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0 }; })(),
+      inbox:(()=>{ const cs=this.state.comments||[];
+        const mk=(c)=>({ author:c.author, body:c.body, item:c.label||'', when:new Date(c.ts||0).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), unread:!c.read, unreadDot:(!c.read?'#D9534F':'transparent'), hasReply:!!(c.reply&&String(c.reply).trim()), reply:c.reply||'', onJump:()=>this.jumpComment(c), onReply:()=>this.openReply(c), onRead:()=>this.markCommentRead(c), onArchive:()=>this.archiveComment(c), onUnarchive:()=>this.unarchiveComment(c) });
+        const active=cs.filter(c=>!c.archived); const arch=cs.filter(c=>!!c.archived);
+        const unread=active.filter(c=>!c.read).length; const showArch=!!this.state.cmShowArchived;
+        return { show:(this.state.privateMode && this.state.view==='launchpad' && cs.length>0),
+          items:active.slice(0,60).map(mk), hasItems:active.length>0, empty:active.length===0,
+          count:active.length, unread:unread, unreadStr:String(unread), hasUnread:unread>0,
+          hasArchived:arch.length>0, archivedCount:arch.length,
+          showArchived:showArch, archiveToggleLabel:(showArch?'▾ Hide archived':('▸ View archived ('+arch.length+')')), onToggleArchived:()=>this.toggleArchivedView(),
+          archivedItems:arch.slice(0,150).map(mk) }; })(),
       navCls:this.state.navOpen?'open':'', onOpenNav:()=>this.setState({navOpen:true}), onCloseNav:()=>this.setState({navOpen:false}),
       showWorkTimer:(this.state.view==='phase' && this.state.privateMode && !!this.TL),
       tlRunning:!!(this.TL&&this.TL.running), tlIdle:!(this.TL&&this.TL.running),
