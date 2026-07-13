@@ -42,7 +42,7 @@
   .edt:hover{background:#F2F6EF;}
   .edt:focus{border-color:#BFD6AE;background:#fff;}
   /* auto-growing, wrapping text fields (replace single-line inputs so long text is fully readable) */
-  textarea.gtext{display:block;box-sizing:border-box;resize:none;overflow:hidden;min-height:26px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;}
+  textarea.gtext{display:block;box-sizing:border-box;resize:none;overflow:hidden;min-height:26px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;}
   textarea.wsfld{min-height:38px;}
   .del:hover{color:#C0392B !important;background:#FBECEA !important;}
   .team-mode .del{display:none !important;}
@@ -102,6 +102,12 @@
     .rg{grid-template-columns:1fr !important;}
     .hdr-actions{width:100% !important;}
     .hdr-search{min-width:0 !important;flex:1 1 100% !important;}
+    /* milestone & task header rows: let the title keep full width; action buttons wrap onto their own line */
+    .mshdr{flex-wrap:wrap !important;}
+    .mstitle{flex:1 1 auto !important;min-width:0 !important;}
+    .msact{flex:0 0 100% !important;width:100% !important;justify-content:flex-start !important;flex-wrap:wrap !important;margin-top:9px !important;gap:8px !important;text-align:left !important;}
+    .tkline{flex-wrap:wrap !important;}
+    .tktitle{flex:1 1 100% !important;min-width:0 !important;}
     /* stop the whole page scrolling sideways; wide tables scroll inside their own box instead */
     html,body{overflow-x:hidden;}
     .app{max-width:100vw;overflow-x:hidden;}
@@ -481,17 +487,17 @@
       <sc-for list="{{ deliverables }}" as="d" hint-placeholder-count="4">
         <sc-if value="{{ d._vis }}" hint-placeholder-val="{{ true }}">
         <div data-ms="{{ d.msDrag }}" style="background:#fff;border:1px solid #E8EDE4;border-radius:16px;box-shadow:0 1px 2px rgba(20,30,12,.05);margin-bottom:14px;overflow:hidden;">
-          <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 16px 15px 16px;background:{{ d.tint }};">
+          <div class="mshdr" style="display:flex;align-items:flex-start;gap:12px;padding:15px 16px 15px 16px;background:{{ d.tint }};">
             <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span data-msgrip="1" draggable="true" title="Drag to reorder this milestone" style="cursor:grab;color:#B7C4A8;font-size:16px;line-height:1;flex:0 0 auto;margin-top:14px;user-select:none;">⠿</span></sc-if>
             <div style="width:44px;height:44px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:{{ d.iconColor }};font-size:18px;border:1px solid rgba(0,0,0,.05);margin-top:2px;">{{ d.glyph }}</div>
-            <div style="min-width:0;flex:1;">
+            <div class="mstitle" style="min-width:0;flex:1;">
               <div style="display:flex;align-items:center;gap:7px;">
                 <span style="font-size:14.5px;font-weight:800;color:{{ d.iconColor }};white-space:nowrap;">Milestone {{ d.ms }} ·</span>
                 <textarea rows="1" class="edt gtext" value="{{ d.title }}" onInput="{{ d.onRename }}" placeholder="Name this milestone" style="font-size:14.5px;font-weight:800;color:#23311C;"></textarea>
               </div>
               <textarea rows="1" class="edt gtext" value="{{ d.desc }}" onInput="{{ d.onRenameDesc }}" placeholder="Short description (optional)" style="font-size:12px;color:#6E7C63;margin-top:1px;"></textarea>
             </div>
-            <div style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
+            <div class="msact" style="text-align:right;flex:0 0 auto;display:flex;align-items:center;gap:12px;">
               <div><div style="font-size:23px;font-weight:800;color:{{ d.pctColor }};line-height:1;">{{ d.pctStr }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#9AA68C;margin-top:4px;text-align:center;">COMPLETE</div></div>
               <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ d.onComment }}" title="Comment on this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">💬 Comment</button></sc-if>
               <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><button class="pbtn" onClick="{{ d.onOpenMs }}" title="Open this milestone (notes, links, files, AI, export)" style="display:inline-flex;align-items:center;gap:5px;height:30px;border-radius:8px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 11px;">Open ⤢</button><button class="pbtn" onClick="{{ d.onDupMs }}" title="Duplicate this milestone" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⧉ Duplicate</button><button class="pbtn" onClick="{{ d.onMoveMs }}" title="Move this milestone to another phase" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇄ Move</button><button class="pbtn" onClick="{{ d.onExportMs }}" title="Export this milestone to a Google Doc" style="display:inline-flex;align-items:center;gap:4px;height:30px;border-radius:8px;border:1px solid #D7E2CE;background:#fff;color:#3F6193;cursor:pointer;font-size:11px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">⇪ Export</button></sc-if>
@@ -511,10 +517,10 @@
             <sc-for list="{{ d.tasks }}" as="t" hint-placeholder-count="3">
               <div class="rg" data-tk="{{ t.tkDrag }}" style="display:grid;grid-template-columns:{{ t.rowGrid }};border:1px solid {{ t.rowBorder }};border-radius:9px;overflow:hidden;background:#fff;">
                 <div style="padding:9px 12px;background:{{ t.bg }};">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="tkline" style="display:flex;align-items:center;gap:10px;">
                     <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}"><span data-tkgrip="1" draggable="true" title="Drag to reorder this task" style="cursor:grab;color:#C4CFB6;font-size:13px;line-height:1;flex:0 0 auto;user-select:none;">⠿</span></sc-if>
                     <div class="cbx {{ t.cbcls }}" onClick="{{ t.onToggle }}"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if></div>
-                    <textarea rows="1" class="edt gtext" value="{{ t.label }}" onInput="{{ t.onRename }}" placeholder="Describe this task" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
+                    <textarea rows="1" class="edt gtext tktitle" value="{{ t.label }}" onInput="{{ t.onRename }}" placeholder="Describe this task" style="font-size:12.5px;font-weight:600;color:{{ t.color }};text-decoration:{{ t.strike }};"></textarea>
                     <sc-if value="{{ t.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#34672A;background:#E4F0DB;border:1px solid #CBDDBC;border-radius:20px;padding:2px 7px;flex:0 0 auto;white-space:nowrap;">{{ t.doneTag }}</span></sc-if>
                     <sc-if value="{{ teamMode }}" hint-placeholder-val="{{ false }}"><button class="pbtn" onClick="{{ t.onComment }}" title="Comment on this task" style="display:inline-flex;align-items:center;gap:4px;height:26px;border-radius:7px;border:1px solid #CBD8E8;background:#EEF3FA;color:#3F6193;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">💬 Comment</button></sc-if>
                     <button class="add" onClick="{{ t.onOpen }}" title="Open this task's workspace" style="display:inline-flex;align-items:center;gap:5px;width:auto;height:26px;border-radius:7px;border:1px solid #CBDDBC;background:#EDF3E6;color:#34672A;cursor:pointer;font-size:10.5px;font-weight:800;font-family:inherit;flex:0 0 auto;padding:0 10px;">Open ⤢</button>
@@ -1531,7 +1537,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v73 · Jul 12';
+    this.BUILD='v74 · Jul 12';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
