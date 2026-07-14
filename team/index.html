@@ -109,10 +109,10 @@
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:#23311C;color:#EAF2E1;font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:12px;box-shadow:0 8px 28px rgba(20,30,12,.28);z-index:80;opacity:0;pointer-events:none;transition:all .25s ease;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   /* Launchpad/dashboard multi-column grids — columns live here (not inline) so the mobile media query can collapse them */
-  .lpstat{grid-template-columns:300px repeat(3,minmax(0,1fr));}
-  .lpstat-hero{grid-row:1 / span 2;}
   .lpwelcome{grid-template-columns:1fr 300px;}
   .dash3{grid-template-columns:repeat(3,1fr);}
+  .statgrid{grid-template-columns:300px repeat(3,minmax(0,1fr));grid-auto-rows:1fr;}
+  .statgrid-hero{grid-row:1 / span 2;}
   /* ---- Mobile / home-screen app ---- */
   .menubar{display:none;align-items:center;gap:11px;padding:max(9px,env(safe-area-inset-top)) 14px 9px;background:#fff;border-bottom:1px solid #E7ECF4;position:sticky;top:0;z-index:35;}
   .hamb{width:40px;height:40px;border-radius:10px;border:1px solid #E2E8DE;background:#FAFBF8;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;color:#34512C;padding:0;}
@@ -142,10 +142,10 @@
     /* bump the tiniest text a touch so nothing needs zooming */
     .mainview [style*="font-size:9px"],.mainview [style*="font-size:9.5px"]{font-size:10.5px !important;}
     /* collapse the multi-column launchpad/dashboard grids to a single column */
-    .lpstat{grid-template-columns:1fr !important;}
-    .lpstat-hero{grid-row:auto !important;}
     .lpwelcome{grid-template-columns:1fr !important;}
     .dash3{grid-template-columns:1fr !important;}
+    .statgrid{grid-template-columns:1fr 1fr !important;grid-auto-rows:auto !important;align-items:start !important;}
+    .statgrid-hero{grid-row:auto !important;grid-column:1 / -1 !important;}
   }
 </style>
 </helmet>
@@ -726,8 +726,8 @@
       </div>
     </div>
 
-    <div class="rg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));grid-auto-rows:1fr;gap:16px;margin-bottom:18px;">
-      <div style="min-width:0;grid-column:span 1;background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(20,30,12,.05);">
+    <div class="rg statgrid" style="display:grid;gap:16px;margin-bottom:18px;">
+      <div class="statgrid-hero" style="min-width:0;background:#fff;border:1px solid #E8EDE4;border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(20,30,12,.05);">
         <div style="position:relative;width:152px;height:152px;">
           <svg width="152" height="152" viewBox="0 0 152 152"><circle cx="76" cy="76" r="64" fill="none" stroke="#EDF1E7" stroke-width="13"/><circle cx="76" cy="76" r="64" fill="none" stroke="{{ curPhaseColor }}" stroke-width="13" stroke-linecap="round" stroke-dasharray="{{ curPhaseDash }}" transform="rotate(-90 76 76)"/></svg>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:38px;font-weight:800;color:#1E2A16;">{{ curPhasePctStr }}</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.13em;color:#A6B098;margin-top:3px;">THIS PHASE</div></div>
@@ -1679,7 +1679,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v79 · Jul 13';
+    this.BUILD='v80 · Jul 13';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
