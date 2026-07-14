@@ -147,6 +147,7 @@
     .tkline{flex-wrap:wrap !important;}
     .tktitle{flex:1 1 100% !important;min-width:0 !important;}
     .cardwrap > [data-uc]{flex:1 1 100% !important;max-width:100% !important;min-width:0 !important;}
+    .cwbtn{display:none !important;} /* card width toggle is a no-op on phones (cards are always full-width) */
     /* stop the whole page scrolling sideways; wide tables scroll inside their own box instead */
     html,body{overflow-x:hidden;}
     .app{max-width:100vw;overflow-x:hidden;}
@@ -501,7 +502,7 @@
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
-            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn cwbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <sc-if value="{{ cd.canDelete }}" hint-placeholder-val="{{ true }}"><button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button></sc-if>
@@ -698,7 +699,7 @@
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
-            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn cwbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <sc-if value="{{ cd.canDelete }}" hint-placeholder-val="{{ true }}"><button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button></sc-if>
@@ -830,7 +831,7 @@
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
-            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn cwbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <sc-if value="{{ cd.canDelete }}" hint-placeholder-val="{{ true }}"><button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button></sc-if>
@@ -1147,7 +1148,7 @@
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
             <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
             <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
-            <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+            <button class="pbtn cwbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
             <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
             <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
             <sc-if value="{{ cd.canDelete }}" hint-placeholder-val="{{ true }}"><button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button></sc-if>
@@ -1230,7 +1231,7 @@
             <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;{{ cd.headStyle }}">
               <span data-ucgrip="1" draggable="true" title="Drag to reorder" style="cursor:grab;color:#8A957C;font-size:13px;flex:0 0 auto;user-select:none;">⠿</span>
               <input value="{{ cd.title }}" onInput="{{ cd.onTitle }}" placeholder="Card title" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:800;color:#23311C;outline:none;">
-              <button class="pbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
+              <button class="pbtn cwbtn" onClick="{{ cd.onCycleWidth }}" title="Card width — tap to fit more cards per row" style="height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#5B6B4E;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;padding:0 7px;white-space:nowrap;">{{ cd.cwLabel }}</button>
               <button class="pbtn" onClick="{{ cd.onToggleColor }}" title="Card color" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.12);cursor:pointer;{{ cd.barStyle }}"></button>
               <button class="pbtn" onClick="{{ cd.onToggleAdd }}" title="Add to this card" style="width:24px;height:24px;border-radius:6px;border:1px solid #D7E2CE;background:#fff;color:#45852B;cursor:pointer;font-size:15px;font-weight:800;line-height:1;">+</button>
               <sc-if value="{{ cd.canDelete }}" hint-placeholder-val="{{ true }}"><button class="del" onClick="{{ cd.onDelete }}" title="Delete card" style="width:24px;height:24px;border-radius:6px;border:none;background:transparent;color:#BCC6B2;cursor:pointer;font-size:12px;">✕</button></sc-if>
