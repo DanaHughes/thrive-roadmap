@@ -108,8 +108,9 @@
   .thv-report-bar b{flex:1;min-width:120px;font-size:13px;font-weight:800;}
   .thv-report-bar button,.thv-report-bar a{font-family:inherit;font-size:12.5px;font-weight:800;border:none;border-radius:8px;padding:9px 13px;cursor:pointer;text-decoration:none;}
   .thv-report-bar .pp{background:#45852B;color:#fff;} .thv-report-bar .cc{background:#3C4F30;color:#EAF2E1;} .thv-report-bar .gg{background:#EAF2E1;color:#23311C;} .thv-report-bar .xx{background:transparent;color:#B9C7AC;}
-  .thv-report-body{max-width:840px;margin:0 auto;padding:18px 20px 60px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;}
-  .thv-report-body img{max-width:100%;height:auto;border-radius:6px;} .thv-report-body table{border-collapse:collapse;max-width:100%;}
+  .thv-report-body{max-width:840px;margin:0 auto;padding:18px 20px 60px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;overflow-wrap:anywhere;word-break:break-word;}
+  .thv-report-body img{max-width:100%;height:auto;border-radius:6px;} .thv-report-body table{border-collapse:collapse;width:100%;max-width:100%;}
+  .thv-report-body td,.thv-report-body th{overflow-wrap:anywhere;word-break:break-word;} .thv-report-body a{word-break:break-all;}
   @media print{
     body.thv-printing .app, body.thv-printing .toast, body.thv-printing .aifab, body.thv-printing .aichat, body.thv-printing .menubar, body.thv-printing .side-back{display:none!important;}
     body.thv-printing .thv-report-ov{position:static!important;overflow:visible!important;}
@@ -1691,7 +1692,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v81 · Jul 14';
+    this.BUILD='v82 · Jul 14';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2098,7 +2099,7 @@ class Component extends DCLogic {
     if(!copied){ try{ await navigator.clipboard.writeText(plain); copied=true; }catch(e){} }
     // Open a fully-rendered report page (images show!) with Save-as-PDF, Copy-all, and Open-Google-Docs.
     const page='<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safeTitle+'</title>'
-      +'<style>@media print{.bar{display:none!important}}body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;max-width:840px;margin:0 auto;padding:0 20px 44px;}#c img{max-width:100%;height:auto;border-radius:6px;}table{border-collapse:collapse;max-width:100%;}'
+      +'<style>@media print{.bar{display:none!important}}body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;max-width:840px;margin:0 auto;padding:0 20px 44px;overflow-wrap:anywhere;word-break:break-word;}#c img{max-width:100%;height:auto;border-radius:6px;}#c table{border-collapse:collapse;width:100%;max-width:100%;}#c td,#c th{overflow-wrap:anywhere;word-break:break-word;}#c a{word-break:break-all;}'
       +'.bar{position:sticky;top:0;z-index:9;background:#23311C;color:#EAF2E1;padding:11px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 -20px 20px;}'
       +'.bar b{flex:1;min-width:120px;font-size:13px;}.bar button,.bar a{font-family:inherit;font-size:12.5px;font-weight:800;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;text-decoration:none;}'
       +'.pp{background:#45852B;color:#fff;}.cc{background:#3C4F30;color:#EAF2E1;}.gg{background:#EAF2E1;color:#23311C;}</style></head><body>'
@@ -2150,7 +2151,7 @@ class Component extends DCLogic {
     let h='<h2 style="color:'+phaseColor+';border-bottom:2px solid '+phaseColor+';padding-bottom:4px;">Milestone '+(di+1)+_mt+' — '+pct+'% complete</h2>';
     if(del.desc&&del.desc.trim()) h+='<p style="color:#555;"><i>'+esc(del.desc)+'</i></p>';
     if(del.notes&&String(del.notes).trim()){ const mn=(/<[a-z]/i.test(del.notes)?del.notes:('<div>'+esc(del.notes).replace(/\n/g,'<br>')+'</div>')); h+='<div style="margin:6px 0 10px;">'+mn+'</div>'; }
-    h+='<table style="border-collapse:collapse;width:100%;margin:8px 0;"><tr><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;text-align:left;">Task</th><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;">Status</th></tr>';
+    h+='<table style="border-collapse:collapse;width:100%;table-layout:fixed;margin:8px 0;"><tr><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;text-align:left;width:78%;">Task</th><th style="border:1px solid #cbd8bc;background:#edf3e6;padding:5px 9px;width:22%;">Status</th></tr>';
     (del.tasks||[]).forEach(t=>{ if(!(t.label&&t.label.trim()) && !(t.notes&&String(t.notes).trim()) && !t.done) return; h+='<tr><td style="border:1px solid #cbd8bc;padding:5px 9px;">'+esc(t.label)+'</td><td style="border:1px solid #cbd8bc;padding:5px 9px;text-align:center;">'+(t.done?'✓ Done':'In progress')+'</td></tr>';
       const noteHtml=(t.notes&&String(t.notes).trim())?(/<[a-z]/i.test(t.notes)?t.notes:('<div>'+esc(t.notes).replace(/\n/g,'<br>')+'</div>')):'';
       if(noteHtml) h+='<tr><td colspan="2" style="border:1px solid #cbd8bc;padding:5px 9px 9px 20px;font-size:10pt;color:#333;background:#fafcf8;">'+noteHtml+'</td></tr>';
