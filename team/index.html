@@ -103,6 +103,19 @@
   .creply-main{flex:1;min-width:0;}
   .creply-x{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:none;background:transparent;color:#C7CFBE;cursor:pointer;font-size:11px;}
   .creply-x:hover{color:#5B6B4E;}
+  /* In-app report viewer (used on iPhone/iPad where a new tab is blocked) */
+  .thv-report-ov{position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;-webkit-overflow-scrolling:touch;}
+  .thv-report-bar{position:sticky;top:0;z-index:2;background:#23311C;color:#EAF2E1;padding:11px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .thv-report-bar b{flex:1;min-width:120px;font-size:13px;font-weight:800;}
+  .thv-report-bar button,.thv-report-bar a{font-family:inherit;font-size:12.5px;font-weight:800;border:none;border-radius:8px;padding:9px 13px;cursor:pointer;text-decoration:none;}
+  .thv-report-bar .pp{background:#45852B;color:#fff;} .thv-report-bar .cc{background:#3C4F30;color:#EAF2E1;} .thv-report-bar .gg{background:#EAF2E1;color:#23311C;} .thv-report-bar .xx{background:transparent;color:#B9C7AC;}
+  .thv-report-body{max-width:840px;margin:0 auto;padding:18px 20px 60px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a1a;}
+  .thv-report-body img{max-width:100%;height:auto;border-radius:6px;} .thv-report-body table{border-collapse:collapse;max-width:100%;}
+  @media print{
+    body.thv-printing .app, body.thv-printing .toast, body.thv-printing .aifab, body.thv-printing .aichat, body.thv-printing .menubar, body.thv-printing .side-back{display:none!important;}
+    body.thv-printing .thv-report-ov{position:static!important;overflow:visible!important;}
+    body.thv-printing .thv-report-bar{display:none!important;}
+  }
   .wsfld.big{overflow-y:auto;}
   .phasehead{padding-right:240px;}
   @media (max-width:820px){ .phasehead{padding-right:0 !important;} }
@@ -1679,7 +1692,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v80 · Jul 13';
+    this.BUILD='v81 · Jul 14';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2111,8 +2124,24 @@ class Component extends DCLogic {
       }catch(e){ w.alert('Could not render the PNG — please use Save as PDF instead.'); } }; })(win);
       try{ win.__thvPngName=pngName; }catch(_){}
       opened=true; } }catch(e){}
-    if(!opened){ try{ const blob=new Blob([page],{type:'text/html'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=(title||'thrive-report').replace(/[^\w \-]+/g,'').slice(0,60).trim()+'.html'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); }catch(e){} }
-    this.toast(opened ? 'Report opened in a new tab — Save as PDF, Save as PNG (for email), or Copy all → Google Docs' : 'Report downloaded — open it to print or copy');
+    if(!opened){ this._showReportOverlay(safeTitle, bodyHtml); this.toast('Report ready — tap “Save as PDF” to print, save to Files, or share it'); return; }
+    this.toast('Report opened in a new tab — Save as PDF, Save as PNG (for email), or Copy all → Google Docs');
+  }
+  // Mobile-friendly fallback: when a new tab is blocked (iPhone/iPad Safari), show the report inside the app.
+  _showReportOverlay(safeTitle, bodyHtml){
+    try{ const old=document.getElementById('thv-report-ov'); if(old) old.remove(); }catch(e){}
+    const ov=document.createElement('div'); ov.className='thv-report-ov'; ov.id='thv-report-ov';
+    ov.innerHTML='<div class="thv-report-bar"><b>✓ Your report — images included</b>'
+      +'<button class="pp" data-a="pdf">🖨 Save as PDF</button>'
+      +'<button class="cc" data-a="copy">📋 Copy all</button>'
+      +'<a class="gg" href="https://docs.google.com/document/create" target="_blank" rel="noopener">Google Docs ↗</a>'
+      +'<button class="xx" data-a="close">✕ Close</button>'
+      +'</div><div class="thv-report-body" id="thv-report-c"><h1 style="font-size:18pt;margin-top:0;">'+safeTitle+'</h1>'+(bodyHtml||'')+'</div>';
+    document.body.appendChild(ov);
+    const close=()=>{ try{ ov.remove(); document.body.classList.remove('thv-printing'); }catch(e){} };
+    ov.querySelector('[data-a="pdf"]').addEventListener('click', ()=>{ try{ document.body.classList.add('thv-printing'); }catch(e){} setTimeout(()=>{ try{ window.print(); }catch(e){} setTimeout(()=>{ try{ document.body.classList.remove('thv-printing'); }catch(e){} }, 800); }, 60); });
+    ov.querySelector('[data-a="copy"]').addEventListener('click', (e)=>{ try{ const el=document.getElementById('thv-report-c'); const r=document.createRange(); r.selectNode(el); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges(); e.target.textContent='✓ Copied'; setTimeout(()=>{ try{ e.target.textContent='📋 Copy all'; }catch(_){} }, 2000); }catch(err){} });
+    ov.querySelector('[data-a="close"]').addEventListener('click', close);
   }
 
   // ---- Export: aesthetically formatted Phase / Milestone reports → Google Docs (email/text to your boss) ----
