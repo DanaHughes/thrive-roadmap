@@ -1697,7 +1697,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v85 · Jul 14';
+    this.BUILD='v86 · Jul 17';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2166,9 +2166,26 @@ class Component extends DCLogic {
     if(links.length||files.length){ h+='<p style="font-weight:bold;margin:6px 0 2px;">Deliverables & links:</p><ul>'; links.forEach(l=>h+='<li><a href="'+esc(l.url)+'">'+esc(l.label||l.url)+'</a></li>'); files.forEach(f=>h+='<li>'+esc(f)+' (file)</li>'); h+='</ul>'; }
     return h;
   }
+  // Render the custom cards (links, files, images, notes & comments) shown at the top of a phase into the export.
+  _rptCardsHtml(scope){ const esc=this._docEsc2; const cards=this.cardsFor(scope); if(!cards||!cards.length) return '';
+    const noteBody=(txt)=>(/<[a-z]/i.test(txt||'')?txt:('<div>'+esc(txt||'').replace(/\n/g,'<br>')+'</div>'));
+    let h='<h2 style="color:#5B6B4E;border-bottom:2px solid #CBD8BC;padding-bottom:4px;">Cards &amp; Resources</h2>';
+    cards.forEach(cd=>{ h+='<div style="border:1px solid #E2E8DE;border-radius:8px;padding:10px 14px;margin:8px 0;">';
+      if(cd.title&&cd.title.trim()) h+='<h3 style="margin:0 0 6px;color:#33402A;">'+esc(cd.title)+'</h3>';
+      (cd.blocks||[]).forEach(bl=>{
+        if(bl.type==='link' && bl.url && bl.url.trim()){ h+='<p style="margin:3px 0;">🔗 '+(bl.label?esc(bl.label)+': ':'')+'<a href="'+esc(bl.url)+'">'+esc(bl.url)+'</a></p>'; }
+        else if(bl.type==='file'){ if(bl.kind==='image'&&bl.data){ h+='<div style="margin:6px 0;"><img src="'+bl.data+'" style="max-width:100%;height:auto;border-radius:6px;"></div>'; } else { h+='<p style="margin:3px 0;">📄 '+esc(bl.name||'file')+'</p>'; } }
+        else if(bl.type==='note'){ const who=bl.byName||(bl.by==='team'?'Teammate':'Dana'); h+='<div style="margin:6px 0;padding:6px 10px;background:#FBFCFA;border:1px solid #EEF2EA;border-radius:6px;"><div style="font-size:9pt;font-weight:bold;color:#5B6B4E;margin-bottom:3px;">'+esc(who)+(bl.resolved?' · Resolved ✓':'')+'</div>'+noteBody(bl.text);
+          (bl.replies||[]).forEach(rp=>{ const rw=rp.byName||(rp.by==='team'?'Teammate':'Dana'); h+='<div style="margin:5px 0 0 10px;padding-left:9px;border-left:2px solid #E4E9DC;"><div style="font-size:8.5pt;font-weight:bold;color:#7C8C6C;">'+esc(rw)+'</div>'+noteBody(rp.text)+'</div>'; });
+          h+='</div>'; }
+      });
+      h+='</div>'; });
+    return h;
+  }
   exportMilestone(ph,di){ const P=this.PHASES.find(x=>x.key===ph); const del=(this.state.board[ph]||[])[di]; if(!del) return; const html='<p style="color:#666;">'+this._docEsc2(P?P.label:'')+' · Thrive Hybrid Academy · '+new Date().toLocaleDateString()+'</p>'+this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); this.docSendToGoogle('Milestone '+(di+1)+((del.title&&del.title.trim())?(' — '+del.title):''), html); }
   exportPhase(ph){ const P=this.PHASES.find(x=>x.key===ph); const dels=this.state.board[ph]||[]; let tt=0,dd=0; dels.forEach(del=>{ tt+=(del.tasks||[]).length; dd+=(del.tasks||[]).filter(t=>t.done).length; }); const pct=tt?Math.round(dd/tt*100):0;
     let html='<p style="color:#666;">Thrive Hybrid Academy · Progress report · '+new Date().toLocaleDateString()+'</p><p style="font-size:13pt;"><b>Overall: '+pct+'% complete</b> ('+dd+' of '+tt+' tasks across '+dels.length+' milestones)</p>';
+    html+=this._rptCardsHtml(ph);
     dels.forEach((del,di)=>{ html+=this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); });
     this.docSendToGoogle((P?P.label:'Phase')+' — Progress Report', html); }
 
