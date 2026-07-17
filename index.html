@@ -347,6 +347,10 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 5v14l4-2 4 2 4-2 4 2V5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
       <span>Roadmap Overview</span>
     </div>
+    <div class="nav" onClick="{{ onExportAll }}" title="Export everything in ThriveOS as one document" style="color:#3F6193;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0 4 4m-4-4-4 4M5 20h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Export everything</span>
+    </div>
     <sc-if value="{{ privateMode }}" hint-placeholder-val="{{ false }}">
     <div class="nav" onClick="{{ goLaunchpad }}" style="{{ navLaunchStyle }}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2.5c2.6 1.4 4.4 4.2 4.4 7.7 0 2.1-.7 3.6-1.6 4.9H9.2c-.9-1.3-1.6-2.8-1.6-4.9 0-3.5 1.8-6.3 4.4-7.7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9.4" r="1.7" stroke="currentColor" stroke-width="1.6"/><path d="M9.2 17.6 8 21l4-1.6L16 21l-1.2-3.4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -1697,7 +1701,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v87 · Jul 17';
+    this.BUILD='v88 · Jul 17';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2188,6 +2192,24 @@ class Component extends DCLogic {
     html+=this._rptCardsHtml(ph);
     dels.forEach((del,di)=>{ html+=this._rptMilestoneHtml(del,di,(P?P.color:'#2E8B57')); });
     this.docSendToGoogle((P?P.label:'Phase')+' — Progress Report', html); }
+  // Export the ENTIRE workspace — every phase (cards + milestones + tasks), plus (for the owner) the Launchpad sections and Brain Dump — as one document.
+  exportAll(){ const esc=this._docEsc2; const team=!!this.state.teamMode; const meta=(this.state.board&&this.state.board.meta)||{};
+    let tt=0,dd=0,msN=0; this.PHASES.forEach(p=>{ const a=this.state.board[p.key]||[]; msN+=a.length; a.forEach(del=>{ tt+=(del.tasks||[]).length; dd+=(del.tasks||[]).filter(t=>t.done).length; }); });
+    const pct=tt?Math.round(dd/tt*100):0;
+    const listSec=(title,items)=>{ if(!items||!items.length) return ''; return '<h2 style="color:#5B6B4E;border-bottom:2px solid #CBD8BC;padding-bottom:4px;">'+esc(title)+'</h2><ul>'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; };
+    let html='<p style="color:#666;">Thrive Hybrid Academy · Full report · '+new Date().toLocaleDateString()+'</p><p style="font-size:13pt;"><b>Overall: '+pct+'% complete</b> ('+dd+' of '+tt+' tasks · '+msN+' milestones · '+this.PHASES.length+' phases)</p>';
+    html+=this._rptCardsHtml('dash'); html+=this._rptCardsHtml('overview');
+    if(!team){
+      html+=listSec('Executive Summary', (meta.exec||[]).filter(x=>x&&String(x).trim()).map(x=>esc(x)));
+      html+=listSec('Needs Attention', (meta.needsAttention||[]).filter(x=>x&&String(x).trim()).map(x=>esc(x)));
+      html+=listSec('Waiting On', (meta.waitingOn||[]).filter(x=>x&&(x.what||x.who)).map(x=>esc(x.what||'')+(x.who?(' — '+esc(x.who)):'')));
+      html+=listSec('Parking Lot', (meta.parkingLot||[]).filter(x=>x&&String(x).trim()).map(x=>esc(x)));
+      html+=this._rptCardsHtml('launch'); html+=this._rptCardsHtml('brain');
+      const bd=(meta.brainDump||[]).filter(x=>x&&x.text&&String(x.text).trim());
+      if(bd.length){ html+='<h2 style="color:#5B6B4E;border-bottom:2px solid #CBD8BC;padding-bottom:4px;">Brain Dump</h2>'; bd.forEach(e=>{ let d=''; try{ d=e.ts?new Date(e.ts).toLocaleString():''; }catch(_){} html+='<div style="margin:6px 0;padding:6px 10px;background:#FBFCFA;border:1px solid #EEF2EA;border-radius:6px;">'+(d?'<div style="font-size:9pt;color:#9AA68C;margin-bottom:3px;">'+esc(d)+'</div>':'')+'<div>'+esc(e.text).replace(/\n/g,'<br>')+'</div></div>'; }); }
+    }
+    this.PHASES.forEach(p=>{ const dels=this.state.board[p.key]||[]; html+='<h1 style="color:'+p.color+';margin-top:26px;border-bottom:3px solid '+p.color+';padding-bottom:5px;">'+esc(p.label)+'</h1>'; html+=this._rptCardsHtml(p.key); dels.forEach((del,di)=>{ html+=this._rptMilestoneHtml(del,di,p.color); }); });
+    this.docSendToGoogle('Thrive Hybrid Academy — Full Report', html); }
 
   // ---- Version history: synced across devices via Firebase (merge by snapshot ts) ----
   histUrl(){ return this.SYNC_URL ? (this.SYNC_URL.replace(/\/+$/,'')+'/thrivehist/'+this.CTOKEN+'.json') : ''; }
@@ -3118,7 +3140,7 @@ class Component extends DCLogic {
       toast:this.state.toast, hasToast:!!this.state.toast,
       execItems, onAddExec:()=>this.addExec(),
       decItems, decEmpty, hasDec:!decEmpty, onAddDec:()=>this.addDec(), onToggleNoDec:()=>this.toggleNoDec(),
-      goDashboard:()=>this.setView('dashboard'), goOverview:()=>this.setView('overview'),
+      goDashboard:()=>this.setView('dashboard'), goOverview:()=>this.setView('overview'), onExportAll:()=>this.exportAll(),
       navDashStyle:navItem(this.state.view==='dashboard'), navOvStyle:navItem(this.state.view==='overview'),
       showOverview:this.state.view==='overview', overviewPhases,
       goBrainDump:()=>this.setView('braindump'), navBdStyle:navItem(this.state.view==='braindump'),
