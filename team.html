@@ -1698,7 +1698,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v86 · Jul 17';
+    this.BUILD='v87 · Jul 17';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2170,7 +2170,7 @@ class Component extends DCLogic {
   // Render the custom cards (links, files, images, notes & comments) shown at the top of a phase into the export.
   _rptCardsHtml(scope){ const esc=this._docEsc2; const cards=this.cardsFor(scope); if(!cards||!cards.length) return '';
     const noteBody=(txt)=>(/<[a-z]/i.test(txt||'')?txt:('<div>'+esc(txt||'').replace(/\n/g,'<br>')+'</div>'));
-    let h='<h2 style="color:#5B6B4E;border-bottom:2px solid #CBD8BC;padding-bottom:4px;">Cards &amp; Resources</h2>';
+    let h='';
     cards.forEach(cd=>{ h+='<div style="border:1px solid #E2E8DE;border-radius:8px;padding:10px 14px;margin:8px 0;">';
       if(cd.title&&cd.title.trim()) h+='<h3 style="margin:0 0 6px;color:#33402A;">'+esc(cd.title)+'</h3>';
       (cd.blocks||[]).forEach(bl=>{
