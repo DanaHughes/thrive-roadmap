@@ -347,7 +347,7 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 5v14l4-2 4 2 4-2 4 2V5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
       <span>Roadmap Overview</span>
     </div>
-    <div class="nav" onClick="{{ onExportAll }}" title="Export everything in ThriveOS as one document" style="color:#3F6193;">
+    <div class="nav" onClick="{{ onExportAll }}" title="Export everything in ThriveAcademyOS as one document" style="color:#3F6193;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0 4 4m-4-4-4 4M5 20h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Export everything</span>
     </div>
@@ -421,7 +421,7 @@
       <sc-if value="{{ notLocked }}" hint-placeholder-val="{{ true }}">
       <div style="font-size:10px;color:#B6C0D0;padding:12px 6px 0;">{{ modeHint }}</div>
       </sc-if>
-      <div style="display:flex;align-items:center;gap:5px;padding:9px 6px 0;font-size:9.5px;color:#B6C0D0;font-weight:600;"><span style="color:#45852B;">✓</span>ThriveOS {{ buildTag }}</div>
+      <div style="display:flex;align-items:center;gap:5px;padding:9px 6px 0;font-size:9.5px;color:#B6C0D0;font-weight:600;"><span style="color:#45852B;">✓</span>ThriveAcademyOS {{ buildTag }}</div>
     </div>
   </aside>
 
@@ -1084,7 +1084,7 @@
         <a href="https://register.learnatthrive.com/admin/profile?tab=timesheets&academic-year=2026-2027" target="_blank" rel="noopener" style="margin-left:auto;font-size:11px;font-weight:800;color:#3F6193;background:#EEF3FA;border:1px solid #CBD8E8;border-radius:8px;padding:7px 13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">↗ Open my Thrive Timesheet</a>
         <button class="pbtn" onClick="{{ timeLog.onExport }}" style="font-size:11px;font-weight:800;color:#34672A;background:#EDF3E6;border:1px solid #CBDDBC;border-radius:8px;padding:7px 13px;cursor:pointer;">⤓ Export CSV</button>
       </div>
-      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = your total time in ThriveOS — dashboard open &amp; in use (counts even while you work in other tabs), <i>plus</i> any Active Task time (pauses after 30 min with no activity). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages (a subset of Passive). <b style="color:#357A2B;">Billable</b> = what you reconcile when you finalize the day (editable anytime).</div>
+      <div style="font-size:10.5px;color:#79866C;margin-bottom:13px;line-height:1.5;"><b style="color:#8FAE48;">Passive</b> = your total time in ThriveAcademyOS — dashboard open &amp; in use (counts even while you work in other tabs), <i>plus</i> any Active Task time (pauses after 30 min with no activity). <b style="color:#2E8B57;">Active Task</b> = the Start/Stop timer on Phase pages (a subset of Passive). <b style="color:#357A2B;">Billable</b> = what you reconcile when you finalize the day (editable anytime).</div>
 
       <!-- DAILY TABLE -->
       <sc-if value="{{ timeLog.hasDaily }}" hint-placeholder-val="{{ true }}">
@@ -1701,7 +1701,7 @@ class Component extends DCLogic {
   constructor(props){
     super(props);
     this.KEY='thrive_webapp_v2';
-    this.BUILD='v88 · Jul 17';
+    this.BUILD='v89 · Jul 17';
     // ---- Shared AI server (Cloudflare Worker middleman) ----
     // When AI_WORKER is set, ALL devices (incl. the team) use the AI through
     // this server — the real API key lives ONLY on the server, never shared.
@@ -2538,7 +2538,7 @@ class Component extends DCLogic {
     this.toast('Inserted into notes ✓'); }
 
   // ---- Floating AI assistant (any page) ----
-  aiProjectSnapshot(){ const parts=[]; this.PHASES.forEach(p=>{ const a=this.state.board[p.key]||[]; let d=0,t=0; a.forEach(del=>{ t+=(del.tasks||[]).length; d+=(del.tasks||[]).filter(x=>x.done).length; }); const pct=t?Math.round(d/t*100):0; parts.push(p.label+': '+pct+'% ('+d+'/'+t+' tasks done)'); }); const focus=this.tlCurrentFocus(); return 'ThriveOS roadmap status:\n'+parts.join('\n')+(focus?('\nDana is currently working on: '+focus):''); }
+  aiProjectSnapshot(){ const parts=[]; this.PHASES.forEach(p=>{ const a=this.state.board[p.key]||[]; let d=0,t=0; a.forEach(del=>{ t+=(del.tasks||[]).length; d+=(del.tasks||[]).filter(x=>x.done).length; }); const pct=t?Math.round(d/t*100):0; parts.push(p.label+': '+pct+'% ('+d+'/'+t+' tasks done)'); }); const focus=this.tlCurrentFocus(); return 'ThriveAcademyOS roadmap status:\n'+parts.join('\n')+(focus?('\nDana is currently working on: '+focus):''); }
   aiChatToggle(){ if(!this.state.aiChatOpen && !this.aiReady()){ this.openSettings(); this.toast('Add your AI key in Settings first'); return; } this.setState({aiChatOpen:!this.state.aiChatOpen}); }
   aiChatMin(){ this.setState({aiChatOpen:false, aiChatMemView:false}); }
   _aiConsentPersisted(){ try{ return localStorage.getItem('thrive_ai_consent')==='1'; }catch(e){ return false; } }
@@ -2653,9 +2653,9 @@ class Component extends DCLogic {
     const mem=(this.state.aiChatMem||'').trim();
     let sys;
     if(team){
-      sys='You are the Thrive Assistant, a friendly, sharp helper built into ThriveOS — the operations command center for Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). You are helping a member of Thrive\'s team. Help them understand the roadmap, summarize phases and milestones, and draft updates. Be concise and practical. Here is the live progress for context:\n\n'+this.aiProjectSnapshot();
+      sys='You are the Thrive Assistant, a friendly, sharp helper built into ThriveAcademyOS — the operations command center for Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). You are helping a member of Thrive\'s team. Help them understand the roadmap, summarize phases and milestones, and draft updates. Be concise and practical. Here is the live progress for context:\n\n'+this.aiProjectSnapshot();
     } else {
-      sys='You are Dana\'s friendly, sharp assistant built into ThriveOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
+      sys='You are Dana\'s friendly, sharp assistant built into ThriveAcademyOS — the operations command center she uses to launch and run Thrive Hybrid Academy (a hybrid/virtual school working toward Cognia accreditation and TEFA funding). Help her think, plan, draft, and problem-solve. Be concise and practical. Here is her live progress for context:\n\n'+this.aiProjectSnapshot();
     }
     if(mem) sys+='\n\nWhat you remember from past conversations (use it naturally to be more helpful — do not recite it back verbatim):\n'+mem;
     sys+='\n\nMEMORY: When you learn a durable fact, preference, or decision that would help you assist better in future chats, append it at the very end of your reply on its own line in EXACTLY this format: [[REMEMBER: the concise fact]]. You may add more than one. These lines are removed before the user sees the reply, so never reference them in the visible text. Only record things worth remembering long-term — skip trivial or one-off details.';
